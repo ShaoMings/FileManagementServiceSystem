@@ -1,4 +1,4 @@
-package com.graduation.model;
+package com.graduation.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.Version;

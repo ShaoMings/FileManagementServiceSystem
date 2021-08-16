@@ -1,6 +1,6 @@
 package com.graduation.service.impl;
 
-import com.graduation.model.File;
+import com.graduation.model.pojo.File;
 import com.graduation.mapper.FileMapper;
 import com.graduation.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

@@ -1,6 +1,6 @@
 package com.graduation.service;
 
-import com.graduation.model.Peers;
+import com.graduation.model.pojo.Peers;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

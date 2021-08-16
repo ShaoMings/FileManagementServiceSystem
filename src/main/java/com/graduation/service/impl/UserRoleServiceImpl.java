@@ -1,6 +1,6 @@
 package com.graduation.service.impl;
 
-import com.graduation.model.UserRole;
+import com.graduation.model.pojo.UserRole;
 import com.graduation.mapper.UserRoleMapper;
 import com.graduation.service.UserRoleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

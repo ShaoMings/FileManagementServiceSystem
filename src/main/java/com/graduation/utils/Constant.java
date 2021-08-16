@@ -15,6 +15,12 @@ public class Constant {
     /** API 响应成功标识 */
     public static final String API_STATUS_SUCCESS = "ok";
 
+    /**  响应成功状态码 */
+    public static final int SUCCESS_STATUS_CODE = 200;
+
+    /** 服务器内部错误状态码 */
+    public static final int INTERNAL_ERROR_CODE = 500;
+
     /** 配置管理重载API */
     public static final String API_RELOAD = "/reload";
 

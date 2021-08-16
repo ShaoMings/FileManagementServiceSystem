@@ -1,6 +1,6 @@
 package com.graduation.mapper;
 
-import com.graduation.model.User;
+import com.graduation.model.pojo.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

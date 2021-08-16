@@ -1,4 +1,4 @@
-package com.graduation.model;
+package com.graduation.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -19,23 +19,20 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="File对象", description="")
-public class File implements Serializable {
+@ApiModel(value="UserRole对象", description="")
+public class UserRole implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "文件id")
+    @ApiModelProperty(value = "默认id")
       @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "文件名")
-    private String fileName;
+    @ApiModelProperty(value = "用户id")
+    private Integer userId;
 
-    @ApiModelProperty(value = "文件页面路径")
-    private String filePageUrl;
-
-    @ApiModelProperty(value = "文件存储路径")
-    private String fileSaveUrl;
+    @ApiModelProperty(value = "角色id")
+    private Integer roleId;
 
 
 }

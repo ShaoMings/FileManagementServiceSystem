@@ -1,6 +1,6 @@
 package com.graduation.mapper;
 
-import com.graduation.model.RolePermission;
+import com.graduation.model.pojo.RolePermission;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**

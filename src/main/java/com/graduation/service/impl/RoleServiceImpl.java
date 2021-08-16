@@ -1,6 +1,6 @@
 package com.graduation.service.impl;
 
-import com.graduation.model.Role;
+import com.graduation.model.pojo.Role;
 import com.graduation.mapper.RoleMapper;
 import com.graduation.service.RoleService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;

@@ -1,4 +1,4 @@
-package com.graduation.model;
+package com.graduation.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.Version;
@@ -19,20 +19,20 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="RolePermission对象", description="")
-public class RolePermission implements Serializable {
+@ApiModel(value="Role对象", description="")
+public class Role implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "默认id")
+    @ApiModelProperty(value = "角色id")
       @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "角色id")
-    private Integer roleId;
+    @ApiModelProperty(value = "角色名称")
+    private String roleName;
 
-    @ApiModelProperty(value = "权限id")
-    private Integer permissionId;
+    @ApiModelProperty(value = "角色描述")
+    private String roleDesc;
 
 
 }

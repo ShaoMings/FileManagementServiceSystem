@@ -1,6 +1,6 @@
 package com.graduation.service;
 
-import com.graduation.model.Role;
+import com.graduation.model.pojo.Role;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**

@@ -1,7 +1,11 @@
 package com.graduation.utils;
 
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadResultVo;
 import org.apache.http.client.config.RequestConfig;
@@ -18,7 +22,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * Description 文件操作工具类
@@ -28,6 +34,9 @@ import java.util.HashMap;
  * @since 1.0
  */
 public class FileUtils {
+
+    private static final String PARAM_KEY_MSG = "message";
+    private static final String PARAM_KEY_DATA = "data";
 
 
     /**
@@ -133,6 +142,49 @@ public class FileUtils {
         } catch (Exception e) {
             return FileResponseVo.fail("文件上传出错!");
         }
+    }
+
+
+    /**
+     *  用于获取文件的列表
+     * @param backUrl  回调url  入参相当于ip:port/group
+     * @param serverAddress 服务地址 入参相当于ip:port/group
+     * @param dir 要获取的目录 其中根目录为null   可以做持久化处理
+     * @return 文件信息列表对象
+     */
+    public static List<FileInfoVo> getDirectoryOrFileList(String backUrl,String serverAddress,String dir){
+        HashMap<String, Object> param = new HashMap<>(13);
+        if (StrUtil.isNotBlank(dir)){
+            param.put("dir",dir);
+        }
+        String result = HttpUtil.post(serverAddress + Constant.API_LIST_DIR,param);
+        JSONObject parseObj = JSONUtil.parseObj(result);
+        ArrayList<FileInfoVo> files = new ArrayList<>();
+        if ("".equals(parseObj.getStr(PARAM_KEY_MSG)) && StrUtil.isNotBlank(parseObj.getStr(PARAM_KEY_DATA))){
+            JSONArray array = parseObj.getJSONArray(PARAM_KEY_DATA);
+            for (int i = 0; i < array.size(); i++) {
+                FileInfoVo fileInfoVo = new FileInfoVo();
+                JSONObject file = array.getJSONObject(i);
+                // 备份文件在后缀之前有 _big
+                if ("_big".equals(file.getStr("name"))){
+                    continue;
+                }
+                fileInfoVo.setMd5(file.getStr("md5"));
+                fileInfoVo.setPath(file.getStr("path"));
+                fileInfoVo.setName(file.getStr("name"));
+                fileInfoVo.setIsDir(file.getBool("is_dir"));
+                fileInfoVo.setPeerAddress(backUrl);
+                // 如果是文件夹
+                if (file.getBool("is_dir")){
+                    fileInfoVo.setSize("0");
+                }else {
+                    fileInfoVo.setSize(FileSizeConverter.getLength(Long.parseLong(file.getStr("size"))));
+                }
+                fileInfoVo.setMTime(DateConverter.timeStampToDate(file.getStr("mtime"),null));
+                files.add(fileInfoVo);
+            }
+        }
+        return files;
     }
 
 

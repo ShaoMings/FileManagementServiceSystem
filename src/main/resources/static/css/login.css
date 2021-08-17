@@ -1,0 +1,46 @@
+html, body {
+    margin: 0;
+    min-height: 100%;
+    line-height: 1.42857143;
+    color: #58666e;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB,
+    Microsoft YaHei, Arial, sans-serif;
+    background: #f1f1f1;
+    height: 100%;
+}
+.full{
+    height: 100%;
+    overflow: auto;
+    width: 100%;
+}
+.login-top-box{
+    height: 50%;
+    width: 100%;
+    background: #627aad;
+}
+.login-box{
+    width: 350px;
+    height: 216px;
+    background: white;
+    position: absolute;
+    left: calc(50% - 175px);
+    top: calc(50% - 108px);
+    border-radius: 5px;
+    box-shadow: 1px 1px 4px #b3b1b1;
+    padding: 15px;
+}
+.layui-input-block{
+    margin: 0;
+}
+.login-title{
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+.login-btn{
+    width: 100%;
+    background: #627aad;
+}

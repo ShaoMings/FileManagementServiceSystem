@@ -1,8 +1,29 @@
 server:
   tomcat:
     uri-encoding: UTF-8
+  port: 8081
+  servlet:
+    session:
+      cookie:
+        http-only: false
+
+version: v1.3.5
+version.date: 2021/04/12
+upload.temp.path: /temp/
 
 spring:
+  thymeleaf:
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+  devtools:
+    restart:
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: -1
+      max-request-size: -1
+
   profiles:
     active: dev
   datasource:
@@ -21,7 +42,7 @@ mybatis-plus:
 
 
     #日志
-  #    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
   #逻辑删除设置
   global-config:
@@ -30,3 +51,15 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
   mapper-locations: classpath:com/study/mapper/xml/*.xml
+
+logging:
+  level:
+    com.graduation: debug
+  file:
+    name: ./logs/debug.log
+
+pagehelper:
+  reasonable: true
+  helper-dialect: mysql
+  support-methods-arguments: true
+  params: count=countSql

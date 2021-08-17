@@ -24,4 +24,16 @@ public class RegexUtils {
         return matcher.matches();
     }
 
+    /**
+     *  验证传入的字符串是否为邮箱
+     * @param s 传入字符串
+     * @return 是否为邮箱
+     */
+    public static boolean verifyEmail(String s){
+        String regEx = "^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\\.[a-zA-Z0-9-]+)*\\.[a-zA-Z0-9]{2,6}$";
+        Pattern pattern = Pattern.compile(regEx);
+        Matcher matcher = pattern.matcher(s);
+        return matcher.matches();
+    }
+
 }

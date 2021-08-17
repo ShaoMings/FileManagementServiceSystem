@@ -1,10 +1,24 @@
 package com.graduation.service.impl;
 
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 import com.graduation.model.pojo.File;
 import com.graduation.mapper.FileMapper;
+import com.graduation.model.vo.FileDetailsVo;
+import com.graduation.model.vo.FileInfoVo;
+import com.graduation.model.vo.FileResponseVo;
 import com.graduation.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.graduation.utils.Constant;
+import com.graduation.utils.DateConverter;
+import com.graduation.utils.FileSizeConverter;
+import com.graduation.utils.FileUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * <p>
@@ -17,4 +31,36 @@ import org.springframework.stereotype.Service;
 @Service
 public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements FileService {
 
+    @Override
+    public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress) {
+        return FileUtils.getDirectoryOrFileList(peersGroupName,serverAddress,null);
+    }
+
+    @Override
+    public List<FileInfoVo> getDirFile(String backUrl, String serverAddress, String dir) {
+        return FileUtils.getDirectoryOrFileList(backUrl,serverAddress,dir);
+    }
+
+    @Override
+    public boolean deleteFile(String peersUrl, String md5) {
+        HashMap<String, Object> param = new HashMap<>(8);
+        param.put("md5",md5);
+        JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_DELETE, param));
+        return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
+    }
+
+    @Override
+    public FileResponseVo getFileDetails(String peersUrl, String md5) {
+        HashMap<String, Object> param = new HashMap<>(8);
+        param.put("md5",md5);
+        JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_GET_FILE_INFO, param));
+        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"))) {
+            FileDetailsVo detailsVo = JSONUtil.toBean(jsonObject.getStr("data"), FileDetailsVo.class);
+            detailsVo.setSize(FileSizeConverter.getLength(Long.parseLong(detailsVo.getSize())));
+            detailsVo.setTimeStamp(DateConverter.getFormatDate(new Date(Long.parseLong(detailsVo.getTimeStamp())*1000)));
+            detailsVo.setUrl(peersUrl+"/"+detailsVo.getPath().replace("files/","")+"/"+detailsVo.getName());
+            return FileResponseVo.success(detailsVo);
+        }
+        return FileResponseVo.fail("获取文件信息失败");
+    }
 }

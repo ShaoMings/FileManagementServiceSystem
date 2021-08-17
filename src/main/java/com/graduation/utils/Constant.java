@@ -60,4 +60,10 @@ public class Constant {
     /**  转换单位大小 */
     public static final Long SIZE_K = 1024L;
 
+    /** 30天 表示一个月 */
+    public static final Integer MONTHS_DAY = 30;
+
+    /** 状态常量词 */
+    public static final String STATUS_CONSTANT = "status";
+
 }

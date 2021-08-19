@@ -27,14 +27,14 @@
                             <label class="layui-form-label">组名称:</label>
                             <div class="layui-input-block">
                                 <input name="groupName" id="groupName" placeholder="请输入组名称" type="text" class="layui-input" >
-                                <span>如果GoFastDfs开启了组支持(support_group_manage为true),则需要填写组名称(group),如:group1,未开启组支持请不要填写!</span>
+                                <span>如果文件服务程序开启了组支持(support_group_manage为true),则需要填写组名称(group),如:group1,未开启组支持请不要填写!</span>
                             </div>
                         </div>
                         <div class="layui-form-item">
                             <label class="layui-form-label">服务地址:</label>
                             <div class="layui-input-block">
                                 <input name="serverAddress" id="serverAddress" placeholder="请输入当前集群服务地址" lay-verify="required" type="text"  class="layui-input" >
-                                <span>填写此集群的服务地址,如:http://153.153.234.32:8080,注意GoFastDfs需要配置(admin_ips)当前web服务主机的管理ip</span>
+                                <span>填写此集群的服务地址,如:http://153.153.234.32:8080,注意文件服务程序需要配置(admin_ips)当前web服务主机的管理ip</span>
                             </div>
                         </div>
                         <div class="layui-form-item">
@@ -119,7 +119,7 @@
         $.get("/install/checkLocalServer", function(result){
             layer.close(index);
             if (result.code === 200) {
-                layer.msg("检测到本机(http://127.0.0.1:8080)存在运行的goFastDfs,已自动加载配置信息");
+                layer.msg("检测到本机(http://10.211.55.101:8080)存在运行的文件服务程序,已自动加载配置信息");
                 let host = "";
                 if (result.data.host) {
                     host = result.data.host.split("//")[1].split(":")[0];
@@ -127,14 +127,14 @@
                 if (result.data.adminIps.indexOf(host) >= 0) {
                     $("#serverAddress").val(result.data.host);
                 } else {
-                    $("#serverAddress").val("http://127.0.0.1:8080");
+                    $("#serverAddress").val("http://10.211.55.101:8080");
                 }
                 $("#showAddress").val(result.data.downloadDomain);
                 if (result.data.supportGroupManage) {
                     $("#groupName").val(result.data.group);
                 }
             } else {
-                layer.msg("未检测到本机(http://127.0.0.1:8080)运行goFastDfs,请手动配置goFastDfs信息");
+                layer.msg("未检测到本机(http://10.211.55.101:8080)运行文件服务程序,请手动配置程序信息");
             }
         });
         step.render({

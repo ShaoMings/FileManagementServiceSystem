@@ -114,6 +114,9 @@ $("#file-result").on("click", ".download-btn", function () {
 $("#file-result").on("click", ".details-btn", function () {
     let md5 = $(this).data("md5");
     $.post('/file/details', {"md5": md5}, function (result) {
+        if (undefined === result.data.name) {
+            console.log("name = null");
+        }
         let html = '<div class="file-details-box">' +
             '<ul>' +
             '<li><span>名称:&nbsp;</span>' + result.data.name + '</li>' +
@@ -136,7 +139,31 @@ $("#file-result").on("click", ".details-btn", function () {
     })
 })
 
-/*监听删除按钮*/
+/*监听文件夹删除按钮*/
+$("#file-result").on("click", ".delete-dir-btn", function () {
+    // layer.msg("该功能未开发完成!");
+    let name = $(this).data("name");
+    let path = $(this).data("path");
+    let $this = $(this);
+    layer.confirm('确定要删除该文件夹吗?', {icon: 3, title: '提示'}, function (index) {
+        $.post('/file/deleteDir', {"path": path+"/"+name}, function (result) {
+            console.log(result);
+            if (result.code === 200) {
+                $this.parent().parent().remove();
+                let len = $(".file-list-file-box").length;
+                if (len === 0) {
+                    $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip">暂无文件</div></div>');
+                }
+                layer.msg("删除成功");
+            } else {
+                layer.msg(result.msg);
+            }
+        })
+        layer.close(index);
+    });
+})
+
+/*监听文件删除按钮*/
 $("#file-result").on("click", ".delete-file-btn", function () {
     let name = $(this).data("name");
     let md5 = $(this).data("md5");
@@ -158,6 +185,8 @@ $("#file-result").on("click", ".delete-file-btn", function () {
     });
 })
 
+
+// 文件预览
 $("#file-result").on("click", ".resultFile", function () {
     let name = $(this).data("name");
     let path = $(this).data("path");
@@ -172,7 +201,7 @@ $("#file-result").on("click", ".resultFile", function () {
             "data": [
                 {
                     "alt": name,
-                    "src": source,
+                    "src": encodeURI(source).replace("%20", " "),
                 }
             ]
         }
@@ -202,7 +231,31 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<video src="' + source + '" autoplay controls style="width: 400px;height: 226px">您的浏览器不支持 video 标签。</video>'
         });
     } else if (kit.getFileType(suffix) === "txt") {
-        window.open(source + "?download=0");
+        // 文本
+        let resObj = $.ajax({url: source, async: false});
+        layer.open({
+            type: 1,
+            skin: 'layui-layer-rim', //加上边框
+            title: '文件内容',
+            shadeClose: true,
+            shade: 0.3,
+            area: ['500px', '400px'],
+            content: resObj.responseText
+        });
+        // window.open(source + "?download=0");
+    }else if (kit.getFileType(suffix) === "md") {
+        // MarkDown文件预览
+        let resObj = $.ajax({url: source, async: false});
+        let converter = new showdown.Converter();
+        let context = converter.makeHtml(resObj.responseText);
+        // console.log(context);
+        layer.open({
+            type: 1,
+            title:'文件内容',
+            skin: 'layui-layer-rim', //加上边框
+            area: ['90%', '90vh'], //宽高
+            content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">'+context+'</div>'
+        })
     } else {
         layer.msg("该文件格式暂不支持预览");
     }

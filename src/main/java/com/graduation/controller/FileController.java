@@ -3,6 +3,7 @@ package com.graduation.controller;
 
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.service.FileService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 
@@ -37,7 +40,7 @@ public class FileController extends BaseController {
      *
      * @return 页面
      */
-    @GetMapping("/")
+    @RequestMapping("")
     public String index() {
         return "file/file";
     }
@@ -47,7 +50,7 @@ public class FileController extends BaseController {
      *
      * @return 一级目录
      */
-    @GetMapping("/getParentFile")
+    @RequestMapping("/getParentFile")
     @ResponseBody
     public FileResponseVo getParentFile(String dir) {
         return FileResponseVo.success(fileService.getParentFile(getPeersGroupName(), getPeersUrl()));
@@ -59,7 +62,7 @@ public class FileController extends BaseController {
      * @param dir 指定目录
      * @return 文件响应对象
      */
-    @GetMapping("/getDirFile")
+    @RequestMapping("/getDirFile")
     @ResponseBody
     public FileResponseVo getDirFile(String dir) {
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
@@ -72,7 +75,7 @@ public class FileController extends BaseController {
      * @param md5 文件md5
      * @return 文件响应对象
      */
-    @GetMapping("/deleteFile")
+    @RequestMapping("/deleteFile")
     @ResponseBody
     public FileResponseVo deleteFile(String md5) {
         if (fileService.deleteFile(getPeersUrl(), md5)) {
@@ -82,12 +85,26 @@ public class FileController extends BaseController {
     }
 
     /**
+     * 删除文件夹
+     * @param path 文件夹路径
+     * @return 是否删除成功
+     */
+    @RequestMapping("/deleteDir")
+    @ResponseBody
+    public FileResponseVo deleteDir(String path){
+        if (fileService.deleteDir(getPeersUrl(),path)) {
+            return FileResponseVo.success();
+        }
+        return FileResponseVo.fail("删除文件夹失败");
+    }
+
+    /**
      * 通过md5获取文件详细信息
      *
      * @param md5 md5
      * @return 文件响应对象
      */
-    @GetMapping("/details")
+    @RequestMapping("/details")
     @ResponseBody
     public FileResponseVo details(String md5) {
         return fileService.getFileDetails(getPeersUrl(), md5);
@@ -96,22 +113,28 @@ public class FileController extends BaseController {
 
     /**
      * 文件下载
-     * @param path 路径
-     * @param name 文件名
+     *
+     * @param path     路径
+     * @param name     文件名
      * @param response http响应对象
      */
-    @GetMapping("/downloadFile")
+    @RequestMapping("/downloadFile")
     @ResponseBody
     public void downloadFile(String path, String name, HttpServletResponse response) {
-        response.setHeader("Content-Disposition", "attachment;filename=" + name);
-        response.setContentType("application/octet-stream");
         BufferedInputStream in = null;
         try {
-            URL url = new URL(getPeersUrl() + "/" + path + "/" + name);
+            // 将文件名 encode 确保 new URL 不出错
+            String filename = URLEncoder.encode(name, "UTF-8");
+            filename = StringUtils.replace(filename, "+", "%20");
+            response.setHeader("Content-Disposition", "attachment;filename=" + name);
+            response.setContentType("application/octet-stream");
+            URL url = new URL(getPeersUrl() + "/" + path + "/" + filename);
             in = new BufferedInputStream(url.openStream());
             response.reset();
+            // 将原本的文件名 encode为utf8后 空格被转为+了  要替换回原来的空格
+            name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", " ");
             response.setContentType("application/octet-stream");
-            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(name, "UTF-8"));
+            response.setHeader("Content-Disposition", "attachment;filename=" + name);
             // 将网络输入流转为输出流
             int len;
             while ((len = in.read()) != -1) {

@@ -6,6 +6,7 @@ import cn.hutool.json.JSONUtil;
 import com.graduation.service.IndexService;
 import com.graduation.utils.DateConverter;
 import com.graduation.utils.FileSizeConverter;
+import org.springframework.stereotype.Service;
 
 import java.util.*;
 
@@ -16,6 +17,7 @@ import java.util.*;
  * @date 2021/8/17 14:32
  * @since 1.0
  */
+@Service
 public class IndexServiceImpl implements IndexService {
     @Override
     public Map<String, Object> getStatus(Object data) {

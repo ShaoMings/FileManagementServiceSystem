@@ -9,13 +9,14 @@ import lombok.Data;
  * @date 2021/8/17 09:25
  * @since 1.0
  */
+@SuppressWarnings("all")
 @Data
 public class FileInfoVo {
-    private Boolean isDir;
+    private Boolean is_dir;
     private String md5;
     private String mTime;
     private String name;
     private String path;
     private String size;
-    private String peerAddress;
+    private String peerAddr;
 }

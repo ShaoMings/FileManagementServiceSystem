@@ -56,7 +56,7 @@ public class InitSystemController {
      *
      * @return 页面
      */
-    @GetMapping("/")
+    @RequestMapping("")
     public String index() {
         return "install";
     }
@@ -66,7 +66,7 @@ public class InitSystemController {
      *
      * @return 响应对象
      */
-    @GetMapping("/checkLocalServer")
+    @RequestMapping("/checkLocalServer")
     @ResponseBody
     public FileResponseVo checkLocalServer() {
         HashMap<String, Object> map = new HashMap<>(8);
@@ -101,7 +101,7 @@ public class InitSystemController {
      * @param bindingResult 用于接收错误信息 即配合@Validated注解，将不符合要求的参数提示的错误信息进行接收
      * @return 响应对象
      */
-    @GetMapping("/checkServer")
+    @RequestMapping("/checkServer")
     @ResponseBody
     @Validated
     public FileResponseVo checkServer(@Valid Peers peers, BindingResult bindingResult) {
@@ -137,7 +137,7 @@ public class InitSystemController {
      * @param bindingResult 用于接收错误信息 即配合@Validated注解，将不符合要求的参数提示的错误信息进行接收
      * @return 响应对象
      */
-    @GetMapping("/doInstall")
+    @RequestMapping("/doInstall")
     @ResponseBody
     @Validated
     public FileResponseVo doinstall(@Valid InstallVo installVo,BindingResult bindingResult){
@@ -148,6 +148,7 @@ public class InitSystemController {
         if (peersService.save(peers)) {
             User user = installVo.getUser();
             user.setPeersid(peers.getId());
+            user.setAge(18);
             // 用户注册
             if (userService.save(user)){
                 return FileResponseVo.success("信息初始化成功");

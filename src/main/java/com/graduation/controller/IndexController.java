@@ -1,8 +1,13 @@
 package com.graduation.controller;
 
+import com.graduation.model.pojo.User;
+import com.graduation.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+
+import java.util.Date;
 
 /**
  * Description index
@@ -14,6 +19,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class IndexController extends BaseController{
 
+    @Autowired
+    UserService userService;
+
     /**
      * 首页视图控制
      * @param model 模型对象
@@ -21,7 +29,10 @@ public class IndexController extends BaseController{
      */
     @GetMapping("/")
     public String index(Model model){
-        model.addAttribute("user",getUser());
+        User user = getUser();
+        user.setLastLoginTime(new Date());
+        userService.updateById(user);
+        model.addAttribute("user",user);
         return "index";
     }
 

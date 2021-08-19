@@ -45,6 +45,9 @@ public class Constant {
     /** 移除空目录API */
     public static final String API_REMOVE_EMPTY_DIR = "/remove_empty_dir";
 
+    /** 移除目录API */
+    public static final String API_REMOVE_DIR = "/remove_dir";
+
     /** 备份操作API */
     public static final String API_BACKUP = "/backup";
 

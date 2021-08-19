@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.optimize.JsqlParser
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Description MP配置类
@@ -20,6 +21,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
  * @since 1.0
  **/
 @Configuration
+@Transactional(rollbackFor = Exception.class)
 @EnableTransactionManagement
 public class MybatisPlusConfig {
 

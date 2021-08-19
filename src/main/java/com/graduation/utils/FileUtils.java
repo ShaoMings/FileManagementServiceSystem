@@ -18,7 +18,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -106,25 +105,32 @@ public class FileUtils {
      * 文件上传操作  采用httpClient方式上传文件
      * 为什么要用这个方式?  hutool和okhttp上传大文件都会有内存溢出的报错
      * @param multipartFile  文件对象
-     * @param path 路径
-     * @param backUrl 回调url 用于文件资源访问
+     * @param scene 场景
+     * @param uploadPath 自定义上传路径
+     * @param uploadApiUrl  服务地址上传文件api
+     * @param serverAddress  服务地址     用于拼接为文件资源访问
      * @return 文件响应对象
      */
-    public static FileResponseVo upload(MultipartFile multipartFile, String path, String backUrl) {
+    public static FileResponseVo upload(MultipartFile multipartFile,String uploadPath, String scene,String uploadApiUrl, String serverAddress) {
         try {
             CloseableHttpClient httpClient = HttpClientBuilder.create().build();
             CloseableHttpResponse httpResponse = null;
             // 设置请求对象属性
+            if (uploadPath == null){
+                uploadPath = "";
+            }
             RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(200000)
                     .setSocketTimeout(200000)
                     .build();
             // 创建post请求对象 并指定请求url
-            HttpPost httpPost = new HttpPost(path);
+            HttpPost httpPost = new HttpPost(uploadApiUrl);
             httpPost.setConfig(requestConfig);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                     .setCharset(StandardCharsets.UTF_8)
                     .addTextBody("output", "json")
+                    .addTextBody("path",uploadPath)
+                    .addTextBody("scene",scene)
                     .addBinaryBody("file", multipartFile.getInputStream(),
                             ContentType.DEFAULT_BINARY, multipartFile.getOriginalFilename());
             httpPost.setEntity(multipartEntityBuilder.build());
@@ -133,7 +139,9 @@ public class FileUtils {
             if (httpResponse.getStatusLine().getStatusCode() == Constant.SUCCESS_STATUS_CODE) {
                     String respStr = EntityUtils.toString(httpResponse.getEntity());
                 UploadResultVo resultVo = JSONUtil.toBean(respStr, UploadResultVo.class);
-                resultVo.setUrl(backUrl+resultVo.getPath());
+                String serverFilePath = resultVo.getPath();
+                resultVo.setUrl(serverAddress+serverFilePath);
+                // serverFilePath为文件服务器存放的真实路径 前缀有组名 如果设置了组名的话
                 return FileResponseVo.success(resultVo);
             }
             httpClient.close();
@@ -172,8 +180,8 @@ public class FileUtils {
                 fileInfoVo.setMd5(file.getStr("md5"));
                 fileInfoVo.setPath(file.getStr("path"));
                 fileInfoVo.setName(file.getStr("name"));
-                fileInfoVo.setIsDir(file.getBool("is_dir"));
-                fileInfoVo.setPeerAddress(backUrl);
+                fileInfoVo.setIs_dir(file.getBool("is_dir"));
+                fileInfoVo.setPeerAddr(backUrl);
                 // 如果是文件夹
                 if (file.getBool("is_dir")){
                     fileInfoVo.setSize("0");

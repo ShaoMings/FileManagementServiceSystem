@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
@@ -30,7 +31,7 @@ public class SignController {
      *  登录页视图跳转
      * @return 登录界面
      */
-    @GetMapping("/login")
+    @RequestMapping("/login")
     public String login(){
         return "login";
     }
@@ -41,14 +42,15 @@ public class SignController {
      * @param user 前端入参
      * @return 响应对象
      */
-    @GetMapping("/doLogin")
+    @RequestMapping("/doLogin")
     @ResponseBody
-    public FileResponseVo doLogin(@RequestBody UserLoginVo user) {
+    public FileResponseVo doLogin(UserLoginVo user) {
         try {
             UsernamePasswordToken token = new UsernamePasswordToken(user.getAccount(), user.getPassword(), false);
             Subject subject = SecurityUtils.getSubject();
             subject.login(token);
             LOGGER.info("用户:{} 登录!", user.getAccount());
+            // session 存放用户
             return FileResponseVo.success();
         }catch (IncorrectCredentialsException e) {
             LOGGER.info(user.getAccount() + e.getMessage());
@@ -67,7 +69,7 @@ public class SignController {
      *  登出操作
      * @return 登录界面
      */
-    @GetMapping("/logout")
+    @RequestMapping("/logout")
     public String logout(){
         Subject subject = SecurityUtils.getSubject();
         UserLoginVo user = new UserLoginVo();

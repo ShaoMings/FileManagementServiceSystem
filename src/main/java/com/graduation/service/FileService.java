@@ -42,6 +42,15 @@ public interface FileService extends IService<File> {
      */
     boolean deleteFile(String peersUrl,String md5);
 
+
+    /**
+     *  删除文件夹
+     * @param peersUrl 集群url
+     * @param path 文件夹路径
+     * @return 是否删除成功
+     */
+    boolean deleteDir(String peersUrl,String path);
+
     /**
      *  获取单个文件内容细节
      * @param peersUrl 集群url
@@ -49,5 +58,13 @@ public interface FileService extends IService<File> {
      * @return  文件信息响应对象
      */
     FileResponseVo getFileDetails(String peersUrl,String md5);
+
+    /**
+     * 通过用户id保存文件路径
+     * @param id 用户id 唯一
+     * @param filePath 服务器存放文件路径
+     * @return 是否保存成功
+     */
+    boolean saveFilePathByUserId(Integer id,String filePath);
 
 }

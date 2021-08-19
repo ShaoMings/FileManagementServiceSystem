@@ -8,6 +8,7 @@ import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -47,7 +48,7 @@ public class ShiroConfig {
      *  安全管理
      * @return SecurityManager
      */
-    @Bean
+    @Bean(name = "securityManager")
     public SecurityManager securityManager(){
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
         securityManager.setSessionManager(sessionManager());
@@ -62,7 +63,7 @@ public class ShiroConfig {
      * @return  ShiroRealm
      */
     @Bean
-    ShiroRealm customRealm(){
+    public ShiroRealm customRealm(){
         return new ShiroRealm();
     }
 
@@ -73,7 +74,7 @@ public class ShiroConfig {
      * @return ShiroFilterFactoryBean
      */
     @Bean
-    public ShiroFilterFactoryBean filterFactoryBean(SecurityManager securityManager){
+    public ShiroFilterFactoryBean filterFactoryBean(@Qualifier("securityManager") SecurityManager securityManager){
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
         shiroFilterFactoryBean.setLoginUrl("/login");

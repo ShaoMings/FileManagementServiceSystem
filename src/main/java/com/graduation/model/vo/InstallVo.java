@@ -10,6 +10,7 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
+import java.util.Date;
 
 /**
  * Description 登录初始化参数对象
@@ -60,7 +61,7 @@ public class InstallVo implements Serializable {
         user.setEmail(this.email);
         user.setRealName(this.name);
         // 插入时间
-
+        user.setCreateTime(new Date());
         return user;
     }
 
@@ -71,7 +72,7 @@ public class InstallVo implements Serializable {
         peers.setName(this.name);
         peers.setShowAddress(this.showAddress);
         // 插入时间
-
+        peers.setCreateTime(new Date());
         return peers;
     }
 }

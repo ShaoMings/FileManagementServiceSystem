@@ -119,7 +119,9 @@
                 fileType = "txt";
             }else if(suffix == "avi" ||suffix == "mp4" ||suffix == "3gp" ||suffix == "rmvb" ||suffix == "flv"){
                 fileType = "video";
-            }else{
+            }else if (suffix == "md"){
+                fileType = "md";
+            } else{
                 fileType = "other";
             }
             return fileType;

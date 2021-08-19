@@ -6,8 +6,10 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * <p>
@@ -17,6 +19,8 @@ import lombok.EqualsAndHashCode;
  * @author shaoming
  * @since 2021-08-16
  */
+@AllArgsConstructor
+@NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
 @ApiModel(value="File对象", description="")
@@ -31,11 +35,8 @@ public class File implements Serializable {
     @ApiModelProperty(value = "文件名")
     private String fileName;
 
-    @ApiModelProperty(value = "文件页面路径")
-    private String filePageUrl;
-
-    @ApiModelProperty(value = "文件存储路径")
-    private String fileSaveUrl;
+    @ApiModelProperty(value = "文件路径")
+    private String filePath;
 
 
 }

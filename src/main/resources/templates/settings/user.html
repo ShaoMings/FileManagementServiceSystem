@@ -30,25 +30,25 @@
 				<div class="layui-card-header">个人资料</div>
 				<div class="layui-card-body">
 					<form class="layui-form" action="">
-						<input type="hidden" name="id" th:value="${user.id}">
+						<input type="hidden" name="id" th:value="${user.getId()}">
 						<div class="layui-form-item">
 							<label class="layui-form-label">账户:</label>
 							<div class="layui-input-inline">
-								<input type="text" name="account" lay-verify="pass" placeholder="请输入账户" autocomplete="off" class="layui-input" th:value="${user.account}" readonly>
+								<input type="text" name="account" lay-verify="pass" placeholder="请输入账户" autocomplete="off" class="layui-input" th:value="${user.getUsername()}" readonly>
 							</div>
 							<div class="layui-form-mid layui-word-aux">不可修改。用于登入名</div>
 						</div>
 						<div class="layui-form-item">
 							<label class="layui-form-label">昵称:</label>
 							<div class="layui-input-inline">
-								<input type="text" name="name" lay-verify="pass" placeholder="请输入昵称" autocomplete="off" class="layui-input" th:value="${user.name}">
+								<input type="text" name="name" lay-verify="pass" placeholder="请输入昵称" autocomplete="off" class="layui-input" th:value="${user.getRealName()}">
 							</div>
 							<div class="layui-form-mid layui-word-aux">16位字符以内</div>
 						</div>
 						<div class="layui-form-item">
 							<label class="layui-form-label">邮箱:</label>
 							<div class="layui-input-inline">
-								<input type="text" name="email" lay-verify="pass" placeholder="请输入邮箱" autocomplete="off" class="layui-input" th:value="${user.email}">
+								<input type="text" name="email" lay-verify="pass" placeholder="请输入邮箱" autocomplete="off" class="layui-input" th:value="${user.getEmail()}">
 							</div>
 						</div>
 						<div class="layui-form-item">
@@ -87,6 +87,7 @@
 				if(data.code === 200){
 					layer.msg("修改成功", {icon: 6});
 					setTimeout(function(){
+						$.get({url:"/logout",async:true});
 						window.location.reload();
 					}, 1000);
 				}else{

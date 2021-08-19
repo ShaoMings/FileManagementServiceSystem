@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * @since 1.0
  **/
 @Slf4j
-@RestControllerAdvice
+//@RestControllerAdvice
 public class UnifiedExceptionHandler {
 
     @ExceptionHandler(value = ResponseException.class)

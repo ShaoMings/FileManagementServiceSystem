@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class HomeController extends BaseController {
      * @param model 模型对象
      * @return 首页
      */
-    @GetMapping("/")
+    @RequestMapping("")
     public String home(Model model) {
         OsInfo osInfo = SystemUtil.getOsInfo();
         model.addAttribute("osName", osInfo.getName());
@@ -71,7 +72,7 @@ public class HomeController extends BaseController {
      *
      * @return 响应对象
      */
-    @GetMapping("/getStatus")
+    @RequestMapping("/getStatus")
     @ResponseBody
     public FileResponseVo getStatus() {
         try {
@@ -95,7 +96,7 @@ public class HomeController extends BaseController {
      *
      * @return 响应对象
      */
-    @GetMapping("/repair_stat")
+    @RequestMapping("/repair_stat")
     @ResponseBody
     public FileResponseVo repairStatus() {
         int count = 0;
@@ -118,7 +119,7 @@ public class HomeController extends BaseController {
      * 同步失败修复
      * @return 响应对象
      */
-    @GetMapping("/repair")
+    @RequestMapping("/repair")
     @ResponseBody
     public FileResponseVo repair() {
         String res = HttpUtil.post(getPeersUrl() + Constant.API_REPAIR + "?force=1", new HashMap<>(8));
@@ -134,7 +135,7 @@ public class HomeController extends BaseController {
      *  备份数据
      * @return 响应对象
      */
-    @GetMapping("/backup")
+    @RequestMapping("/backup")
     @ResponseBody
     public FileResponseVo backup(){
         int count = 0;
@@ -156,7 +157,7 @@ public class HomeController extends BaseController {
      *  移除空文件夹
      * @return 响应对象
      */
-    @GetMapping("/remove_empty_dir")
+    @RequestMapping("/remove_empty_dir")
     @ResponseBody
     public FileResponseVo removeEmptyDir(){
         String res = HttpUtil.post(getPeersUrl()+Constant.API_REMOVE_EMPTY_DIR,new HashMap<>(3));
@@ -172,7 +173,7 @@ public class HomeController extends BaseController {
      * 获取所有集群对象
      * @return 响应对象
      */
-    @GetMapping("/getAllPeers")
+    @RequestMapping("/getAllPeers")
     @ResponseBody
     public FileResponseVo getAllPeers(){
         List<Peers> list = peersService.list();
@@ -186,7 +187,7 @@ public class HomeController extends BaseController {
      * @param session session
      * @return 响应对象
      */
-    @GetMapping("/switchPeers")
+    @RequestMapping("/switchPeers")
     @ResponseBody
     public FileResponseVo switchPeers(int id, HttpSession session){
         if (id == getPeers().getId()){
@@ -196,7 +197,7 @@ public class HomeController extends BaseController {
         user.setPeersid(id);
         user.setId(getUser().getId());
         // 用户更新时间
-
+        user.setUpdateTime(new Date());
         if (userService.updateById(user)){
             Peers peers = peersService.getById(id);
             session.setAttribute("peers",peers);

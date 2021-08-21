@@ -155,7 +155,7 @@ public class FileUtils {
 
     /**
      *  用于获取文件的列表
-     * @param backUrl  回调url  入参相当于ip:port/group
+     * @param backUrl  回调url  入参相当于ip:port/group  首次在根目录获取文件列表时为组名
      * @param serverAddress 服务地址 入参相当于ip:port/group
      * @param dir 要获取的目录 其中根目录为null   可以做持久化处理
      * @return 文件信息列表对象
@@ -194,6 +194,49 @@ public class FileUtils {
         }
         return files;
     }
+
+
+    /**
+     *  用于获取文件
+     * @param serverAddress 服务地址 入参相当于ip:port/group
+     * @param path 要获取的目录 其中根目录为null   可以做持久化处理
+     * @return 文件信息列表对象
+     */
+    public static List<FileInfoVo> getFileList(String serverAddress,String path,String fileName){
+        HashMap<String, Object> param = new HashMap<>(12);
+        if (StrUtil.isNotBlank(path)){
+            param.put("dir",path);
+        }
+        String result = HttpUtil.post(serverAddress + Constant.API_LIST_DIR,param);
+        JSONObject parseObj = JSONUtil.parseObj(result);
+        ArrayList<FileInfoVo> files = new ArrayList<>();
+        if ("".equals(parseObj.getStr(PARAM_KEY_MSG)) && StrUtil.isNotBlank(parseObj.getStr(PARAM_KEY_DATA))){
+            JSONArray array = parseObj.getJSONArray(PARAM_KEY_DATA);
+            for (int i = 0; i < array.size(); i++) {
+                FileInfoVo fileInfoVo = new FileInfoVo();
+                JSONObject file = array.getJSONObject(i);
+                // 备份文件在后缀之前有 _big
+                if ("_big".equals(file.getStr("name")) || !fileName.equals(file.getStr("name"))){
+                    continue;
+                }
+                // 如果是文件夹
+                if (file.getBool("is_dir")){
+                    continue;
+                }else {
+                    fileInfoVo.setSize(FileSizeConverter.getLength(Long.parseLong(file.getStr("size"))));
+                }
+                fileInfoVo.setMd5(file.getStr("md5"));
+                fileInfoVo.setPath(file.getStr("path"));
+                fileInfoVo.setName(file.getStr("name"));
+                fileInfoVo.setIs_dir(file.getBool("is_dir"));
+                fileInfoVo.setPeerAddr(serverAddress);
+                fileInfoVo.setMTime(DateConverter.timeStampToDate(file.getStr("mtime"),null));
+                files.add(fileInfoVo);
+            }
+        }
+        return files;
+    }
+
 
 
 }

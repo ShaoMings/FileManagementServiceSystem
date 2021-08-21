@@ -1,6 +1,8 @@
 package com.graduation.handler;
 
+import com.graduation.exception.FileConverterException;
 import com.graduation.exception.ResponseException;
+import com.graduation.model.vo.FileResponseVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -16,27 +18,33 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * @since 1.0
  **/
 @Slf4j
-//@RestControllerAdvice
+@RestControllerAdvice
 public class UnifiedExceptionHandler {
 
-    @ExceptionHandler(value = ResponseException.class)
-    @ResponseBody
-    public String runtimeExceptionHandler(ResponseException e){
-        log.info("捕获到自定义异常!");
-        return e.getMessage();
-    }
+//    @ExceptionHandler(value = ResponseException.class)
+//    @ResponseBody
+//    public String runtimeExceptionHandler(ResponseException e){
+//        log.info("捕获到自定义异常!");
+//        return e.getMessage();
+//    }
+//
+//    @ExceptionHandler(value = RuntimeException.class)
+//    @ResponseBody
+//    public String runtimeExceptionHandler(RuntimeException e){
+//        log.info("捕获到运行时异常!");
+//        return e.getMessage();
+//    }
+//
+//    @ExceptionHandler(value = Exception.class)
+//    @ResponseBody
+//    public String exceptionHandler(Exception e){
+//        log.info("捕获到编译时异常!");
+//        return e.getMessage();
+//    }
 
-    @ExceptionHandler(value = RuntimeException.class)
+    @ExceptionHandler(value = FileConverterException.class)
     @ResponseBody
-    public String runtimeExceptionHandler(RuntimeException e){
-        log.info("捕获到运行时异常!");
-        return e.getMessage();
-    }
-
-    @ExceptionHandler(value = Exception.class)
-    @ResponseBody
-    public String exceptionHandler(Exception e){
-        log.info("捕获到编译时异常!");
-        return e.getMessage();
+    public FileResponseVo fileConverterExceptionHandler(FileConverterException e){
+        return FileResponseVo.fail(e.getMessage());
     }
 }

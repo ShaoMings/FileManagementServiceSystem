@@ -3,6 +3,7 @@ package com.graduation.service.impl;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.graduation.model.pojo.File;
 import com.graduation.mapper.FileMapper;
 import com.graduation.model.pojo.UserFile;
@@ -19,6 +20,7 @@ import com.graduation.utils.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -56,6 +58,14 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
+    public boolean mkdir(String serverAddress, String path) {
+        HashMap<String, Object> param = new HashMap<>();
+        param.put("path",path);
+        JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(serverAddress + Constant.API_MKDIR, param));
+        return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
+    }
+
+    @Override
     public boolean deleteDir(String peersUrl,String path) {
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("path",path);
@@ -86,5 +96,21 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         Integer fileId = file.getId();
         boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
         return flag1 && flag2;
+    }
+
+    @Override
+    public List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress,String keyword) {
+        QueryWrapper<File> queryWrapper = new QueryWrapper<>();
+        queryWrapper.like("file_name",keyword);
+        List<File> list = this.list(queryWrapper);
+        List<FileInfoVo> fileInfoVos = new ArrayList<>();
+        list.forEach(e -> {
+            String tmpPath = e.getFilePath().replace("/group1/","");
+            String path = tmpPath.substring(0,tmpPath.lastIndexOf("/"));
+            String filename = e.getFileName();
+            List<FileInfoVo> fileList = FileUtils.getFileList(serverAddress, path, filename);
+            fileInfoVos.addAll(fileList);
+        });
+        return fileInfoVos;
     }
 }

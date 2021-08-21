@@ -17,9 +17,16 @@
         <div class="layui-col-md12" style="padding:5px;">
             <div class="layui-card">
                 <div class="layui-card-header" style="padding: 5px;">
-                    <button class="layui-btn" id="fileUpload">
-                        <i class="fa fa-cloud-upload"></i>&nbsp;上传
-                    </button>
+                    <div class="layui-form-item">
+                        <div class="layui-input-inline">
+                            <input type="text" id="search" name="keywords" lay-verify="required" placeholder="请输入要检索的文件关键字" autocomplete="off" class="layui-input">
+                        </div>
+                        <div class="layui-input-inline" style="float: right">
+                            <button class="layui-btn" id="mkdir">
+                                <i class="fa fa-plus"></i>&nbsp;新建文件夹
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="layui-card-body">
                     <div class="file-list-side">
@@ -37,7 +44,7 @@
                                 <li class="file-list-header-li file-list-handle">操作</li>
                             </ul>
                         </div>
-<!--                        文件或文件夹展示-->
+                        <!--                        文件或文件夹展示-->
                         <div class="file-list-result" id="file-result">
 
                         </div>
@@ -51,18 +58,18 @@
     {{if data.length > 0}}
     {{each data as value i}}
     <div class="file-list-file-box">
-<!--        文件夹展示-->
+        <!--        文件夹展示-->
         {{if value.is_dir}}
-        <a class="file-list-file file-list-file-name resultDir" href="javascript:;" data-path="{{value.path}}"
+        <a class="file-list-file file-list-file-name resultDir" id="dir-path" href="javascript:;" data-path="{{value.path}}"
            data-name="{{value.name}}" data-md5="{{value.md5}}">
             <svg class="icon" aria-hidden="true">
                 <use xlink:href="#icon-{{value.name | iconHandler:value.is_dir}}"></use>
             </svg>
             <span>{{value.name}}</span>
         </a>
-<!--        文件展示-->
+        <!--        文件展示-->
         {{else}}
-        <a class="file-list-file file-list-file-name resultFile" href="javascript:;" data-path="{{value.path}}"
+        <a class="file-list-file file-list-file-name resultFile" id="file-path" href="javascript:;" data-path="{{value.path}}"
            data-name="{{value.name}}" data-md5="{{value.md5}}" data-peer="{{value.peerAddr}}">
             <svg class="icon" aria-hidden="true">
                 <use xlink:href="#icon-{{value.name | iconHandler:value.is_dir}}"></use>
@@ -84,6 +91,14 @@
 
             <!--            文件夹列表操作-->
             {{if value.is_dir}}
+            <button class="layui-btn layui-btn-xs  layui-btn-normal upload-file-btn" data-path="{{value.path}}"
+                    data-name="{{value.name}}">上传
+            </button>
+
+            <button class="layui-btn layui-btn-xs layui-btn-warm rename-file-btn" data-path="{{value.path}}"
+                    data-name="{{value.name}}">重命名
+            </button>
+
             <button class="layui-btn layui-btn-xs layui-btn-danger delete-dir-btn" data-path="{{value.path}}"
                     data-name="{{value.name}}">删除
             </button>
@@ -93,7 +108,8 @@
             <button class="layui-btn layui-btn-xs details-btn" data-md5="{{value.md5}}" data-name="{{value.name}}"
                     title="文件详情">详情
             </button>
-            <button class="layui-btn layui-btn-xs layui-btn-normal download-btn" data-path="{{value.path}}" data-name="{{value.name}}"
+            <button class="layui-btn layui-btn-xs layui-btn-normal download-btn" data-path="{{value.path}}"
+                    data-name="{{value.name}}"
                     title="下载文件">下载
             </button>
             <button class="layui-btn layui-btn-xs layui-btn-danger delete-file-btn" data-md5="{{value.md5}}"
@@ -106,7 +122,7 @@
     {{/each}}
     {{else}}
     <div class="file-list-file-box">
-        <div class="no-file-tip">暂无文件</div>
+        <div class="no-file-tip" value="">暂无文件</div>
     </div>
     {{/if}}
 </script>

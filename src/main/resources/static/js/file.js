@@ -4,10 +4,66 @@ let element;
 layui.use(['element'], function () {
     element = layui.element;
 });
-/*监听上传按钮点击*/
-$('#fileUpload').click(function () {
-    window.parent.toPage("/file/upload");
+/*监听创建文件夹按钮点击*/
+$('#mkdir').click(function () {
+    let dir_path = $('#dir-path').data('path');
+    let file_path = $('#file-path').data('path');
+    let current_path = "files/";
+    if (dir_path !== undefined) {
+        current_path += dir_path;
+    }
+    if (file_path !== undefined) {
+        current_path += file_path;
+    }
+    if (dir_path === undefined && file_path === undefined) {
+        current_path = "files" +  $('#path-side').children("a:last-child").data("path");
+    }
+    layer.prompt({title: '输入文件夹名称', formType: 0}, function (name, index) {
+        $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
+            if (res.code === 200) {
+                openDir(current_path.replace("files/",""));
+                layer.msg("创建成功");
+            } else {
+                layer.msg(res.msg);
+            }
+        });
+        layer.close(index);
+    });
 })
+
+/* 监听文件检索框 */
+$('#search').on('input', function (e) {
+    let keywords = e.delegateTarget.value;
+    if (keywords === "" || keywords === undefined) {
+        getParentFile();
+    } else {
+        let index = layer.load();
+        $.post('/file/getSearchFiles', {"keywords": keywords}, function (res) {
+            if (res.code === 200) {
+                let data = res;
+                template.helper('iconHandler', function (name, isDir) {
+                    let icon;
+                    if (isDir === true) {
+                        icon = "file";
+                    } else {
+                        let index = name.lastIndexOf(".");
+                        let length = name.length;
+                        let suffix = name.substring(index + 1, length).toLowerCase();
+                        icon = kit.getIconName(suffix);
+                    }
+                    return icon;
+                });
+                let html = template('file-list', data);
+                $("#file-result").html(html);
+                layer.close(index);
+            } else {
+                layer.close(index);
+                layer.msg("系统异常");
+            }
+        });
+    }
+})
+
 
 /*获取所有一级目录及文件*/
 function getParentFile() {
@@ -110,6 +166,27 @@ $("#file-result").on("click", ".download-btn", function () {
     form.appendTo('body').submit().remove();
 })
 
+/*监听上传按钮*/
+$("#file-result").on("click", ".upload-file-btn", function () {
+    let name = $(this).data("name");
+    let path = $(this).data("path");
+    layer.open({
+        type: 2,
+        skin: 'layui-layer-rim', //加上边框
+        title: '文件上传',
+        shadeClose: true,
+        shade: 0.3,
+        area: ['90%', '90vh'],
+        content: "/file/upload",
+        success: function (obj, index) {
+            let body = layer.getChildFrame('body', index);
+            // 获取上传页面的元素进行初始化渲染
+            body.contents().find("#path").val(path + "/" + name);
+        }
+    });
+})
+
+
 /*监听详情按钮*/
 $("#file-result").on("click", ".details-btn", function () {
     let md5 = $(this).data("md5");
@@ -146,13 +223,13 @@ $("#file-result").on("click", ".delete-dir-btn", function () {
     let path = $(this).data("path");
     let $this = $(this);
     layer.confirm('确定要删除该文件夹吗?', {icon: 3, title: '提示'}, function (index) {
-        $.post('/file/deleteDir', {"path": path+"/"+name}, function (result) {
-            console.log(result);
+        $.post('/file/deleteDir', {"path": path + "/" + name}, function (result) {
+            // console.log(result);
             if (result.code === 200) {
                 $this.parent().parent().remove();
                 let len = $(".file-list-file-box").length;
                 if (len === 0) {
-                    $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip">暂无文件</div></div>');
+                    $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip" value="">暂无文件</div></div>');
                 }
                 layer.msg("删除成功");
             } else {
@@ -174,7 +251,7 @@ $("#file-result").on("click", ".delete-file-btn", function () {
                 $this.parent().parent().remove();
                 let len = $(".file-list-file-box").length;
                 if (len === 0) {
-                    $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip">暂无文件</div></div>');
+                    $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip" value="">暂无文件</div></div>');
                 }
                 layer.msg("删除成功");
             } else {
@@ -243,7 +320,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: resObj.responseText
         });
         // window.open(source + "?download=0");
-    }else if (kit.getFileType(suffix) === "md") {
+    } else if (kit.getFileType(suffix) === "md") {
         // MarkDown文件预览
         let resObj = $.ajax({url: source, async: false});
         let converter = new showdown.Converter();
@@ -251,10 +328,10 @@ $("#file-result").on("click", ".resultFile", function () {
         // console.log(context);
         layer.open({
             type: 1,
-            title:'文件内容',
+            title: '文件内容',
             skin: 'layui-layer-rim', //加上边框
             area: ['90%', '90vh'], //宽高
-            content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">'+context+'</div>'
+            content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else {
         layer.msg("该文件格式暂不支持预览");

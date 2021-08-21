@@ -68,6 +68,17 @@ public class FileController extends BaseController {
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
     }
 
+    /**
+     * 通过关键字获取相关文件
+     * @param keywords 文件名关键字
+     * @return 文件响应对象
+     */
+    @RequestMapping("/getSearchFiles")
+    @ResponseBody
+    public FileResponseVo getSearchFiles(String keywords){
+        return FileResponseVo.success(fileService.getFileInfoListByFileKeyword(getPeersUrl(),keywords));
+    }
+
 
     /**
      * 通过md5 删除文件
@@ -97,6 +108,21 @@ public class FileController extends BaseController {
         }
         return FileResponseVo.fail("删除文件夹失败");
     }
+
+    /**
+     *  创建文件夹
+     * @param path 文件夹路径
+     * @return 响应对象
+     */
+    @RequestMapping("/mkdir")
+    @ResponseBody
+    public FileResponseVo mkdir(String path){
+        if (fileService.mkdir(getPeersUrl(),path)){
+            return FileResponseVo.success();
+        }
+        return FileResponseVo.fail("创建文件夹失败");
+    }
+
 
     /**
      * 通过md5获取文件详细信息

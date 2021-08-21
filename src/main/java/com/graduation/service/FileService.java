@@ -42,6 +42,13 @@ public interface FileService extends IService<File> {
      */
     boolean deleteFile(String peersUrl,String md5);
 
+    /**
+     *  创建文件夹
+     * @param serverAddress 服务地址 包含组名
+     * @param path 文件夹路径
+     * @return 是否创建成功
+     */
+    boolean mkdir(String serverAddress,String path);
 
     /**
      *  删除文件夹
@@ -67,4 +74,11 @@ public interface FileService extends IService<File> {
      */
     boolean saveFilePathByUserId(Integer id,String filePath);
 
+    /**
+     *  通过文件名关键字获取相关文件
+     * @param keyword 关键字
+     * @param serverAddress 服务地址 包含组名
+     * @return 符合要求的所有文件
+     */
+    List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress,String keyword);
 }

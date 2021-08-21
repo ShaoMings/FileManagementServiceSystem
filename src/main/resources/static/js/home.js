@@ -1,14 +1,5 @@
 getStatus();
 
-//文件上传
-$('#fileUpload').click(function () {
-    window.parent.toPage("/file/upload");
-})
-//文件列表
-$('#fileList').click(function () {
-    window.parent.toPage("/file");
-})
-
 let form;
 let switchPeersId = 0;
 layui.use('form', function() {
@@ -16,6 +7,23 @@ layui.use('form', function() {
     form.on('select(peers)', function(data){
         switchPeersId = data.value;
     });
+})
+
+//文件上传
+$('#fileUpload').click(function () {
+    layer.open({
+        type: 2,
+        skin: 'layui-layer-rim', //加上边框
+        title: '文件上传',
+        shadeClose: true,
+        shade: 0.3,
+        area: ['90%', '90vh'],
+        content: "/file/upload"
+    });
+})
+//文件列表
+$('#fileList').click(function () {
+    window.parent.toPage("/file");
 })
 
 //切换集群

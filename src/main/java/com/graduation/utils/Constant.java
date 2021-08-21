@@ -33,6 +33,9 @@ public class Constant {
     /** 文件删除API */
     public static final String API_DELETE = "/delete";
 
+    /** 文件夹创建API */
+    public static final String API_MKDIR = "/mkdir";
+
     /** 获取文件信息 API */
     public static final String API_GET_FILE_INFO = "/get_file_info";
 

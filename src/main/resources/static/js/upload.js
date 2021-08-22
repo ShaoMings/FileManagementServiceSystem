@@ -79,7 +79,7 @@ layui.use(['upload', 'element'], function () {
             var scene = $("#scene").val();
             var path = $("#path").val();
             var showUrl = $("#showUrl").val();
-            // 传递参数
+            // 传递参数  场景  文件上传路径  服务地址
             this.data = {'scene': scene, 'path': path, 'showUrl': showUrl};
         }, done: function (res, index, upload) {
             //上传成功

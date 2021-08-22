@@ -68,15 +68,28 @@ public class FileController extends BaseController {
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
     }
 
+    @RequestMapping("rename")
+    @ResponseBody
+    public FileResponseVo renameFileOrFolder(String path, String oldName, String newName) {
+        String oldPath = path + "/" + oldName;
+        String newPath = path + "/" + newName;
+        if (fileService.renameFileOrFolder(getPeersUrl(), oldPath, newPath,path,getPeersGroupName())) {
+            return FileResponseVo.success();
+        } else {
+            return FileResponseVo.fail("重命名失败");
+        }
+    }
+
     /**
      * 通过关键字获取相关文件
+     *
      * @param keywords 文件名关键字
      * @return 文件响应对象
      */
     @RequestMapping("/getSearchFiles")
     @ResponseBody
-    public FileResponseVo getSearchFiles(String keywords){
-        return FileResponseVo.success(fileService.getFileInfoListByFileKeyword(getPeersUrl(),keywords));
+    public FileResponseVo getSearchFiles(String keywords) {
+        return FileResponseVo.success(fileService.getFileInfoListByFileKeyword(getPeersUrl(), keywords));
     }
 
 
@@ -97,27 +110,29 @@ public class FileController extends BaseController {
 
     /**
      * 删除文件夹
+     *
      * @param path 文件夹路径
      * @return 是否删除成功
      */
     @RequestMapping("/deleteDir")
     @ResponseBody
-    public FileResponseVo deleteDir(String path){
-        if (fileService.deleteDir(getPeersUrl(),path)) {
+    public FileResponseVo deleteDir(String path) {
+        if (fileService.deleteDir(getPeersUrl(), path)) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("删除文件夹失败");
     }
 
     /**
-     *  创建文件夹
+     * 创建文件夹
+     *
      * @param path 文件夹路径
      * @return 响应对象
      */
     @RequestMapping("/mkdir")
     @ResponseBody
-    public FileResponseVo mkdir(String path){
-        if (fileService.mkdir(getPeersUrl(),path)){
+    public FileResponseVo mkdir(String path) {
+        if (fileService.mkdir(getPeersUrl(), path)) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("创建文件夹失败");

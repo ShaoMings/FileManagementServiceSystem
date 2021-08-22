@@ -59,6 +59,16 @@ public interface FileService extends IService<File> {
     boolean deleteDir(String peersUrl,String path);
 
     /**
+     *  重命名文件或文件夹
+     *  @param peersUrl 集群url
+     * @param oldPath 旧路径
+     * @param newPath 新路径
+     * @param path
+     * @return 是否命名成功
+     */
+    boolean renameFileOrFolder(String peersUrl,String oldPath,String newPath,String path,String groupName);
+
+    /**
      *  获取单个文件内容细节
      * @param peersUrl 集群url
      * @param md5 文件md5
@@ -73,6 +83,7 @@ public interface FileService extends IService<File> {
      * @return 是否保存成功
      */
     boolean saveFilePathByUserId(Integer id,String filePath);
+
 
     /**
      *  通过文件名关键字获取相关文件

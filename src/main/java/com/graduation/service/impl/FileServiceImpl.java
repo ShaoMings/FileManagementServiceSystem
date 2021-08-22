@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.graduation.model.pojo.File;
 import com.graduation.mapper.FileMapper;
 import com.graduation.model.pojo.UserFile;
@@ -27,7 +28,7 @@ import java.util.List;
 
 /**
  * <p>
- *  服务实现类
+ * 服务实现类
  * </p>
  *
  * @author shaoming
@@ -39,20 +40,23 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     @Autowired
     UserFileService userFileService;
 
+    @Autowired
+    FileMapper fileMapper;
+
     @Override
     public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress) {
-        return FileUtils.getDirectoryOrFileList(peersGroupName,serverAddress,null);
+        return FileUtils.getDirectoryOrFileList(peersGroupName, serverAddress, null);
     }
 
     @Override
     public List<FileInfoVo> getDirFile(String backUrl, String serverAddress, String dir) {
-        return FileUtils.getDirectoryOrFileList(backUrl,serverAddress,dir);
+        return FileUtils.getDirectoryOrFileList(backUrl, serverAddress, dir);
     }
 
     @Override
     public boolean deleteFile(String peersUrl, String md5) {
         HashMap<String, Object> param = new HashMap<>(8);
-        param.put("md5",md5);
+        param.put("md5", md5);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_DELETE, param));
         return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
     }
@@ -60,29 +64,43 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     @Override
     public boolean mkdir(String serverAddress, String path) {
         HashMap<String, Object> param = new HashMap<>();
-        param.put("path",path);
+        param.put("path", path);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(serverAddress + Constant.API_MKDIR, param));
         return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
     }
 
     @Override
-    public boolean deleteDir(String peersUrl,String path) {
+    public boolean deleteDir(String peersUrl, String path) {
         HashMap<String, Object> param = new HashMap<>(8);
-        param.put("path",path);
+        param.put("path", path);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_REMOVE_DIR, param));
         return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
     }
 
     @Override
+    public boolean renameFileOrFolder(String peersUrl, String oldPath, String newPath, String path, String groupName) {
+        String prefix = "/" + groupName + "/" + path;
+        HashMap<String, Object> param = new HashMap<>(8);
+        param.put("oldPath", oldPath);
+        param.put("newPath", newPath);
+        JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_RENAME, param));
+        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"))) {
+            return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", "")) > 0;
+        }
+        return false;
+    }
+
+
+    @Override
     public FileResponseVo getFileDetails(String peersUrl, String md5) {
         HashMap<String, Object> param = new HashMap<>(8);
-        param.put("md5",md5);
+        param.put("md5", md5);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_GET_FILE_INFO, param));
         if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"))) {
             FileDetailsVo detailsVo = JSONUtil.toBean(jsonObject.getStr("data"), FileDetailsVo.class);
             detailsVo.setSize(FileSizeConverter.getLength(Long.parseLong(detailsVo.getSize())));
-            detailsVo.setTimeStamp(DateConverter.getFormatDate(new Date(Long.parseLong(detailsVo.getTimeStamp())*1000)));
-            detailsVo.setUrl(peersUrl+"/"+detailsVo.getPath().replace("files/","")+"/"+detailsVo.getName());
+            detailsVo.setTimeStamp(DateConverter.getFormatDate(new Date(Long.parseLong(detailsVo.getTimeStamp()) * 1000)));
+            detailsVo.setUrl(peersUrl + "/" + detailsVo.getPath().replace("files/", "") + "/" + detailsVo.getName());
             return FileResponseVo.success(detailsVo);
         }
         return FileResponseVo.fail("获取文件信息失败");
@@ -90,23 +108,24 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
 
     @Override
     public boolean saveFilePathByUserId(Integer id, String filePath) {
-        String filename = filePath.substring(filePath.lastIndexOf("/")+1);
-        File file = new File(id,filename,filePath);
+        String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
+        File file = new File(id, filename, filePath);
         boolean flag1 = this.save(file);
         Integer fileId = file.getId();
         boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
         return flag1 && flag2;
     }
 
+
     @Override
-    public List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress,String keyword) {
+    public List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress, String keyword) {
         QueryWrapper<File> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("file_name",keyword);
+        queryWrapper.like("file_name", keyword);
         List<File> list = this.list(queryWrapper);
         List<FileInfoVo> fileInfoVos = new ArrayList<>();
         list.forEach(e -> {
-            String tmpPath = e.getFilePath().replace("/group1/","");
-            String path = tmpPath.substring(0,tmpPath.lastIndexOf("/"));
+            String tmpPath = e.getFilePath().replace("/group1/", "");
+            String path = tmpPath.substring(0, tmpPath.lastIndexOf("/"));
             String filename = e.getFileName();
             List<FileInfoVo> fileList = FileUtils.getFileList(serverAddress, path, filename);
             fileInfoVos.addAll(fileList);

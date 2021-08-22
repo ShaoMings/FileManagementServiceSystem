@@ -174,7 +174,7 @@ public class FileUtils {
                 FileInfoVo fileInfoVo = new FileInfoVo();
                 JSONObject file = array.getJSONObject(i);
                 // 备份文件在后缀之前有 _big
-                if ("_big".equals(file.getStr("name"))){
+                if ("_big".equals(file.getStr("name")) || "_tmp".equals(file.getStr("name"))){
                     continue;
                 }
                 fileInfoVo.setMd5(file.getStr("md5"));

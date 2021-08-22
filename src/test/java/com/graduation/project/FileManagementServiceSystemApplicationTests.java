@@ -1,5 +1,6 @@
 package com.graduation.project;
 
+import com.graduation.mapper.FileMapper;
 import com.graduation.model.pojo.User;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.service.FileService;
@@ -23,6 +24,9 @@ class FileManagementServiceSystemApplicationTests {
     @Autowired
     FileService fileService;
 
+    @Autowired
+    FileMapper fileMapper;
+
     @Test
     void contextLoads() {
         List<FileInfoVo> list = fileService.getFileInfoListByFileKeyword("http://10.211.55.102:8080/group1", "彼岸");
@@ -32,6 +36,14 @@ class FileManagementServiceSystemApplicationTests {
     @Test
     void testStream() throws FileNotFoundException {
 
+    }
+
+    @Test
+    void testUpdatePath(){
+        String prefix = "/group1/test/";
+        String oldString = "myFile";
+        String newString = "file";
+        System.out.println(fileMapper.updatePathString(prefix, oldString, newString));
     }
 
 }

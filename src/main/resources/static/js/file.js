@@ -16,13 +16,41 @@ $('#mkdir').click(function () {
         current_path += file_path;
     }
     if (dir_path === undefined && file_path === undefined) {
-        current_path = "files" +  $('#path-side').children("a:last-child").data("path");
+        current_path = "files" + $('#path-side').children("a:last-child").data("path");
     }
     layer.prompt({title: '输入文件夹名称', formType: 0}, function (name, index) {
         $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
             if (res.code === 200) {
-                openDir(current_path.replace("files/",""));
+                openDir(current_path.replace("files/", ""));
                 layer.msg("创建成功");
+            } else {
+                layer.msg(res.msg);
+            }
+        });
+        layer.close(index);
+    });
+})
+
+/*监听重命名操作*/
+$('#file-result').on('click', '.rename-file-btn', function () {
+    let dir_path = $('#dir-path').data('path');
+    let file_path = $('#file-path').data('path');
+    let current_path = "files/";
+    if (dir_path !== undefined) {
+        current_path += dir_path;
+    }
+    if (file_path !== undefined) {
+        current_path += file_path;
+    }
+    if (dir_path === undefined && file_path === undefined) {
+        current_path = "files" + $('#path-side').children("a:last-child").data("path");
+    }
+    let oldName = $(this).data('name');
+    layer.prompt({title: '输入新的名称', formType: 0}, function (name, index) {
+        $.post('/file/rename', {"path": current_path, "oldName": oldName,"newName":name}, function (res) {
+            if (res.code === 200) {
+                openDir(current_path.replace("files/", ""));
+                layer.msg("重命名成功");
             } else {
                 layer.msg(res.msg);
             }

@@ -33,6 +33,8 @@ public class Constant {
     /** 文件删除API */
     public static final String API_DELETE = "/delete";
 
+    public static final String API_RENAME = "/rename";
+
     /** 文件夹创建API */
     public static final String API_MKDIR = "/mkdir";
 

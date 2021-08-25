@@ -1,5 +1,8 @@
 package com.graduation.utils;
 
+import ws.schild.jave.Encoder;
+import ws.schild.jave.EncoderException;
+
 import java.security.MessageDigest;
 
 /**
@@ -40,7 +43,7 @@ public class Md5Utils {
     }
 
     public static void main(String[] args) {
-        System.out.println(encode("shaoming"));
+//        System.out.println(encode("shaoming"));
     }
 
 }

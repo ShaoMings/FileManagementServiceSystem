@@ -5,9 +5,11 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
+import com.graduation.exception.FileDownloadException;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadResultVo;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -18,8 +20,14 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,8 +114,8 @@ public class FileUtils {
      * 为什么要用这个方式?  hutool和okhttp上传大文件都会有内存溢出的报错
      * @param multipartFile  文件对象
      * @param scene 场景
-     * @param uploadPath 自定义上传路径
-     * @param uploadApiUrl  服务地址上传文件api
+     * @param uploadPath 自定义上传路径 不含文件名
+     * @param uploadApiUrl  服务地址/组名/上传文件api
      * @param serverAddress  服务地址     用于拼接为文件资源访问
      * @return 文件响应对象
      */
@@ -149,6 +157,52 @@ public class FileUtils {
             return FileResponseVo.fail("文件上传出错!");
         } catch (Exception e) {
             return FileResponseVo.fail("文件上传出错!");
+        }
+    }
+
+    /**
+     * 通过输入流以及文件名上传文件
+     * @param inputStream 文件输入流
+     * @param fileName 文件名
+     * @param uploadPath 自定义上传路径 不含文件名
+     * @param scene 场景
+     * @param uploadApiUrl  服务地址/组名/上传文件api
+     * @param serverAddress  服务地址     用于拼接为文件资源访问
+     * @return 是否上传成功
+     */
+    public static boolean uploadFileByInputStream(InputStream inputStream,String fileName,String uploadPath, String scene,String uploadApiUrl, String serverAddress){
+        try {
+            CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+            CloseableHttpResponse httpResponse = null;
+            // 设置请求对象属性
+            if (uploadPath == null){
+                uploadPath = "";
+            }
+            RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(200000)
+                    .setSocketTimeout(200000)
+                    .build();
+            // 创建post请求对象 并指定请求url
+            HttpPost httpPost = new HttpPost(uploadApiUrl);
+            httpPost.setConfig(requestConfig);
+            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .setCharset(StandardCharsets.UTF_8)
+                    .addTextBody("output", "json")
+                    .addTextBody("path",uploadPath)
+                    .addTextBody("scene",scene)
+                    .addBinaryBody("file", inputStream,
+                            ContentType.DEFAULT_BINARY, fileName);
+            httpPost.setEntity(multipartEntityBuilder.build());
+            httpResponse = httpClient.execute(httpPost);
+
+            if (httpResponse.getStatusLine().getStatusCode() == Constant.SUCCESS_STATUS_CODE) {
+                return true;
+            }
+            httpClient.close();
+            httpResponse.close();
+            return false;
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -237,6 +291,35 @@ public class FileUtils {
         return files;
     }
 
+    /**
+     *  下载文件到 InputStream
+     * @param path 文件路径
+     * @param name 文件名
+     * @param peerAddress 服务集群地址
+     * @return InputStream
+     */
+    public static InputStream getFileDownloadStream(String path, String name,String peerAddress){
+        BufferedInputStream in = null;
+        try {
+            // 将文件名 encode 确保 new URL 不出错
+            String filename = URLEncoder.encode(name, "UTF-8");
+            filename = StringUtils.replace(filename, "+", "%20");
+            URL url = new URL(peerAddress + "/" + path + "/" + filename);
+            in = new BufferedInputStream(url.openStream());
+            return in;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        throw new FileDownloadException("下载文件为输入流出错");
+    }
 
 
 }

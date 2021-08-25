@@ -45,7 +45,7 @@ html,body,.layui-container,.layui-row,.layui-col-md12{
     display: table-cell;
 }
 .file-list-name{
-    width: 55%;
+    width: 45%;
 }
 .file-list-size{
     width: 15%;
@@ -54,7 +54,7 @@ html,body,.layui-container,.layui-row,.layui-col-md12{
     width: 15%;
 }
 .file-list-handle{
-    width: 15%;
+    width: 25%;
 }
 .file-list-file{
     float: left;
@@ -68,7 +68,7 @@ html,body,.layui-container,.layui-row,.layui-col-md12{
     background: #eeeeee;
 }
 .file-list-file-name{
-    width: 55%;
+    width: 45%;
 }
 .file-list-file-size{
     width: 15%;
@@ -77,7 +77,7 @@ html,body,.layui-container,.layui-row,.layui-col-md12{
     width: 15%;
 }
 .file-list-file-handle{
-    width: 15%;
+    width: 25%;
 }
 .path-side-btn{
     cursor: pointer;

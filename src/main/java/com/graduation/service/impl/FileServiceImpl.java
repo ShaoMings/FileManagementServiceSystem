@@ -11,20 +11,17 @@ import com.graduation.model.pojo.UserFile;
 import com.graduation.model.vo.FileDetailsVo;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.model.vo.PictureConvertVo;
 import com.graduation.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.graduation.service.UserFileService;
-import com.graduation.utils.Constant;
-import com.graduation.utils.DateConverter;
-import com.graduation.utils.FileSizeConverter;
-import com.graduation.utils.FileUtils;
+import com.graduation.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.util.*;
 
 /**
  * <p>
@@ -54,37 +51,73 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean deleteFile(String peersUrl, String md5) {
+    public boolean deleteFile(String peersUrl,String groupName, String path) {
         HashMap<String, Object> param = new HashMap<>(8);
-        param.put("md5", md5);
+        param.put("path", path);
+        String filename = path.substring(path.lastIndexOf("/")+1);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_DELETE, param));
-        return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
+        boolean isDeleted = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
+        if (isDeleted){
+            QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
+            fileQueryWrapper.eq("file_name",filename);
+            String sqlFilePath = "/"+groupName+"/"+path;
+            fileQueryWrapper.likeRight("file_path",sqlFilePath);
+            File file = this.getOne(fileQueryWrapper);
+            Integer fileId = file.getId();
+            QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
+            userFileQueryWrapper.eq("file_id",fileId);
+            boolean removeFile = this.removeById(fileId);
+            boolean removeUserFile = userFileService.remove(userFileQueryWrapper);
+            return removeFile && removeUserFile;
+        }
+        return false;
     }
 
     @Override
     public boolean mkdir(String serverAddress, String path) {
-        HashMap<String, Object> param = new HashMap<>();
+        HashMap<String, Object> param = new HashMap<>(8);
         param.put("path", path);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(serverAddress + Constant.API_MKDIR, param));
-        return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
+        return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT));
     }
 
     @Override
     public boolean deleteDir(String peersUrl, String path) {
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("path", path);
+        String groupName = peersUrl.substring(peersUrl.lastIndexOf("/"));
+        String pathPrefix = groupName + path;
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_REMOVE_DIR, param));
-        return Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
+        boolean isDeleteDir = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT));
+        if (isDeleteDir){
+            return deleteDirFileRecord(pathPrefix);
+        }
+        return false;
     }
 
     @Override
-    public boolean renameFileOrFolder(String peersUrl, String oldPath, String newPath, String path, String groupName) {
+    public boolean deleteDirFileRecord(String pathPrefix) {
+        QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
+        fileQueryWrapper.likeRight("file_path",pathPrefix);
+        List<File> deleteFileList = this.list(fileQueryWrapper);
+        List<Integer> fileIds = new ArrayList<>();
+        QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
+        deleteFileList.forEach(e -> fileIds.add(e.getId()));
+        userFileQueryWrapper.in("file_id",fileIds);
+        boolean isDeleteFiles = this.removeByIds(fileIds);
+        boolean isDeleteUserFiles = userFileService.remove(userFileQueryWrapper);
+        return isDeleteFiles && isDeleteUserFiles;
+    }
+
+    @Override
+    public boolean renameFileOrFolder(String peersUrl, String oldPath, String newPath, String path, String groupName,String md5) {
         String prefix = "/" + groupName + "/" + path;
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("oldPath", oldPath);
         param.put("newPath", newPath);
+        param.put("md5", md5);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_RENAME, param));
-        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"))) {
+        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
             return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", "")) > 0;
         }
         return false;
@@ -132,4 +165,32 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         });
         return fileInfoVos;
     }
+
+    @Override
+    public boolean convertPictureFile(PictureConvertVo fileInfo) {
+        InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
+        if (Constant.PICTURE_TYPE_JPG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_PNG.equals(fileInfo.getDestSuffix())) {
+            byte[] bytes = PictureConverter.jpgToPngBytes(inputStream);
+            InputStream stream = new ByteArrayInputStream(bytes);
+            String uploadApiUrl = fileInfo.getPeerAddress() + "/" + fileInfo.getPeerGroupName() + Constant.API_UPLOAD;
+            String oldFileName = fileInfo.getFilename();
+            String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_PNG;
+            boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
+                    fileInfo.getPath(), fileInfo.getScene(), uploadApiUrl, fileInfo.getPeerAddress());
+            return isSuccess;
+        } else {
+            if (Constant.PICTURE_TYPE_PNG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_JPG.equals(fileInfo.getDestSuffix())) {
+                byte[] bytes = PictureConverter.pngToJpgBytes(inputStream);
+                InputStream stream = new ByteArrayInputStream(bytes);
+                String uploadApiUrl = fileInfo.getPeerAddress() + "/" + fileInfo.getPeerGroupName() + Constant.API_UPLOAD;
+                String oldFileName = fileInfo.getFilename();
+                String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_JPG;
+                boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
+                        fileInfo.getPath(), fileInfo.getScene(), uploadApiUrl, fileInfo.getPeerAddress());
+                return isSuccess;
+            }
+            return false;
+        }
+    }
+
 }

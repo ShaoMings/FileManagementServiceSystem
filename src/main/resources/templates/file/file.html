@@ -4,12 +4,20 @@
     <meta charset="UTF-8">
     <title>文件列表</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link rel="stylesheet" th:href="@{/static/lib/layui-v2.5.6/layui/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/static/lib/layui-v2.5.6/layui/css/layui.css}" media="all">
     <link th:href="@{/static/lib/font-awesome-4.7.0/css/font-awesome.min.css}" rel="stylesheet"/>
     <link rel="stylesheet" th:href="@{/static/css/file.css}" media="all">
     <link rel="stylesheet" th:href="@{/static/css/github-markdown.css}">
     <script type="text/javascript" th:src="@{/static/lib/iconfont/iconfont.js}"></script>
     <script type="text/javascript" th:src="@{/static/js/showdown.min.js}"></script>
+    <style>
+        .format{
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+        }
+    </style>
 </head>
 <body>
 <div class="layui-container" style="width: 100%;">
@@ -105,14 +113,19 @@
 
             <!--            文件列表操作-->
             {{else}}
-            <button class="layui-btn layui-btn-xs details-btn" data-md5="{{value.md5}}" data-name="{{value.name}}"
-                    title="文件详情">详情
+            <button class="layui-btn layui-btn-xs details-btn" data-md5="{{value.md5}}" data-path="{{value.path}}"
+                    data-name="{{value.name}}" title="文件详情">详情
+            </button>
+            <button class="layui-btn layui-btn-xs layui-btn-warm rename-file-btn" data-md5="{{value.md5}}" data-path="{{value.path}}"
+                    data-name="{{value.name}}">重命名
             </button>
             <button class="layui-btn layui-btn-xs layui-btn-normal download-btn" data-path="{{value.path}}"
-                    data-name="{{value.name}}"
-                    title="下载文件">下载
+                    data-name="{{value.name}}" title="下载文件">下载
             </button>
-            <button class="layui-btn layui-btn-xs layui-btn-danger delete-file-btn" data-md5="{{value.md5}}"
+            <button class="layui-btn layui-btn-xs layui-btn-normal converter-btn" data-path="{{value.path}}"
+                    data-name="{{value.name}}" data-md5="{{value.md5}}">格式转换
+            </button>
+            <button class="layui-btn layui-btn-xs layui-btn-danger delete-file-btn" data-path="{{value.path}}" data-md5="{{value.md5}}"
                     data-name="{{value.name}}">删除
             </button>
             {{/if}}

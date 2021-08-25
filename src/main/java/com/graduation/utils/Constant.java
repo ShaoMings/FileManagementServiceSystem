@@ -74,4 +74,10 @@ public class Constant {
     /** 状态常量词 */
     public static final String STATUS_CONSTANT = "status";
 
+    /** 图片jpg格式 */
+    public static final String PICTURE_TYPE_JPG = "jpg";
+
+    /** 图片png格式 */
+    public static final String PICTURE_TYPE_PNG = "png";
+
 }

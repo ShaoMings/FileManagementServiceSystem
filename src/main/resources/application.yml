@@ -48,7 +48,7 @@ mybatis-plus:
 
 
     #日志
-    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
 
   #逻辑删除设置
   global-config:
@@ -58,11 +58,11 @@ mybatis-plus:
       logic-not-delete-value: 0
   mapper-locations: classpath:com/graduation/mapper/xml/*.xml
 
-logging:
-  level:
-    com.graduation: debug
-  file:
-    name: ./logs/debug.log
+#logging:
+#  level:
+#    com.graduation: debug
+#  file:
+#    name: ./logs/debug.log
 
 pagehelper:
   reasonable: true

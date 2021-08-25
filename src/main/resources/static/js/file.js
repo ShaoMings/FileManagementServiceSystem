@@ -35,6 +35,10 @@ $('#mkdir').click(function () {
 $('#file-result').on('click', '.rename-file-btn', function () {
     let dir_path = $('#dir-path').data('path');
     let file_path = $('#file-path').data('path');
+    let md5 = $(this).data('md5');
+    if (md5 === undefined) {
+        md5 = "";
+    }
     let current_path = "files/";
     if (dir_path !== undefined) {
         current_path += dir_path;
@@ -46,8 +50,13 @@ $('#file-result').on('click', '.rename-file-btn', function () {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
     }
     let oldName = $(this).data('name');
-    layer.prompt({title: '输入新的名称', formType: 0}, function (name, index) {
-        $.post('/file/rename', {"path": current_path, "oldName": oldName,"newName":name}, function (res) {
+    layer.prompt({
+        formType: 0,
+        title: '输入新的名称',
+        value: oldName
+    }, function (name, index) {
+        $(".layui-layer-input").val(oldName);
+        $.post('/file/rename', {"path": current_path, "oldName": oldName, "newName": name,"md5":md5}, function (res) {
             if (res.code === 200) {
                 openDir(current_path.replace("files/", ""));
                 layer.msg("重命名成功");
@@ -92,6 +101,99 @@ $('#search').on('input', function (e) {
     }
 })
 
+/*监听格式转换按钮 */
+$('#file-result').on('click', '.converter-btn', function () {
+
+    let fileMd5 = $('this').data('md5');
+    let dir_path = $('#dir-path').data('path');
+    let file_path = $('#file-path').data('path');
+    let current_path = "files/";
+    if (dir_path !== undefined) {
+        current_path += dir_path;
+    }
+    if (file_path !== undefined) {
+        current_path += file_path;
+    }
+    if (dir_path === undefined && file_path === undefined) {
+        current_path = "files" + $('#path-side').children("a:last-child").data("path");
+    }
+    let oldName = $(this).data('name');
+    let suffix = oldName.substring(oldName.lastIndexOf(".") + 1);
+    console.log(suffix);
+    let html;
+    let select;
+    let audio_types = ['mp3', 'm4a', 'wav'];
+    let picture_type = ['jpg', 'png']
+    let form = layui.form;
+    if (audio_types.indexOf(suffix) !== -1) {
+        removeItem(audio_types, suffix);
+        html = '<div class="layui-input-inline">\n' +
+            '        <select id="before">\n' +
+            '          <option value=' + suffix + '>' + suffix + '</option>\n' +
+            '        </select>\n' +
+            '</div>';
+        select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
+            '<div class="layui-input-inline">\n' +
+            '<select id="after">' +
+            '<option value=' + audio_types[0] + '>' + audio_types[0] + '</option>' +
+            '<option value=' + audio_types[1] + '>' + audio_types[1] + '</option>' +
+            '</select>' +
+            '</div>';
+    } else if (picture_type.indexOf(suffix) !== -1) {
+        removeItem(picture_type, suffix);
+        html = '<div class="layui-input-inline">\n' +
+            '      <select id="before">\n' +
+            '        <option value=' + suffix + '>' + suffix + '</option>\n' +
+            '      </select>\n' +
+            '    </div>';
+        select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
+            '<div class="layui-input-inline">\n' +
+            '<select class="sel" id="after">' +
+            '<option value=' + picture_type[0] + '>' + picture_type[0] + '</option>' +
+            '</select>' +
+            '</div>';
+    } else {
+        layer.msg("未知类型!");
+        return;
+    }
+    let confirm_btn = '<div class="layui-form-item"><div class="layui-input-block">\n' +
+        '      <button type="button" class="layui-btn" id="converter" style="float: right;margin-right: 10px;margin-top: 20px;">立即提交</button>\n' +
+        '    </div></div>'
+    layer.open({
+        type: 1,
+        skin: 'layui-layer-demo', //样式类名
+        title: false,
+        closeBtn: 0,
+        anim: 2,
+        shadeClose: true, //开启遮罩关闭
+        area: ['510px', '200px'],
+        content: '<div class="format"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>' + confirm_btn + '</form></div>',
+        success: function () {
+            form.render('select');
+            let before = $('#before option:selected').val();
+            $('#before').on('change', function () {
+                before = $('#before option:selected').val();
+            })
+            let after = $('#after option:selected').val();
+            $('#after').on('change', function () {
+                after = $('#after option:selected').val();
+            })
+
+            $('#converter').click(function () {
+                console.log(before + ":" + after);
+            })
+        }
+
+    });
+})
+
+function removeItem(arr, e) {
+    arr.forEach(function (item, index, arr) {
+        if (item === e) {
+            arr.splice(index, 1);
+        }
+    });
+}
 
 /*获取所有一级目录及文件*/
 function getParentFile() {
@@ -141,6 +243,9 @@ function openDir(dir) {
     let suff = dir.substring(0, 1);
     if (suff === "/") {
         dir = dir.substring(1);
+    }
+    if (dir === "files"){
+        dir = "";
     }
     $.post('/file/getDirFile', {"dir": dir}, function (result) {
         if (result.code === 200) {
@@ -271,10 +376,10 @@ $("#file-result").on("click", ".delete-dir-btn", function () {
 /*监听文件删除按钮*/
 $("#file-result").on("click", ".delete-file-btn", function () {
     let name = $(this).data("name");
-    let md5 = $(this).data("md5");
+    let path = $(this).data("path");
     let $this = $(this);
     layer.confirm('确定要删除' + name + '吗?', {icon: 3, title: '提示'}, function (index) {
-        $.post('/file/deleteFile', {"md5": md5}, function (result) {
+        $.post('/file/deleteFile', {"path": path + "/" + name}, function (result) {
             if (result.code === 200) {
                 $this.parent().parent().remove();
                 let len = $(".file-list-file-box").length;

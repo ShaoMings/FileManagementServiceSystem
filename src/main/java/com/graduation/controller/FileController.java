@@ -68,12 +68,20 @@ public class FileController extends BaseController {
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
     }
 
+    /**
+     * 重命名文件或文件夹
+     *
+     * @param path
+     * @param oldName
+     * @param newName
+     * @return
+     */
     @RequestMapping("rename")
     @ResponseBody
-    public FileResponseVo renameFileOrFolder(String path, String oldName, String newName) {
+    public FileResponseVo renameFileOrFolder(String path, String oldName, String newName, String md5) {
         String oldPath = path + "/" + oldName;
         String newPath = path + "/" + newName;
-        if (fileService.renameFileOrFolder(getPeersUrl(), oldPath, newPath,path,getPeersGroupName())) {
+        if (fileService.renameFileOrFolder(getPeersUrl(), oldPath, newPath, path, getPeersGroupName(), md5)) {
             return FileResponseVo.success();
         } else {
             return FileResponseVo.fail("重命名失败");
@@ -94,15 +102,15 @@ public class FileController extends BaseController {
 
 
     /**
-     * 通过md5 删除文件
+     * 通过path 删除文件
      *
-     * @param md5 文件md5
+     * @param path 文件路径
      * @return 文件响应对象
      */
     @RequestMapping("/deleteFile")
     @ResponseBody
-    public FileResponseVo deleteFile(String md5) {
-        if (fileService.deleteFile(getPeersUrl(), md5)) {
+    public FileResponseVo deleteFile(String path) {
+        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path)) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("删除文件失败");

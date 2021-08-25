@@ -22,8 +22,19 @@ public interface FileMapper extends BaseMapper<File> {
      * @param prefix 改变部分之前的字符
      * @param oldString 要改变的部分
      * @param newString 要改为的字符串
+     * @param filename 新文件名
+     * @return 是否更改成功
+     */
+    @Update("update file set file_path = replace(file_path,#{oldString},#{newString}),file_name = #{filename} where file_path like #{prefix}\"%\"")
+     int updateFilePathString(@Param("prefix") String prefix,@Param("oldString") String oldString, @Param("newString") String newString,@Param("filename") String filename);
+
+    /**
+     * 更新文件夹路径
+     * @param prefix 改变部分之前的字符
+     * @param oldString 要改变的部分
+     * @param newString 要改为的字符串
      * @return 是否更改成功
      */
     @Update("update file set file_path = replace(file_path,#{oldString},#{newString}) where file_path like #{prefix}\"%\"")
-     int updatePathString(@Param("prefix") String prefix,@Param("oldString") String oldString, @Param("newString") String newString);
+    int updatePathString(@Param("prefix") String prefix,@Param("oldString") String oldString, @Param("newString") String newString);
 }

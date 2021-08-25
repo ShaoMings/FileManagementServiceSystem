@@ -309,14 +309,6 @@ public class FileUtils {
             return in;
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         throw new FileDownloadException("下载文件为输入流出错");
     }

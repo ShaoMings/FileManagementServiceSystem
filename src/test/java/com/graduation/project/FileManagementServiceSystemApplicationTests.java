@@ -43,7 +43,7 @@ class FileManagementServiceSystemApplicationTests {
         String prefix = "/group1/test/";
         String oldString = "myFile";
         String newString = "file";
-        System.out.println(fileMapper.updatePathString(prefix, oldString, newString));
+//        System.out.println(fileMapper.updatePathString(prefix, oldString, newString));
     }
 
 }

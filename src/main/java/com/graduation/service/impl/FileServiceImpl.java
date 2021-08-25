@@ -51,24 +51,26 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean deleteFile(String peersUrl,String groupName, String path) {
+    public boolean deleteFile(String peersUrl, String groupName, String path) {
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("path", path);
-        String filename = path.substring(path.lastIndexOf("/")+1);
+        String filename = path.substring(path.lastIndexOf("/") + 1);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_DELETE, param));
         boolean isDeleted = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
-        if (isDeleted){
+        if (isDeleted) {
             QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
-            fileQueryWrapper.eq("file_name",filename);
-            String sqlFilePath = "/"+groupName+"/"+path;
-            fileQueryWrapper.likeRight("file_path",sqlFilePath);
+            fileQueryWrapper.eq("file_name", filename);
+            String sqlFilePath = "/" + groupName + "/" + path;
+            fileQueryWrapper.likeRight("file_path", sqlFilePath);
             File file = this.getOne(fileQueryWrapper);
-            Integer fileId = file.getId();
-            QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
-            userFileQueryWrapper.eq("file_id",fileId);
-            boolean removeFile = this.removeById(fileId);
-            boolean removeUserFile = userFileService.remove(userFileQueryWrapper);
-            return removeFile && removeUserFile;
+            if (file != null) {
+                Integer fileId = file.getId();
+                QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
+                userFileQueryWrapper.eq("file_id", fileId);
+                boolean removeFile = this.removeById(fileId);
+                boolean removeUserFile = userFileService.remove(userFileQueryWrapper);
+                return removeFile && removeUserFile;
+            }
         }
         return false;
     }
@@ -89,7 +91,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         String pathPrefix = groupName + path;
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_REMOVE_DIR, param));
         boolean isDeleteDir = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT));
-        if (isDeleteDir){
+        if (isDeleteDir) {
             return deleteDirFileRecord(pathPrefix);
         }
         return false;
@@ -98,19 +100,19 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     @Override
     public boolean deleteDirFileRecord(String pathPrefix) {
         QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
-        fileQueryWrapper.likeRight("file_path",pathPrefix);
+        fileQueryWrapper.likeRight("file_path", pathPrefix);
         List<File> deleteFileList = this.list(fileQueryWrapper);
         List<Integer> fileIds = new ArrayList<>();
         QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
         deleteFileList.forEach(e -> fileIds.add(e.getId()));
-        userFileQueryWrapper.in("file_id",fileIds);
+        userFileQueryWrapper.in("file_id", fileIds);
         boolean isDeleteFiles = this.removeByIds(fileIds);
         boolean isDeleteUserFiles = userFileService.remove(userFileQueryWrapper);
         return isDeleteFiles && isDeleteUserFiles;
     }
 
     @Override
-    public boolean renameFileOrFolder(String peersUrl, String oldPath, String newPath, String path, String groupName,String md5) {
+    public boolean renameFileOrFolder(String peersUrl, String oldPath, String newPath, String path, String groupName, String md5) {
         String prefix = "/" + groupName + "/" + path;
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("oldPath", oldPath);
@@ -118,7 +120,12 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         param.put("md5", md5);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_RENAME, param));
         if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
-            return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", "")) > 0;
+            String filename = newPath.substring(newPath.lastIndexOf("/") + 1);
+            if (!"".equals(md5)) {
+                return fileMapper.updateFilePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", ""), filename) > 0;
+            } else {
+                return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", "")) > 0;
+            }
         }
         return false;
     }
@@ -168,29 +175,47 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
 
     @Override
     public boolean convertPictureFile(PictureConvertVo fileInfo) {
+        // 通过下载获取文件的输入流
         InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
+        // 是否jpg转png
         if (Constant.PICTURE_TYPE_JPG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_PNG.equals(fileInfo.getDestSuffix())) {
+            // 格式转换为bytes
             byte[] bytes = PictureConverter.jpgToPngBytes(inputStream);
             InputStream stream = new ByteArrayInputStream(bytes);
-            String uploadApiUrl = fileInfo.getPeerAddress() + "/" + fileInfo.getPeerGroupName() + Constant.API_UPLOAD;
+            String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
             String oldFileName = fileInfo.getFilename();
             String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_PNG;
+            // 讲转换后的文件进行重新上传
             boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
-                    fileInfo.getPath(), fileInfo.getScene(), uploadApiUrl, fileInfo.getPeerAddress());
-            return isSuccess;
+                    fileInfo.getPath(), "default", uploadApiUrl, fileInfo.getPeerAddress());
+            // 删除原来的文件并插入新的记录
+            if (isSuccess) {
+                boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName);
+                String saveFilePath = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + newFileName;
+                boolean isSaveNew = saveFilePathByUserId(fileInfo.getUserId(), saveFilePath);
+                return isDeleteOld && isSaveNew;
+            }
         } else {
+            // 是否png转jpg
             if (Constant.PICTURE_TYPE_PNG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_JPG.equals(fileInfo.getDestSuffix())) {
                 byte[] bytes = PictureConverter.pngToJpgBytes(inputStream);
                 InputStream stream = new ByteArrayInputStream(bytes);
-                String uploadApiUrl = fileInfo.getPeerAddress() + "/" + fileInfo.getPeerGroupName() + Constant.API_UPLOAD;
+                String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
                 String oldFileName = fileInfo.getFilename();
                 String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_JPG;
                 boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
-                        fileInfo.getPath(), fileInfo.getScene(), uploadApiUrl, fileInfo.getPeerAddress());
-                return isSuccess;
+                        fileInfo.getPath(), "default", uploadApiUrl, fileInfo.getPeerAddress());
+                // 删除原来的文件并插入新的记录
+                if (isSuccess) {
+                    boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName);
+                    String saveFilePath = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + newFileName;
+                    boolean isSaveNew = saveFilePathByUserId(fileInfo.getUserId(), saveFilePath);
+                    return isDeleteOld && isSaveNew;
+                }
+                return false;
             }
-            return false;
         }
+        return false;
     }
 
 }

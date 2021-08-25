@@ -119,7 +119,6 @@ $('#file-result').on('click', '.converter-btn', function () {
     }
     let oldName = $(this).data('name');
     let suffix = oldName.substring(oldName.lastIndexOf(".") + 1);
-    console.log(suffix);
     let html;
     let select;
     let audio_types = ['mp3', 'm4a', 'wav'];
@@ -168,7 +167,7 @@ $('#file-result').on('click', '.converter-btn', function () {
         shadeClose: true, //开启遮罩关闭
         area: ['510px', '200px'],
         content: '<div class="format"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>' + confirm_btn + '</form></div>',
-        success: function () {
+        success: function (name,index) {
             form.render('select');
             let before = $('#before option:selected').val();
             $('#before').on('change', function () {
@@ -180,8 +179,16 @@ $('#file-result').on('click', '.converter-btn', function () {
             })
 
             $('#converter').click(function () {
-                console.log(before + ":" + after);
-            })
+                let path = current_path.substring(current_path.indexOf("/")+1)
+                // post: path filename src dest
+                $.post("/file/picConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
+                    if (res.code === 200){
+                        layer.msg("转换成功");
+                        layer.close(index);
+                        openDir(path)
+                    }
+                });
+            });
         }
 
     });

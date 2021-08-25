@@ -15,11 +15,18 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class PictureConvertVo {
+    /** 非必须 基类获取 */
+    private Integer userId;
+    /** 文件路径 */
     private String path;
+    /** 文件名 */
     private String filename;
+    /** 非必须 基类获取 */
     private String peerGroupName;
-    private String scene;
+    /** 非必须 基类获取 */
     private String peerAddress;
+    /** 转换前类型 */
     private String srcSuffix;
+    /** 转换后类型 */
     private String destSuffix;
 }

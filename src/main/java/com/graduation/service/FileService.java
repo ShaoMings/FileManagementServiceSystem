@@ -39,7 +39,7 @@ public interface FileService extends IService<File> {
      *  删除文件
      * @param peersUrl 集群url
      * @param groupName 组名
-     * @param path 文件md5
+     * @param path 文件path
      * @return 是否删除成功
      */
     boolean deleteFile(String peersUrl,String groupName,String path);
@@ -90,7 +90,7 @@ public interface FileService extends IService<File> {
     /**
      * 通过用户id保存文件路径
      * @param id 用户id 唯一
-     * @param filePath 服务器存放文件路径
+     * @param filePath 组名+服务器存放文件路径
      * @return 是否保存成功
      */
     boolean saveFilePathByUserId(Integer id,String filePath);

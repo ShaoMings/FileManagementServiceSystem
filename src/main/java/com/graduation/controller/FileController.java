@@ -2,6 +2,7 @@ package com.graduation.controller;
 
 
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.model.vo.PictureConvertVo;
 import com.graduation.service.FileService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -159,6 +160,19 @@ public class FileController extends BaseController {
         return fileService.getFileDetails(getPeersUrl(), md5);
     }
 
+
+    @RequestMapping("/picConverter")
+    @ResponseBody
+    public FileResponseVo convertPicture(String path,String filename,String srcSuffix,String destSuffix){
+        PictureConvertVo pictureConvertVo = new PictureConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
+                getPeersUrl(), srcSuffix, destSuffix);
+        System.out.println(pictureConvertVo);
+        boolean isSuccess = fileService.convertPictureFile(pictureConvertVo);
+        if (isSuccess){
+            return FileResponseVo.success();
+        }
+        return FileResponseVo.fail("格式转换失败");
+    }
 
     /**
      * 文件下载

@@ -4,8 +4,9 @@ import com.graduation.model.pojo.File;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
-import com.graduation.model.vo.PictureConvertVo;
+import com.graduation.model.vo.ConvertVo;
 
+import java.io.InputStream;
 import java.util.List;
 
 /**
@@ -105,9 +106,27 @@ public interface FileService extends IService<File> {
     List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress,String keyword);
 
     /**
+     * 更新格式转换后记录信息
+     * @param fileInfo 转换过程文件信息
+     * @param stream 新文件的输入流
+     * @param newFileName 新文件名
+     * @param oldFileName 原本的文件名
+     * @param uploadApiUrl 上传api
+     * @return  是否更新成功
+     */
+    boolean updateConvertRecord(ConvertVo fileInfo, InputStream stream,String newFileName,String oldFileName,String uploadApiUrl);
+
+    /**
      * 转换图片格式 目前支持png和jpg互转
      * @param fileInfo 文件信息封装类
      * @return 是否转换成功
      */
-    boolean convertPictureFile(PictureConvertVo fileInfo);
+    boolean convertPictureFile(ConvertVo fileInfo);
+
+    /**
+     * 转换音频格式 目前支持m4a wav 转 mp3
+     * @param fileInfo 文件信息封装类
+     * @return 是否转换成功
+     */
+    boolean convertAudioFile(ConvertVo fileInfo);
 }

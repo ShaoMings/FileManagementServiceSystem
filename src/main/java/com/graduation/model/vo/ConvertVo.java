@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Description 图片格式转换vo
+ * Description 格式转换vo
  *
  * @author shaoming
  * @date 2021/8/23 13:33
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-public class PictureConvertVo {
+public class ConvertVo {
     /** 非必须 基类获取 */
     private Integer userId;
     /** 文件路径 */

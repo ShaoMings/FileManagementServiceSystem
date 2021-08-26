@@ -80,4 +80,13 @@ public class Constant {
     /** 图片png格式 */
     public static final String PICTURE_TYPE_PNG = "png";
 
+    /** 音频mp3格式 */
+    public static final String AUDIO_TYPE_MP3 = "mp3";
+
+    /** 音频m4a格式 */
+    public static final String AUDIO_TYPE_M4A = "m4a";
+
+    /** 音频wav格式 */
+    public static final String AUDIO_TYPE_WAV = "wav";
+
 }

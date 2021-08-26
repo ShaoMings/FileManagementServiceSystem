@@ -4,14 +4,13 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.graduation.model.pojo.File;
 import com.graduation.mapper.FileMapper;
 import com.graduation.model.pojo.UserFile;
 import com.graduation.model.vo.FileDetailsVo;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
-import com.graduation.model.vo.PictureConvertVo;
+import com.graduation.model.vo.ConvertVo;
 import com.graduation.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.graduation.service.UserFileService;
@@ -174,7 +173,22 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean convertPictureFile(PictureConvertVo fileInfo) {
+    public boolean updateConvertRecord(ConvertVo fileInfo, InputStream stream, String newFileName, String oldFileName, String uploadApiUrl) {
+        // 将转换后的文件进行重新上传
+        boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
+                fileInfo.getPath(), "default", uploadApiUrl, fileInfo.getPeerAddress());
+        // 删除原来的文件并插入新的记录
+        if (isSuccess) {
+            boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName);
+            String saveFilePath = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + newFileName;
+            boolean isSaveNew = saveFilePathByUserId(fileInfo.getUserId(), saveFilePath);
+            return isDeleteOld && isSaveNew;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean convertPictureFile(ConvertVo fileInfo) {
         // 通过下载获取文件的输入流
         InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
         // 是否jpg转png
@@ -185,37 +199,44 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
             String oldFileName = fileInfo.getFilename();
             String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_PNG;
-            // 讲转换后的文件进行重新上传
-            boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
-                    fileInfo.getPath(), "default", uploadApiUrl, fileInfo.getPeerAddress());
-            // 删除原来的文件并插入新的记录
-            if (isSuccess) {
-                boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName);
-                String saveFilePath = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + newFileName;
-                boolean isSaveNew = saveFilePathByUserId(fileInfo.getUserId(), saveFilePath);
-                return isDeleteOld && isSaveNew;
-            }
-        } else {
+            // 将转换后的文件进行重新上传
+            return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
             // 是否png转jpg
-            if (Constant.PICTURE_TYPE_PNG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_JPG.equals(fileInfo.getDestSuffix())) {
-                byte[] bytes = PictureConverter.pngToJpgBytes(inputStream);
-                InputStream stream = new ByteArrayInputStream(bytes);
-                String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
-                String oldFileName = fileInfo.getFilename();
-                String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_JPG;
-                boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
-                        fileInfo.getPath(), "default", uploadApiUrl, fileInfo.getPeerAddress());
-                // 删除原来的文件并插入新的记录
-                if (isSuccess) {
-                    boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName);
-                    String saveFilePath = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + newFileName;
-                    boolean isSaveNew = saveFilePathByUserId(fileInfo.getUserId(), saveFilePath);
-                    return isDeleteOld && isSaveNew;
-                }
-                return false;
-            }
+        } else if (Constant.PICTURE_TYPE_PNG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_JPG.equals(fileInfo.getDestSuffix())) {
+            byte[] bytes = PictureConverter.pngToJpgBytes(inputStream);
+            InputStream stream = new ByteArrayInputStream(bytes);
+            String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+            String oldFileName = fileInfo.getFilename();
+            String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_JPG;
+            return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
         }
         return false;
+    }
+
+    @Override
+    public boolean convertAudioFile(ConvertVo fileInfo) {
+
+        // 通过下载获取文件的输入流
+        InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
+        java.io.File file;
+        byte[] bytes = null;
+        String outputPath = "src/main/java/com/graduation/utils/tmp/tmp.mp3";
+        // 是否m4a转mp3
+        if (Constant.AUDIO_TYPE_M4A.equals(fileInfo.getSrcSuffix())) {
+            file = FileUtils.inputStreamToFile(inputStream, outputPath);
+            // 格式转换为bytes
+            bytes = AudioConverter.m4aToMp3Bytes(file);
+            // 是否wav转mp3
+        } else if (Constant.AUDIO_TYPE_WAV.equals(fileInfo.getSrcSuffix())) {
+            file = FileUtils.inputStreamToFile(inputStream, outputPath);
+            bytes = AudioConverter.wavToMp3Bytes(file);
+        }
+        assert bytes != null;
+        InputStream stream = new ByteArrayInputStream(bytes);
+        String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+        String oldFileName = fileInfo.getFilename();
+        String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.AUDIO_TYPE_MP3;
+        return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
     }
 
 }

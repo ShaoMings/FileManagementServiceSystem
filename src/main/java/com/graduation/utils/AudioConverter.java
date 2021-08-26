@@ -2,11 +2,10 @@ package com.graduation.utils;
 
 
 import com.graduation.exception.FileConverterException;
-import ws.schild.jave.Encoder;
-import ws.schild.jave.EncoderException;
-import ws.schild.jave.MultimediaObject;
+import ws.schild.jave.*;
 import ws.schild.jave.encode.AudioAttributes;
 import ws.schild.jave.encode.EncodingAttributes;
+
 
 import java.io.*;
 
@@ -17,13 +16,76 @@ import java.io.*;
 public class AudioConverter {
 
     /**
-     * 将m4a格式文件转为wav格式字符数组
-     * @param source 源文件
-     * @return 字符数组
+     * 将文件file对象转为字节数组
+     * @param target 文件file
+     * @return 字节数组
      */
-    public static byte[] m4aToWavBytes(File source){
+    public static byte[] getBytesFromFile(File target){
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         FileInputStream fileInputStream = null;
+        try {
+            fileInputStream = new FileInputStream(target);
+            byte[] bytes = new byte[1024];
+            int len;
+            while ((len = fileInputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, len);
+            }
+            return outputStream.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileInputStream != null) {
+                try {
+                    fileInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        throw new FileConverterException("文件格式转换失败!");
+    }
+
+    /**
+     * 将任意的音频格式转为mp3格式字节数组
+     * @param source 源文件
+     * @return 字节数组
+     */
+    public static byte[] convertAnyAudioToMp3Bytes(File source){
+        AudioAttributes audio = new AudioAttributes();
+        audio.setCodec("libmp3lame");
+        audio.setBitRate(128000);
+        audio.setChannels(2);
+        audio.setSamplingRate(44100);
+        EncodingAttributes attrs = new EncodingAttributes();
+        attrs.setOutputFormat("mp3");
+        attrs.setAudioAttributes(audio);
+        File target = new File("src/main/java/com/graduation/utils/tmp/tmp.mp3");
+        Encoder encoder = new Encoder();
+        try {
+            encoder.encode(new MultimediaObject(source), target, attrs);
+            return getBytesFromFile(target);
+        } catch (EncoderException e) {
+            e.printStackTrace();
+        } finally {
+            if (source.exists()) {
+                source.delete();
+            }
+            if (target.exists()) {
+                target.delete();
+            }
+        }
+        throw new FileConverterException("文件格式转换失败!");
+    }
+
+
+    /**
+     * 将m4a格式文件转为wav格式字节数组
+     *
+     * @param source 源文件
+     * @return 字节数组
+     */
+    @Deprecated
+    public static byte[] m4aToWavBytes(File source) {
         AudioAttributes audio = new AudioAttributes();
         // 音频属性设置
         audio.setCodec("pcm_s16le");
@@ -38,52 +100,42 @@ public class AudioConverter {
         // 编码
         Encoder encoder = new Encoder();
         try {
-            encoder.encode(new MultimediaObject(source),target,encodingAttributes);
-            fileInputStream = new FileInputStream(target);
-            byte[] bytes = new byte[1024];
-            int len;
-            while ((len = fileInputStream.read(bytes))!=-1){
-                outputStream.write(bytes,0,len);
-            }
-            return outputStream.toByteArray();
-        } catch (EncoderException | IOException e) {
+            encoder.encode(new MultimediaObject(source), target, encodingAttributes);
+            return getBytesFromFile(target);
+        } catch (EncoderException e) {
             e.printStackTrace();
         } finally {
-            if (source.exists()){
+            if (source.exists()) {
                 source.delete();
             }
-            if (target.exists()){
+            if (target.exists()) {
                 target.delete();
-            }
-            if (fileInputStream!=null){
-                try {
-                    fileInputStream.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         }
         throw new FileConverterException("文件格式转换失败!");
     }
 
 
-    public static byte[] wavTom4aBytes(File source){
-        return null;
+    /**
+     *  '将m4a格式文件转为mp3格式字节数组
+     * @param source 源文件
+     * @return 字节数组
+     */
+    public static byte[] m4aToMp3Bytes(File source) {
+        return convertAnyAudioToMp3Bytes(source);
     }
 
 
+    /**
+     *  '将wav格式文件转为mp3格式字节数组
+     * @param source 源文件
+     * @return 字节数组
+     */
+    public static byte[] wavToMp3Bytes(File source) {
+        return convertAnyAudioToMp3Bytes(source);
+    }
+
     public static void main(String[] args) throws IOException {
-//        File source = new File("src/main/java/com/graduation/utils/tmp/test.m4a");
-//        byte[] wavBytes = m4aToWavBytes(source);
-//        FileOutputStream fos = new FileOutputStream("src/main/java/com/graduation/utils/tmp/天净沙秋思.wav");
-//        fos.write(wavBytes);
-        Encoder encoder = new Encoder();
-        try {
-            for (int i = 0; i < encoder.getAudioEncoders().length; i++) {
-                System.out.println(encoder.getAudioEncoders()[i].toString());
-            }
-        } catch (EncoderException e) {
-            e.printStackTrace();
-        }
+
     }
 }

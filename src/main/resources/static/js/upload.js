@@ -50,7 +50,7 @@ layui.use(['upload', 'element'], function () {
                 var tr = $(['<tr id="upload-' + key + '">',
                     '<td>' + files[key].name + '</td>',
                     '<td>' + (files[key].size / 1014).toFixed(1) + 'kb</td>',
-                    '<td>等待上传</td>',
+                    '<td>上传中...</td>',
                     '<td>' +
                     '<div file="' + files[key].name + '" class="layui-progress" lay-showPercent="true" lay-filter="progressBar' + count + '">' +
                     '<div class="layui-progress-bar layui-bg-green" lay-percent="0%"></div>' +

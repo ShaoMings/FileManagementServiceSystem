@@ -121,7 +121,9 @@ $('#file-result').on('click', '.converter-btn', function () {
     let suffix = oldName.substring(oldName.lastIndexOf(".") + 1);
     let html;
     let select;
-    let audio_types = ['mp3', 'm4a', 'wav'];
+    // 支持格式转mp3
+    let audio_types = ['m4a', 'wav'];
+
     let picture_type = ['jpg', 'png']
     let form = layui.form;
     if (audio_types.indexOf(suffix) !== -1) {
@@ -134,8 +136,7 @@ $('#file-result').on('click', '.converter-btn', function () {
         select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
             '<div class="layui-input-inline">\n' +
             '<select id="after">' +
-            '<option value=' + audio_types[0] + '>' + audio_types[0] + '</option>' +
-            '<option value=' + audio_types[1] + '>' + audio_types[1] + '</option>' +
+            '<option value="mp3">mp3</option>' +
             '</select>' +
             '</div>';
     } else if (picture_type.indexOf(suffix) !== -1) {
@@ -152,6 +153,10 @@ $('#file-result').on('click', '.converter-btn', function () {
             '</select>' +
             '</div>';
     } else {
+        if (suffix === "mp3"){
+            layer.msg("目前仅m4a,wav格式转mp3 !");
+            return;
+        }
         layer.msg("未知类型!");
         return;
     }
@@ -177,17 +182,27 @@ $('#file-result').on('click', '.converter-btn', function () {
             $('#after').on('change', function () {
                 after = $('#after option:selected').val();
             })
-
             $('#converter').click(function () {
                 let path = current_path.substring(current_path.indexOf("/")+1)
                 // post: path filename src dest
-                $.post("/file/picConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
-                    if (res.code === 200){
-                        layer.msg("转换成功");
-                        layer.close(index);
-                        openDir(path)
-                    }
-                });
+                if (audio_types.indexOf(suffix) !== -1) {
+                    $.post("/file/audioConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
+                        if (res.code === 200){
+                            layer.msg("转换成功");
+                            layer.close(index);
+                            openDir(path)
+                        }
+                    });
+                }else if (picture_type.indexOf(after)!== -1){
+                    $.post("/file/picConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
+                        if (res.code === 200){
+                            layer.msg("转换成功");
+                            layer.close(index);
+                            openDir(path)
+                        }
+                    });
+                }
+
             });
         }
 

@@ -2,10 +2,12 @@ package com.graduation.controller;
 
 import com.graduation.model.pojo.Peers;
 import com.graduation.model.pojo.User;
+import com.graduation.service.PeersService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -22,6 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 @Controller
 public class BaseController {
 
+    @Autowired
+    PeersService peersService;
+
     /**
      * 获取登录用户信息
      *
@@ -35,7 +40,8 @@ public class BaseController {
     }
 
     /**
-     *  获取request对象
+     * 获取request对象
+     *
      * @return request对象
      */
     public HttpServletRequest getRequest() {
@@ -47,51 +53,65 @@ public class BaseController {
     }
 
     /**
-     *  获取当前用户的集群信息
+     * 获取当前用户的集群信息
+     *
      * @return 集群对象
      */
-    public Peers getPeers(){
+    public Peers getPeers() {
         return (Peers) getRequest().getSession().getAttribute("peers");
     }
 
     /**
      * 获取集群完整管理地址
-     * @return  集群完整管理地址
+     *
+     * @return 集群完整管理地址
      */
-    public String getPeersUrl(){
+    public String getPeersUrl() {
         Peers peers = (Peers) getRequest().getSession().getAttribute("peers");
-        if(!StringUtils.isBlank(peers.getGroupName())) {
-            return peers.getServerAddress() + "/" + peers.getGroupName();
+        if (peers != null) {
+            if (!StringUtils.isBlank(peers.getGroupName())) {
+                return peers.getServerAddress() + "/" + peers.getGroupName();
+            }
+            return peers.getServerAddress();
+        }else {
+            // 没有选定集群 默认选择第一个
+            Integer userPeersId = getUser().getPeersid();
+            Peers userPeers = peersService.getById(userPeersId);
+            if (!StringUtils.isBlank(userPeers.getGroupName())) {
+                return userPeers.getServerAddress() + "/" + userPeers.getGroupName();
+            }
+            return userPeers.getServerAddress();
         }
-        return  peers.getServerAddress();
     }
 
     /**
-     *  获取组名
+     * 获取组名
+     *
      * @return 组名
      */
-    public String getPeersGroupName(){
+    public String getPeersGroupName() {
         Peers peers = (Peers) getRequest().getSession().getAttribute("peers");
         return peers.getGroupName();
     }
 
     /**
-     *  获取访问域名
+     * 获取访问域名
+     *
      * @return 访问域名
      */
-    public String getBackUrl(){
+    public String getBackUrl() {
         Peers peers = (Peers) getRequest().getSession().getAttribute("peers");
         String showAddress = "";
-        if(StringUtils.isBlank(peers.getShowAddress())){
-            if(StringUtils.isBlank(peers.getGroupName())){
+        if (StringUtils.isBlank(peers.getShowAddress())) {
+            if (StringUtils.isBlank(peers.getGroupName())) {
                 showAddress = peers.getServerAddress();
-            }else{
+            } else {
                 showAddress = peers.getServerAddress() + "/" + peers.getGroupName();
             }
-        }else{
-            if(StringUtils.isBlank(peers.getGroupName())){
+        } else {
+            if (StringUtils.isBlank(peers.getGroupName())) {
                 showAddress = peers.getShowAddress();
-            }else{
+            } else {
                 showAddress = peers.getShowAddress() + "/" + peers.getGroupName();
             }
         }
@@ -100,15 +120,16 @@ public class BaseController {
 
 
     /**
-     *  获取回显域名(不带url)
+     * 获取回显域名(不带url)
+     *
      * @return 回显域名(不带url)
      */
-    public String getUploadShowUrl(){
+    public String getUploadShowUrl() {
         Peers peers = (Peers) getRequest().getSession().getAttribute("peers");
         String showAddress = "";
-        if(StringUtils.isBlank(peers.getShowAddress())){
+        if (StringUtils.isBlank(peers.getShowAddress())) {
             showAddress += peers.getServerAddress();
-        }else{
+        } else {
             showAddress += peers.getShowAddress();
         }
         return showAddress;

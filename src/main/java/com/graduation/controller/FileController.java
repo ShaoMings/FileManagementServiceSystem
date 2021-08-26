@@ -2,22 +2,18 @@ package com.graduation.controller;
 
 
 import com.graduation.model.vo.FileResponseVo;
-import com.graduation.model.vo.PictureConvertVo;
+import com.graduation.model.vo.ConvertVo;
 import com.graduation.service.FileService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 
 
@@ -164,10 +160,24 @@ public class FileController extends BaseController {
     @RequestMapping("/picConverter")
     @ResponseBody
     public FileResponseVo convertPicture(String path,String filename,String srcSuffix,String destSuffix){
-        PictureConvertVo pictureConvertVo = new PictureConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
+        ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        System.out.println(pictureConvertVo);
-        boolean isSuccess = fileService.convertPictureFile(pictureConvertVo);
+        System.out.println(convertVo);
+        boolean isSuccess = fileService.convertPictureFile(convertVo);
+        if (isSuccess){
+            return FileResponseVo.success();
+        }
+        return FileResponseVo.fail("格式转换失败");
+    }
+
+
+    @RequestMapping("/audioConverter")
+    @ResponseBody
+    public FileResponseVo convertAudio(String path,String filename,String srcSuffix,String destSuffix){
+        ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
+                getPeersUrl(), srcSuffix, destSuffix);
+        System.out.println(convertVo);
+        boolean isSuccess = fileService.convertAudioFile(convertVo);
         if (isSuccess){
             return FileResponseVo.success();
         }

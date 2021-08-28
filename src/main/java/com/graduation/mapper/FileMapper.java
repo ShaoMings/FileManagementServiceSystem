@@ -25,7 +25,7 @@ public interface FileMapper extends BaseMapper<File> {
      * @param filename 新文件名
      * @return 是否更改成功
      */
-    @Update("update file set file_path = replace(file_path,#{oldString},#{newString}),file_name = #{filename} where file_path like #{prefix}\"%\"")
+    @Update("update file set file_path = replace(file_path,#{oldString},#{newString}),file_name = #{filename} where file_path = #{prefix}")
      int updateFilePathString(@Param("prefix") String prefix,@Param("oldString") String oldString, @Param("newString") String newString,@Param("filename") String filename);
 
     /**
@@ -37,4 +37,15 @@ public interface FileMapper extends BaseMapper<File> {
      */
     @Update("update file set file_path = replace(file_path,#{oldString},#{newString}) where file_path like #{prefix}\"%\"")
     int updatePathString(@Param("prefix") String prefix,@Param("oldString") String oldString, @Param("newString") String newString);
+
+    /**
+     * 更新文件路径
+     * @param prefix 改变部分之前的字符
+     * @param oldString 要改变的部分
+     * @param newString 要改为的字符串
+     * @param filename 新文件名
+     * @return 是否更改成功
+     */
+    @Update("update file set file_path = replace(file_path,#{oldString},#{newString}),file_name = #{filename} where file_path = #{prefix}")
+    int updateConvertFilePathString(@Param("prefix") String prefix,@Param("oldString") String oldString, @Param("newString") String newString,@Param("filename") String filename);
 }

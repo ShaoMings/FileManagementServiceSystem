@@ -41,9 +41,10 @@ public interface FileService extends IService<File> {
      * @param peersUrl 集群url
      * @param groupName 组名
      * @param path 文件path
+     * @param isUpdatePath 是否只更新路径不删除原来的记录
      * @return 是否删除成功
      */
-    boolean deleteFile(String peersUrl,String groupName,String path);
+    boolean deleteFile(String peersUrl,String groupName,String path,boolean isUpdatePath);
 
     /**
      *  创建文件夹

@@ -50,13 +50,13 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean deleteFile(String peersUrl, String groupName, String path) {
+    public boolean deleteFile(String peersUrl, String groupName, String path, boolean isUpdatePath) {
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("path", path);
         String filename = path.substring(path.lastIndexOf("/") + 1);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_DELETE, param));
         boolean isDeleted = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));
-        if (isDeleted) {
+        if (isDeleted && !isUpdatePath) {
             QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
             fileQueryWrapper.eq("file_name", filename);
             String sqlFilePath = "/" + groupName + "/" + path;
@@ -71,7 +71,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
                 return removeFile && removeUserFile;
             }
         }
-        return false;
+        return isDeleted;
     }
 
     @Override
@@ -87,7 +87,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("path", path);
         String groupName = peersUrl.substring(peersUrl.lastIndexOf("/"));
-        String pathPrefix = groupName + path;
+        String pathPrefix = groupName + "/" + path;
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_REMOVE_DIR, param));
         boolean isDeleteDir = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT));
         if (isDeleteDir) {
@@ -121,7 +121,9 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
             String filename = newPath.substring(newPath.lastIndexOf("/") + 1);
             if (!"".equals(md5)) {
-                return fileMapper.updateFilePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", ""), filename) > 0;
+                String oldFilename = oldPath.substring(oldPath.lastIndexOf("/") + 1);
+                prefix = prefix.replaceFirst("files/", "") + "/" + oldFilename;
+                return fileMapper.updateFilePathString(prefix, oldPath.replace(path + "/", ""), newPath.replace(path + "/", ""), filename) > 0;
             } else {
                 return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", "")) > 0;
             }
@@ -135,7 +137,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("md5", md5);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_GET_FILE_INFO, param));
-        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"))) {
+        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
             FileDetailsVo detailsVo = JSONUtil.toBean(jsonObject.getStr("data"), FileDetailsVo.class);
             detailsVo.setSize(FileSizeConverter.getLength(Long.parseLong(detailsVo.getSize())));
             detailsVo.setTimeStamp(DateConverter.getFormatDate(new Date(Long.parseLong(detailsVo.getTimeStamp()) * 1000)));
@@ -177,12 +179,12 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         // 将转换后的文件进行重新上传
         boolean isSuccess = FileUtils.uploadFileByInputStream(stream, newFileName,
                 fileInfo.getPath(), "default", uploadApiUrl, fileInfo.getPeerAddress());
-        // 删除原来的文件并插入新的记录
+        // 删除原来的文件并更新记录
         if (isSuccess) {
-            boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName);
-            String saveFilePath = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + newFileName;
-            boolean isSaveNew = saveFilePathByUserId(fileInfo.getUserId(), saveFilePath);
-            return isDeleteOld && isSaveNew;
+            boolean isDeleteOld = deleteFile(fileInfo.getPeerAddress(), fileInfo.getPeerGroupName(), fileInfo.getPath() + "/" + oldFileName, true);
+            String prefix = "/" + fileInfo.getPeerGroupName() + "/" + fileInfo.getPath() + "/" + oldFileName;
+            boolean isUpdateNew = fileMapper.updateConvertFilePathString(prefix, oldFileName, newFileName, newFileName) > 0;
+            return isDeleteOld && isUpdateNew;
         }
         return false;
     }
@@ -220,14 +222,16 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
         java.io.File file;
         byte[] bytes = null;
-        String outputPath = "src/main/java/com/graduation/utils/tmp/tmp.mp3";
+        String outputPath;
         // 是否m4a转mp3
         if (Constant.AUDIO_TYPE_M4A.equals(fileInfo.getSrcSuffix())) {
+            outputPath = Constant.OUTPUT_TMP_FILE_PATH+"tmp.m4a";
             file = FileUtils.inputStreamToFile(inputStream, outputPath);
             // 格式转换为bytes
             bytes = AudioConverter.m4aToMp3Bytes(file);
             // 是否wav转mp3
         } else if (Constant.AUDIO_TYPE_WAV.equals(fileInfo.getSrcSuffix())) {
+            outputPath = Constant.OUTPUT_TMP_FILE_PATH+"tmp.wav";
             file = FileUtils.inputStreamToFile(inputStream, outputPath);
             bytes = AudioConverter.wavToMp3Bytes(file);
         }

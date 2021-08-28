@@ -59,7 +59,7 @@ public class AudioConverter {
         EncodingAttributes attrs = new EncodingAttributes();
         attrs.setOutputFormat("mp3");
         attrs.setAudioAttributes(audio);
-        File target = new File("src/main/java/com/graduation/utils/tmp/tmp.mp3");
+        File target = new File(Constant.OUTPUT_TMP_FILE_PATH+"tmp.mp3");
         Encoder encoder = new Encoder();
         try {
             encoder.encode(new MultimediaObject(source), target, attrs);
@@ -96,7 +96,7 @@ public class AudioConverter {
         EncodingAttributes encodingAttributes = new EncodingAttributes();
         encodingAttributes.setOutputFormat("wav");
         encodingAttributes.setAudioAttributes(audio);
-        File target = new File("src/main/java/com/graduation/utils/tmp/tmp.wav");
+        File target = new File(Constant.OUTPUT_TMP_FILE_PATH+"tmp.wav");
         // 编码
         Encoder encoder = new Encoder();
         try {
@@ -136,6 +136,8 @@ public class AudioConverter {
     }
 
     public static void main(String[] args) throws IOException {
+        File file = new File(Constant.OUTPUT_TMP_FILE_PATH+"test.m4a");
+        byte[] bytes = m4aToMp3Bytes(file);
 
     }
 }

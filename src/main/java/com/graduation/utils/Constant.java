@@ -74,6 +74,8 @@ public class Constant {
     /** 状态常量词 */
     public static final String STATUS_CONSTANT = "status";
 
+    public static final String OUTPUT_TMP_FILE_PATH = "src/main/java/com/graduation/utils/tmp/";
+
     /** 图片jpg格式 */
     public static final String PICTURE_TYPE_JPG = "jpg";
 

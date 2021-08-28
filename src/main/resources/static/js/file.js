@@ -127,7 +127,6 @@ $('#file-result').on('click', '.converter-btn', function () {
     let picture_type = ['jpg', 'png']
     let form = layui.form;
     if (audio_types.indexOf(suffix) !== -1) {
-        removeItem(audio_types, suffix);
         html = '<div class="layui-input-inline">\n' +
             '        <select id="before">\n' +
             '          <option value=' + suffix + '>' + suffix + '</option>\n' +
@@ -183,21 +182,26 @@ $('#file-result').on('click', '.converter-btn', function () {
                 after = $('#after option:selected').val();
             })
             $('#converter').click(function () {
+                layer.close(index);
+                let load_index = layer.load();
                 let path = current_path.substring(current_path.indexOf("/")+1)
                 // post: path filename src dest
-                if (audio_types.indexOf(suffix) !== -1) {
+                console.log(before+":"+after);
+                console.log(audio_types)
+                console.log(audio_types.indexOf(before) !== -1)
+                if (audio_types.indexOf(before) !== -1) {
                     $.post("/file/audioConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
                         if (res.code === 200){
+                           layer.close(load_index);
                             layer.msg("转换成功");
-                            layer.close(index);
                             openDir(path)
                         }
                     });
                 }else if (picture_type.indexOf(after)!== -1){
                     $.post("/file/picConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
                         if (res.code === 200){
+                            layer.close(load_index);
                             layer.msg("转换成功");
-                            layer.close(index);
                             openDir(path)
                         }
                     });

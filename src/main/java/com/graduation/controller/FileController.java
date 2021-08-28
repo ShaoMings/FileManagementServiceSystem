@@ -107,7 +107,7 @@ public class FileController extends BaseController {
     @RequestMapping("/deleteFile")
     @ResponseBody
     public FileResponseVo deleteFile(String path) {
-        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path)) {
+        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path,false)) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("删除文件失败");

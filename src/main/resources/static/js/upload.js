@@ -1,9 +1,9 @@
-var xhrOnProgress = function (fun) {
+let xhrOnProgress = function (fun) {
     xhrOnProgress.onprogress = fun; //绑定监听
     //使用闭包实现监听绑
     return function () {
         //通过$.ajaxSettings.xhr();获得XMLHttpRequest对象
-        var xhr = $.ajaxSettings.xhr();
+        let xhr = $.ajaxSettings.xhr();
         //判断监听函数是否为函数
         if (typeof xhrOnProgress.onprogress !== 'function')
             return xhr;
@@ -14,11 +14,11 @@ var xhrOnProgress = function (fun) {
         return xhr;
     }
 }
-var count = 0;
+let count = 0;
 layui.use(['upload', 'element'], function () {
-    var $ = layui.jquery, upload = layui.upload, element = layui.element;
+    let $ = layui.jquery, upload = layui.upload, element = layui.element;
     //多文件上传
-    var demoListView = $('#moreFileList'), uploadListIns = upload.render({
+    let demoListView = $('#moreFileList'), uploadListIns = upload.render({
         elem: '#fileList',
         url: '/file/upload/moreFileUpload',
         accept: 'file',
@@ -30,10 +30,14 @@ layui.use(['upload', 'element'], function () {
             //上传进度回调 value进度值
             $("#moreFileList").find('.layui-progress ').each(function () {
                 if ($(this).attr("file") === obj.name) {
-                    var progressBarName = $(this).attr("lay-filter");
-                    var percent = ((value.loaded / value.total) * 100).toFixed(2);
+                    let progressBarName = $(this).attr("lay-filter");
+                    let index = $(this).data('count');
+                    let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
+                    let percent = ((value.loaded / value.total) * 100).toFixed(2);
                     if (percent === 100.00) {
                         percent = 100;
+                    } else if (percent > 0.00 && percent < 100.00) {
+                        tds.eq(2).html('<span style="color: #FFB800;">上传中...</span>');
                     }
                     element.progress(progressBarName, percent + '%');
                 }
@@ -42,17 +46,17 @@ layui.use(['upload', 'element'], function () {
         },
         choose: function (obj) {
             //将每次选择的文件追加到文件队列
-            var files = this.files = obj.pushFile();
+            let files = this.files = obj.pushFile();
             //读取本地文件
             demoListView.html(" ");
-            for (var key in files) {
+            for (let key in files) {
                 count++;
-                var tr = $(['<tr id="upload-' + key + '">',
+                let tr = $(['<tr id="upload-' + key + '">',
                     '<td>' + files[key].name + '</td>',
                     '<td>' + (files[key].size / 1014).toFixed(1) + 'kb</td>',
-                    '<td>上传中...</td>',
+                    '<td>准备就绪...</td>',
                     '<td>' +
-                    '<div file="' + files[key].name + '" class="layui-progress" lay-showPercent="true" lay-filter="progressBar' + count + '">' +
+                    '<div file="' + files[key].name + '" class="layui-progress" data-count="'+key+'" lay-showPercent="true" lay-filter="progressBar' + count + '">' +
                     '<div class="layui-progress-bar layui-bg-green" lay-percent="0%"></div>' +
                     '</div>' +
                     '</td>',
@@ -76,15 +80,15 @@ layui.use(['upload', 'element'], function () {
             }
             ;
         }, before: function (obj) {
-            var scene = $("#scene").val();
-            var path = $("#path").val();
-            var showUrl = $("#showUrl").val();
+            let scene = $("#scene").val();
+            let path = $("#path").val();
+            let showUrl = $("#showUrl").val();
             // 传递参数  场景  文件上传路径  服务地址
             this.data = {'scene': scene, 'path': path, 'showUrl': showUrl};
         }, done: function (res, index, upload) {
             //上传成功
             if (res.code === 200) {
-                var tr = demoListView.find('tr#upload-' + index), tds = tr.children();
+                let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
                 tds.eq(2).html('<span style="color: #5FB878;">上传成功</span>');
                 tds.eq(3).children(".layui-progress").children(".layui-progress-bar").attr("lay-percent", "100%");
                 //清空操作
@@ -93,14 +97,14 @@ layui.use(['upload', 'element'], function () {
                 //删除文件队列已经上传成功的文件
                 return delete this.files[index];
             } else {
-                var tr = demoListView.find('tr#upload-' + index), tds = tr.children();
+                let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
                 tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
                 //显示重传
                 tds.eq(4).find('.more-file-reload').removeClass('layui-hide');
             }
             this.error(index, upload);
         }, error: function (index, upload) {
-            var tr = demoListView.find('tr#upload-' + index), tds = tr.children();
+            let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
             tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
             //显示重传
             tds.eq(4).find('.more-file-reload').removeClass('layui-hide');

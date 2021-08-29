@@ -1,5 +1,6 @@
 package com.graduation.utils;
 
+import com.aspose.cells.Workbook;
 import com.aspose.slides.Presentation;
 import com.aspose.words.Document;
 import com.aspose.words.DocumentBuilder;
@@ -8,6 +9,7 @@ import com.graduation.exception.FileConverterException;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.FileInputStream;
 
 /**
  * Description 文档转换器  用于将常见格式文件转为PDF文件
@@ -25,10 +27,10 @@ public class DocumentConverter {
      * @param source 源文件
      * @param target 目标文件
      */
-    private static void deleteFile(File source,File target){
-//        if (source.exists()) {
-//            source.delete();
-//        }
+    public static void deleteFile(File source,File target){
+        if (source.exists()) {
+            source.delete();
+        }
         assert target != null;
         if (target.exists()) {
             target.delete();
@@ -87,20 +89,36 @@ public class DocumentConverter {
     public static byte[] pptToPdfBytes(File source){
         File target = null;
         try {
-            Presentation presentation = new Presentation(source.getAbsolutePath());
-            presentation.save(OUTPUT_FILE_PATH,SaveFormat.PDF);
+            Presentation presentation = new Presentation(new FileInputStream(source));
+            presentation.save(OUTPUT_FILE_PATH, com.aspose.slides.SaveFormat.Pdf);
             target = new File(OUTPUT_FILE_PATH);
             return AudioConverter.getBytesFromFile(target);
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-//            deleteFile(source,target);
+            deleteFile(source,target);
         }
         throw new FileConverterException("ppt转pdf失败!");
     }
 
+
+    public static byte[] excelToPdfBytes(File source){
+        File target = null;
+        try {
+            Workbook workbook = new Workbook(new FileInputStream(source));
+            workbook.save(OUTPUT_FILE_PATH, com.aspose.cells.SaveFormat.PDF);
+            target = new File(OUTPUT_FILE_PATH);
+            return AudioConverter.getBytesFromFile(target);
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            deleteFile(source,target);
+        }
+        throw new FileConverterException("excel转pdf失败!");
+    }
+
     public static void main(String[] args) {
-        File source = new File(Constant.OUTPUT_TMP_FILE_PATH+"test.ppt");
-        byte[] bytes = pptToPdfBytes(source);
+        File source = new File(Constant.OUTPUT_TMP_FILE_PATH+"test.xlsx");
+        byte[] bytes = excelToPdfBytes(source);
     }
 }

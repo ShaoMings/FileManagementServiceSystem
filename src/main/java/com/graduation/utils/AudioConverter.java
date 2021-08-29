@@ -67,12 +67,7 @@ public class AudioConverter {
         } catch (EncoderException e) {
             e.printStackTrace();
         } finally {
-            if (source.exists()) {
-                source.delete();
-            }
-            if (target.exists()) {
-                target.delete();
-            }
+            DocumentConverter.deleteFile(source,target);
         }
         throw new FileConverterException("文件格式转换失败!");
     }
@@ -105,12 +100,7 @@ public class AudioConverter {
         } catch (EncoderException e) {
             e.printStackTrace();
         } finally {
-            if (source.exists()) {
-                source.delete();
-            }
-            if (target.exists()) {
-                target.delete();
-            }
+            DocumentConverter.deleteFile(source,target);
         }
         throw new FileConverterException("文件格式转换失败!");
     }

@@ -465,6 +465,7 @@ $("#file-result").on("click", ".resultFile", function () {
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
+    let doc_types = ["word","excel","ppt"];
     //图片
     if (kit.getFileType(suffix) === "image") {
         let img = {
@@ -536,7 +537,10 @@ $("#file-result").on("click", ".resultFile", function () {
             content: viewer_url
         })
     } else {
-        console.log(kit.getFileType(suffix));
+        if (doc_types.indexOf(kit.getFileType(suffix))!==-1) {
+            layer.msg("该文档格式需转为PDF才能在线预览!");
+            return;
+        }
         layer.msg("该文件格式暂不支持预览");
     }
 

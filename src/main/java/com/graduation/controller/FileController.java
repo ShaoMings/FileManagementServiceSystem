@@ -170,7 +170,6 @@ public class FileController extends BaseController {
     public FileResponseVo convertPicture(String path,String filename,String srcSuffix,String destSuffix){
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        System.out.println(convertVo);
         boolean isSuccess = fileService.convertPictureFile(convertVo);
         if (isSuccess){
             return FileResponseVo.success();

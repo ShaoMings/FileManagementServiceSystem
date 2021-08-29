@@ -56,7 +56,7 @@ $('#file-result').on('click', '.rename-file-btn', function () {
         value: oldName
     }, function (name, index) {
         $(".layui-layer-input").val(oldName);
-        $.post('/file/rename', {"path": current_path, "oldName": oldName, "newName": name,"md5":md5}, function (res) {
+        $.post('/file/rename', {"path": current_path, "oldName": oldName, "newName": name, "md5": md5}, function (res) {
             if (res.code === 200) {
                 openDir(current_path.replace("files/", ""));
                 layer.msg("重命名成功");
@@ -123,8 +123,9 @@ $('#file-result').on('click', '.converter-btn', function () {
     let select;
     // 支持格式转mp3
     let audio_types = ['m4a', 'wav'];
-
     let picture_type = ['jpg', 'png']
+    // 支持格式转pdf
+    let document_types = ['txt', 'ppt', 'pptx', 'docx', 'xlsx'];
     let form = layui.form;
     if (audio_types.indexOf(suffix) !== -1) {
         html = '<div class="layui-input-inline">\n' +
@@ -151,8 +152,20 @@ $('#file-result').on('click', '.converter-btn', function () {
             '<option value=' + picture_type[0] + '>' + picture_type[0] + '</option>' +
             '</select>' +
             '</div>';
+    } else if (document_types.indexOf(suffix) !== -1) {
+        html = '<div class="layui-input-inline">\n' +
+            '        <select id="before">\n' +
+            '          <option value=' + suffix + '>' + suffix + '</option>\n' +
+            '        </select>\n' +
+            '</div>';
+        select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
+            '<div class="layui-input-inline">\n' +
+            '<select id="after">' +
+            '<option value="pdf">pdf</option>' +
+            '</select>' +
+            '</div>';
     } else {
-        if (suffix === "mp3"){
+        if (suffix === "mp3") {
             layer.msg("目前仅m4a,wav格式转mp3 !");
             return;
         }
@@ -171,7 +184,7 @@ $('#file-result').on('click', '.converter-btn', function () {
         shadeClose: true, //开启遮罩关闭
         area: ['510px', '200px'],
         content: '<div class="format"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>' + confirm_btn + '</form></div>',
-        success: function (name,index) {
+        success: function (name, index) {
             form.render('select');
             let before = $('#before option:selected').val();
             $('#before').on('change', function () {
@@ -183,23 +196,44 @@ $('#file-result').on('click', '.converter-btn', function () {
             })
             $('#converter').click(function () {
                 layer.close(index);
+                layer.msg("格式转换花费的时间较长,请耐心等待!");
                 let load_index = layer.load();
-                let path = current_path.substring(current_path.indexOf("/")+1)
+                let path = current_path.substring(current_path.indexOf("/") + 1)
                 // post: path filename src dest
-                console.log(before+":"+after);
-                console.log(audio_types)
-                console.log(audio_types.indexOf(before) !== -1)
                 if (audio_types.indexOf(before) !== -1) {
-                    $.post("/file/audioConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
-                        if (res.code === 200){
-                           layer.close(load_index);
+                    $.post("/file/audioConverter", {
+                        "path": path,
+                        "filename": oldName,
+                        "srcSuffix": before,
+                        "destSuffix": after
+                    }, function (res) {
+                        if (res.code === 200) {
+                            layer.close(load_index);
                             layer.msg("转换成功");
                             openDir(path)
                         }
                     });
-                }else if (picture_type.indexOf(after)!== -1){
-                    $.post("/file/picConverter",{"path":path,"filename":oldName,"srcSuffix":before,"destSuffix":after},function (res) {
-                        if (res.code === 200){
+                } else if (picture_type.indexOf(after) !== -1) {
+                    $.post("/file/picConverter", {
+                        "path": path,
+                        "filename": oldName,
+                        "srcSuffix": before,
+                        "destSuffix": after
+                    }, function (res) {
+                        if (res.code === 200) {
+                            layer.close(load_index);
+                            layer.msg("转换成功");
+                            openDir(path)
+                        }
+                    });
+                } else if (document_types.indexOf(before) !== -1) {
+                    $.post("/file/documentConverter", {
+                        "path": path,
+                        "filename": oldName,
+                        "srcSuffix": before,
+                        "destSuffix": after
+                    }, function (res) {
+                        if (res.code === 200) {
                             layer.close(load_index);
                             layer.msg("转换成功");
                             openDir(path)
@@ -270,7 +304,7 @@ function openDir(dir) {
     if (suff === "/") {
         dir = dir.substring(1);
     }
-    if (dir === "files"){
+    if (dir === "files") {
         dir = "";
     }
     $.post('/file/getDirFile', {"dir": dir}, function (result) {
@@ -492,7 +526,17 @@ $("#file-result").on("click", ".resultFile", function () {
             area: ['90%', '90vh'], //宽高
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
+    } else if (kit.getFileType(suffix) === "pdf") {
+        let viewer_url = peer+"/"+path+"/"+name+"?download=0";
+        layer.open({
+            type: 2,
+            title: '文件内容',
+            skin: 'layui-layer-rim', //加上边框
+            area: ['90%', '90vh'], //宽高
+            content: viewer_url
+        })
     } else {
+        console.log(kit.getFileType(suffix));
         layer.msg("该文件格式暂不支持预览");
     }
 

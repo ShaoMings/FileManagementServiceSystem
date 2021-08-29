@@ -121,6 +121,8 @@
                 fileType = "video";
             }else if (suffix == "md"){
                 fileType = "md";
+            }else if (suffix == "pdf"){
+                fileType = "pdf";
             } else{
                 fileType = "other";
             }

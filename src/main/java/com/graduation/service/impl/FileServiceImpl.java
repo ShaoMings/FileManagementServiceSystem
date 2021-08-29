@@ -243,4 +243,22 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
     }
 
+    @Override
+    public boolean convertDocumentFile(ConvertVo fileInfo) {
+        // 通过下载获取文件的输入流
+        InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
+        java.io.File file;
+        byte[] bytes;
+        String outputPath;
+        outputPath = Constant.OUTPUT_TMP_FILE_PATH + "tmp."+fileInfo.getSrcSuffix();
+        file = FileUtils.inputStreamToFile(inputStream,outputPath);
+        bytes = DocumentConverter.autoConvertByFileType(file,fileInfo.getSrcSuffix());
+        assert bytes != null;
+        InputStream stream = new ByteArrayInputStream(bytes);
+        String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+        String oldFileName = fileInfo.getFilename();
+        String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.DOCUMENT_TYPE_PDF;
+        return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+    }
+
 }

@@ -130,4 +130,11 @@ public interface FileService extends IService<File> {
      * @return 是否转换成功
      */
     boolean convertAudioFile(ConvertVo fileInfo);
+
+    /**
+     * 转换文档格式 目前支持txt ppt pptx docx xlsx 转pdf
+     * @param fileInfo 文件信息封装类
+     * @return 是否转换成功
+     */
+    boolean convertDocumentFile(ConvertVo fileInfo);
 }

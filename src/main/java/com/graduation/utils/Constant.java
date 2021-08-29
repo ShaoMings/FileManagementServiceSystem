@@ -91,4 +91,7 @@ public class Constant {
     /** 音频wav格式 */
     public static final String AUDIO_TYPE_WAV = "wav";
 
+    /** 文档pdf格式 */
+    public static final String DOCUMENT_TYPE_PDF = "pdf";
+
 }

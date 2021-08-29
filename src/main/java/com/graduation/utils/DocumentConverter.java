@@ -7,9 +7,11 @@ import com.aspose.words.DocumentBuilder;
 import com.aspose.words.SaveFormat;
 import com.graduation.exception.FileConverterException;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.util.Arrays;
 
 /**
  * Description 文档转换器  用于将常见格式文件转为PDF文件
@@ -115,6 +117,26 @@ public class DocumentConverter {
             deleteFile(source,target);
         }
         throw new FileConverterException("excel转pdf失败!");
+    }
+
+    public static byte[] autoConvertByFileType(File source,String suffix){
+        if (StringUtils.isBlank(suffix) || source == null){
+            throw new FileConverterException("文档转pdf失败!");
+        }
+        String[] powerpointTypes = {"ppt","pptx"};
+        String[] docTypes = {"docx","doc"};
+        String[] excelTypes = {"xlsx","xls"};
+        if (Arrays.asList(powerpointTypes).contains(suffix)){
+            return pptToPdfBytes(source);
+        }else if (Arrays.asList(docTypes).contains(suffix)){
+            return wordToPdfBytes(source);
+        }else if (Arrays.asList(excelTypes).contains(suffix)){
+            return excelToPdfBytes(source);
+        }else if ("txt".equals(suffix)){
+            return txtToPdfBytes(source);
+        }else {
+            throw new FileConverterException("目前文档格式不支持!");
+        }
     }
 
     public static void main(String[] args) {

@@ -106,7 +106,7 @@ public class AesUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        String content = "/admin/group1/test/files/2020-2021-02网络协议分析与编程实验题目.pdf";
+        String content = "/admin/test/doc/Chapter_2.pdf@2021-08-31 20:53";
 
         System.out.println("加密前：" + content);
 

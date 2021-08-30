@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -111,7 +112,7 @@ public class FileController extends BaseController {
     @RequestMapping("/deleteFile")
     @ResponseBody
     public FileResponseVo deleteFile(String path) {
-        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path,false)) {
+        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path, false)) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("删除文件失败");
@@ -163,19 +164,20 @@ public class FileController extends BaseController {
 
     /**
      * 图片转换接口
-     * @param path 文件路径 不含文件名
-     * @param filename 文件名
-     * @param srcSuffix 文件原本后缀
+     *
+     * @param path       文件路径 不含文件名
+     * @param filename   文件名
+     * @param srcSuffix  文件原本后缀
      * @param destSuffix 文件转换目标后缀
      * @return 响应对象
      */
     @RequestMapping("/picConverter")
     @ResponseBody
-    public FileResponseVo convertPicture(String path,String filename,String srcSuffix,String destSuffix){
+    public FileResponseVo convertPicture(String path, String filename, String srcSuffix, String destSuffix) {
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
         boolean isSuccess = fileService.convertPictureFile(convertVo);
-        if (isSuccess){
+        if (isSuccess) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("格式转换失败");
@@ -183,19 +185,20 @@ public class FileController extends BaseController {
 
     /**
      * 音频转换接口
-     * @param path 文件路径 不含文件名
-     * @param filename 文件名
-     * @param srcSuffix 文件原本后缀
+     *
+     * @param path       文件路径 不含文件名
+     * @param filename   文件名
+     * @param srcSuffix  文件原本后缀
      * @param destSuffix 文件转换目标后缀
      * @return 响应对象
      */
     @RequestMapping("/audioConverter")
     @ResponseBody
-    public FileResponseVo convertAudio(String path,String filename,String srcSuffix,String destSuffix){
+    public FileResponseVo convertAudio(String path, String filename, String srcSuffix, String destSuffix) {
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
         boolean isSuccess = fileService.convertAudioFile(convertVo);
-        if (isSuccess){
+        if (isSuccess) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("格式转换失败");
@@ -203,25 +206,25 @@ public class FileController extends BaseController {
 
     /**
      * 文档转换接口
-     * @param path 文件路径 不含文件名
-     * @param filename 文件名
-     * @param srcSuffix 文件原本后缀
+     *
+     * @param path       文件路径 不含文件名
+     * @param filename   文件名
+     * @param srcSuffix  文件原本后缀
      * @param destSuffix 文件转换目标后缀
      * @return 响应对象
      */
     @RequestMapping("/documentConverter")
     @ResponseBody
-    public FileResponseVo convertDocument(String path,String filename,String srcSuffix,String destSuffix){
+    public FileResponseVo convertDocument(String path, String filename, String srcSuffix, String destSuffix) {
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
         System.out.println(convertVo);
         boolean isSuccess = fileService.convertDocumentFile(convertVo);
-        if (isSuccess){
+        if (isSuccess) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("格式转换失败");
     }
-
 
 
     /**
@@ -269,14 +272,14 @@ public class FileController extends BaseController {
 
     @RequestMapping("/share")
     @ResponseBody
-    public FileResponseVo createShareFileLink(ShareFileVo shareFileVo) throws Exception {
+    public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
-        String content = "/"+getUser().getUsername()+"/"+shareFileVo.getPath()+"/"+shareFileVo.getFilename()+"@"
+        String content = "/" + getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
                 + untilToTime;
-        System.out.println(content);
         String code = AesUtils.encrypt(content);
         String check = AesUtils.getCheckCodeByEncryptStr(code);
-        return FileResponseVo.success(new ShareFileLinkVo(getUploadShowUrl()+"/s/"+code,check,untilToTime));
+        String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
+        return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/s/download?code=" + code, check, untilToTime));
     }
 
 }

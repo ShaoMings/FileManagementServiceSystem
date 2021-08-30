@@ -142,10 +142,11 @@ $('#file-result').on('click', '.share-btn', function () {
                             let html = '<div class="file-details-box">' +
                                 '<ul>' +
                                 '<li><span>有效期至:&nbsp;</span>' + res.data.until + '</li>' +
-                                '<li><span>访问链接:</span></br><a href=' + res.data.link +"?code="+ res.data.check+ '>' + res.data.link +"?code="+ res.data.check+ '</a></li>' +
+                                '<li><span>访问链接:</span></br><a href=' + res.data.link +"&check="+ res.data.check+ '>' + res.data.link +"&check="+ res.data.check+ '</a></li>' +
                                 '<li><span>提取码:&nbsp;</span>' + res.data.check + '</li>' +
-                                '</ul>' +
-                                '</div>';
+                                '<li><span>二维码:</span></br><div id="qrcode" style="width:150px; height:150px; margin:0 auto;"></div></li>' +
+                                '</ul>';
+
                             layer.open({
                                 type: 1,
                                 skin: 'layui-layer-demo', //样式类名
@@ -153,8 +154,15 @@ $('#file-result').on('click', '.share-btn', function () {
                                 closeBtn: 0,
                                 anim: 2,
                                 shadeClose: true, //开启遮罩关闭
-                                area: ['510px', '320px'],
-                                content:html
+                                area: ['710px', '520px'],
+                                content:html,
+                                success:function () {
+                                    let qrcode = new QRCode(document.getElementById("qrcode"),{
+                                        width:150,
+                                        height:150
+                                    });
+                                    qrcode.makeCode(res.data.link +"&check="+ res.data.check);
+                                }
                             })
                         }
                     })

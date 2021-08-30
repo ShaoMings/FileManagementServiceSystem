@@ -119,19 +119,20 @@ public class DateConverter {
 
     /**
      * 将时间戳转为指定格式日期时间
+     *
      * @param seconds 时间戳
      * @param format  日期时间格式
-     * @return  指定格式日期时间
+     * @return 指定格式日期时间
      */
-    public static String timeStampToDate(String seconds,String format){
-        if (seconds == null || seconds.isEmpty() || Constant.NULL_VALUE.equals(seconds)){
+    public static String timeStampToDate(String seconds, String format) {
+        if (seconds == null || seconds.isEmpty() || Constant.NULL_VALUE.equals(seconds)) {
             return "";
         }
-        if(format == null || format.isEmpty()){
+        if (format == null || format.isEmpty()) {
             format = "yyyy-MM-dd HH:mm:ss";
         }
         SimpleDateFormat sdf = new SimpleDateFormat(format);
-        return sdf.format(new Date(Long.parseLong(seconds+"000")));
+        return sdf.format(new Date(Long.parseLong(seconds + "000")));
     }
 
 
@@ -171,6 +172,26 @@ public class DateConverter {
         return 0;
     }
 
+
+    /**
+     * 计算传入时间是否没有当前时间大(是否过时了)
+     *
+     * @return true过时了 反之不过时
+     */
+    public static boolean isOverdueBaseNow(String time) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date now = new Date();
+        try {
+            Date dateTime = sdf.parse(time);
+            if (now.getTime() > dateTime.getTime()) {
+                return true;
+            }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     /**
      * 月份相差天数计算辅助类
      *
@@ -192,9 +213,10 @@ public class DateConverter {
 
 
     /**
-     *  将传入的字符串格式日期 进行偏移天数计算  正数表示天数向后加 反正则减
+     * 将传入的字符串格式日期 进行偏移天数计算  正数表示天数向后加 反正则减
+     *
      * @param dateString 日期字符串
-     * @param days 偏移天数
+     * @param days       偏移天数
      * @return 计算后的日期字符串
      */
     public static String dayCalculate(String dateString, int days) {
@@ -208,14 +230,15 @@ public class DateConverter {
         Calendar calendar = new GregorianCalendar();
         assert date != null;
         calendar.setTime(date);
-        calendar.add(Calendar.DATE,days);
+        calendar.add(Calendar.DATE, days);
         date = calendar.getTime();
         return sdf.format(date);
     }
 
 
     /**
-     *  将当前日期 进行偏移天数计算  正数表示天数向后加 反正则减
+     * 将当前日期 进行偏移天数计算  正数表示天数向后加 反正则减
+     *
      * @param days 偏移天数
      * @return 计算后的日期字符串
      */
@@ -230,11 +253,10 @@ public class DateConverter {
         Calendar calendar = new GregorianCalendar();
         assert date != null;
         calendar.setTime(date);
-        calendar.add(Calendar.DATE,days);
+        calendar.add(Calendar.DATE, days);
         date = calendar.getTime();
         return sdf.format(date);
     }
-
 
 
 }

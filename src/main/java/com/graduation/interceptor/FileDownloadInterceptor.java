@@ -17,21 +17,19 @@ import javax.servlet.http.HttpServletResponse;
 public class FileDownloadInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-//        String code = request.getParameter("code");
-        String requestURI = request.getRequestURI();
-        System.out.println(requestURI);
-//        if (StringUtils.isBlank(code)){
-//            return false;
-//        }
+        String code = request.getParameter("code");
+        if (StringUtils.isBlank(code)){
+            return false;
+        }
         String check = request.getParameter("check");
         if (StringUtils.isBlank(check)){
             return false;
         }
-//        String checkCode = AesUtils.getCheckCodeByEncryptStr(code);
-//        if (check.equals(checkCode)){
-//            response.sendRedirect("/s/d/"+code);
-//            return true;
-//        }
-        return true;
+        code = code.replaceAll(" ", "+");
+        String checkCode = AesUtils.getCheckCodeByEncryptStr(code);
+        if (check.equals(checkCode)){
+            return true;
+        }
+        return false;
     }
 }

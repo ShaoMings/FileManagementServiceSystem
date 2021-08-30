@@ -101,6 +101,104 @@ $('#search').on('input', function (e) {
     }
 })
 
+$('#file-result').on('click', '.share-btn', function () {
+    let md5 = $(this).data('md5');
+    let path = $(this).data('path');
+    let filename = $(this).data('name');
+    let html = '<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">' +
+        '  <legend style="font-size: 15px;margin-left: 9px">分享文件:'+filename+'</legend>' +
+        '</fieldset>';
+    let select = '<label class="layui-form-label" style="text-align: center;">分享有效期:</label>' +
+        '<div class="layui-input-inline">\n' +
+        '<select id="share-time">' +
+        '<option value="1">1天</option>' +
+        '<option value="7">7天</option>' +
+        '<option value="30">30天</option>' +
+        '<option value="99999">永久有效</option>' +
+        '</select>' +
+        '</div>';
+    let confirm_btn = '<div class="layui-form-item"><div class="layui-input-block">\n' +
+        '      <button type="button" class="layui-btn" id="share-btn" style="float: right;margin-right: 10px;margin-top: 150px;">创建链接</button>\n' +
+        '    </div></div>'
+    let form = layui.form;
+    layer.open({
+        type: 1,
+        skin: 'layui-layer-demo', //样式类名
+        title: false,
+        closeBtn: 0,
+        anim: 2,
+        shadeClose: true, //开启遮罩关闭
+        area: ['510px', '320px'],
+        content: '<div class="share-file"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>'+confirm_btn+'</form></div>',
+        success: function (name, index) {
+            form.render('select');
+            $('#share-btn').on('click',function () {
+                if (checkSystemRightTime()) {
+                    let shareTime = $('#share-time option:selected').val();
+                    let data = {"path":path,"filename":filename,"days":shareTime};
+                    $.post("/file/share",data,function (res) {
+                        if (res.code === 200){
+                            layer.close(index);
+                            let html = '<div class="file-details-box">' +
+                                '<ul>' +
+                                '<li><span>有效期至:&nbsp;</span>' + res.data.until + '</li>' +
+                                '<li><span>访问链接:</span></br><a href=' + res.data.link +"?code="+ res.data.check+ '>' + res.data.link +"?code="+ res.data.check+ '</a></li>' +
+                                '<li><span>提取码:&nbsp;</span>' + res.data.check + '</li>' +
+                                '</ul>' +
+                                '</div>';
+                            layer.open({
+                                type: 1,
+                                skin: 'layui-layer-demo', //样式类名
+                                title: false,
+                                closeBtn: 0,
+                                anim: 2,
+                                shadeClose: true, //开启遮罩关闭
+                                area: ['510px', '320px'],
+                                content:html
+                            })
+                        }
+                    })
+                }else {
+                    layer.msg("本地时间与网络标准时间相差过大,请检查!");
+                }
+            });
+        }
+    });
+});
+
+function checkSystemRightTime() {
+    let networkTime;
+    $.ajax({
+        type: 'GET',
+        dataType: 'json',
+        async: false,
+        url: 'https://quan.suning.com/getSysTime.do',
+        success: function (data) {
+            data = data.sysTime2;
+            networkTime = data.slice(0, 16);
+        }
+    });
+    Date.prototype.Format = function (fmt) {
+        let o = {
+            "M+": this.getMonth() + 1, // 月份
+            "d+": this.getDate(), // 日
+            "h+": this.getHours(), // 小时
+            "m+": this.getMinutes(), // 分
+            "s+": this.getSeconds(), // 秒
+            "q+": Math.floor((this.getMonth() + 3) / 3), // 季度
+            "S": this.getMilliseconds() // 毫秒
+        };
+        if (/(y+)/.test(fmt))
+            fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+        for (let k in o)
+            if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+        return fmt;
+    }
+    let localTime = (new Date()).Format("yyyy-MM-dd hh:mm");
+    return networkTime === localTime;
+}
+
+
 /*监听格式转换按钮 */
 $('#file-result').on('click', '.converter-btn', function () {
 
@@ -465,7 +563,7 @@ $("#file-result").on("click", ".resultFile", function () {
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
-    let doc_types = ["word","excel","ppt"];
+    let doc_types = ["word", "excel", "ppt"];
     //图片
     if (kit.getFileType(suffix) === "image") {
         let img = {
@@ -528,7 +626,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = peer+"/"+path+"/"+name+"?download=0";
+        let viewer_url = peer + "/" + path + "/" + name + "?download=0";
         layer.open({
             type: 2,
             title: '文件内容',
@@ -537,7 +635,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: viewer_url
         })
     } else {
-        if (doc_types.indexOf(kit.getFileType(suffix))!==-1) {
+        if (doc_types.indexOf(kit.getFileType(suffix)) !== -1) {
             layer.msg("该文档格式需转为PDF才能在线预览!");
             return;
         }

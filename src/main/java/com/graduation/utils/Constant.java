@@ -71,6 +71,8 @@ public class Constant {
     /** 30天 表示一个月 */
     public static final Integer MONTHS_DAY = 30;
 
+    public static final String AES_KEY = "jcjssljyalg01234";
+
     /** 状态常量词 */
     public static final String STATUS_CONSTANT = "status";
 

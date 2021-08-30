@@ -1,6 +1,8 @@
 package com.graduation.interceptor;
 
 import com.graduation.service.UserService;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -26,13 +28,26 @@ public class LoginInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         HttpSession session = request.getSession();
         Boolean isInstall = (Boolean) session.getAttribute("isInstall");
+        Boolean isLogin = (Boolean) session.getAttribute("isLogin");
         if (isInstall == null){
             if (userService.list().size()<1){
                 response.sendRedirect("/install");
                 return false;
             }else {
                 session.setAttribute("isInstall",true);
-                session.setMaxInactiveInterval(3000);
+                session.setMaxInactiveInterval(60);
+            }
+        }
+
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isRemembered()){
+            if (subject.getPrincipal() ==null) {
+                response.sendRedirect("/login");
+                return false;
+            }
+            if (isLogin == null){
+                response.sendRedirect("/login");
+                return false;
             }
         }
         return true;

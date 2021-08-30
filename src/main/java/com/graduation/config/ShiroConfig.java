@@ -98,8 +98,8 @@ public class ShiroConfig {
      */
     public SimpleCookie rememberMeCookie(){
         SimpleCookie simpleCookie = new SimpleCookie("rememberMe");
-        // cookie 设置30天有效期
-        simpleCookie.setMaxAge(2592000);
+        // cookie 设置30天有效期 2592000
+        simpleCookie.setMaxAge(1800);
         return simpleCookie;
     }
 

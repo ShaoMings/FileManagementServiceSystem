@@ -1,5 +1,6 @@
 package com.graduation.config;
 
+import com.graduation.interceptor.FileDownloadInterceptor;
 import com.graduation.interceptor.LoginInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,11 +23,17 @@ public class WebConfig implements WebMvcConfigurer {
         return new LoginInterceptor();
     }
 
+    @Bean
+    public FileDownloadInterceptor fileDownloadInterceptor(){
+        return new FileDownloadInterceptor();
+    }
+
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loginInterceptor()).excludePathPatterns("/install","/install/**","/static/**")
+        registry.addInterceptor(loginInterceptor()).excludePathPatterns("/install","/login","/install/**","/static/**")
                 .addPathPatterns("/**");
+        registry.addInterceptor(fileDownloadInterceptor()).addPathPatterns("/s/**","/s");
     }
 
     @Override

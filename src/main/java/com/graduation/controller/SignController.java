@@ -16,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpSession;
+import java.util.Enumeration;
+
 /**
  * Description 登录登出控制器
  *
@@ -44,13 +47,16 @@ public class SignController {
      */
     @RequestMapping("/doLogin")
     @ResponseBody
-    public FileResponseVo doLogin(UserLoginVo user) {
+    public FileResponseVo doLogin(UserLoginVo user, HttpSession session) {
         try {
-            UsernamePasswordToken token = new UsernamePasswordToken(user.getAccount(), user.getPassword(), false);
+            UsernamePasswordToken token = new UsernamePasswordToken(user.getAccount(), user.getPassword(), true);
             Subject subject = SecurityUtils.getSubject();
             subject.login(token);
             LOGGER.info("用户:{} 登录!", user.getAccount());
             // session 存放用户
+            session.setAttribute("isLogin",true);
+            session.setAttribute("user",user.getAccount());
+            session.setMaxInactiveInterval(1800);
             return FileResponseVo.success();
         }catch (IncorrectCredentialsException e) {
             LOGGER.info(user.getAccount() + e.getMessage());

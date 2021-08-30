@@ -3,7 +3,11 @@ package com.graduation.controller;
 
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.ConvertVo;
+import com.graduation.model.vo.ShareFileLinkVo;
+import com.graduation.model.vo.ShareFileVo;
 import com.graduation.service.FileService;
+import com.graduation.utils.AesUtils;
+import com.graduation.utils.DateConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -261,6 +265,18 @@ public class FileController extends BaseController {
                 }
             }
         }
+    }
+
+    @RequestMapping("/share")
+    @ResponseBody
+    public FileResponseVo createShareFileLink(ShareFileVo shareFileVo) throws Exception {
+        String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
+        String content = "/"+getUser().getUsername()+"/"+shareFileVo.getPath()+"/"+shareFileVo.getFilename()+"@"
+                + untilToTime;
+        System.out.println(content);
+        String code = AesUtils.encrypt(content);
+        String check = AesUtils.getCheckCodeByEncryptStr(code);
+        return FileResponseVo.success(new ShareFileLinkVo(getUploadShowUrl()+"/s/"+code,check,untilToTime));
     }
 
 }

@@ -214,6 +214,27 @@ public class DateConverter {
     }
 
 
+    /**
+     *  将当前日期 进行偏移天数计算  正数表示天数向后加 反正则减
+     * @param days 偏移天数
+     * @return 计算后的日期字符串
+     */
+    public static String dayCalculateBaseOnNow(int days) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        Date date = null;
+        try {
+            date = sdf.parse(getFormatDate("yyyy-MM-dd HH:mm"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Calendar calendar = new GregorianCalendar();
+        assert date != null;
+        calendar.setTime(date);
+        calendar.add(Calendar.DATE,days);
+        date = calendar.getTime();
+        return sdf.format(date);
+    }
+
 
 
 }

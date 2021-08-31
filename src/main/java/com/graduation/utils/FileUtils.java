@@ -24,12 +24,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description 文件操作工具类
@@ -230,6 +230,11 @@ public class FileUtils {
     }
 
 
+    public static boolean uploadDirectoryAndFile(){
+        return false;
+    }
+
+
     /**
      * 用于获取文件的列表
      *
@@ -337,6 +342,53 @@ public class FileUtils {
             e.printStackTrace();
         }
         throw new FileDownloadException("下载文件为输入流出错");
+    }
+
+    /**
+     * 通过url下载文件到输入流
+     * @param downloadUrl 文件下载url
+     * @return 文件输入流 以及 文件名
+     */
+    public static Map<String, Object> getFileDownloadStreamByUrl(String downloadUrl){
+        BufferedInputStream in = null;
+        HashMap<String, Object> objectHashMap = new HashMap<>();
+        try {
+            URL  url= new URL(downloadUrl);
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            conn.setConnectTimeout(5000);
+            String filename = getFileName(conn);
+            in = new BufferedInputStream(url.openStream());
+            objectHashMap.put("inputStream",in);
+            objectHashMap.put("filename",filename);
+            return objectHashMap;
+        }catch (IOException e){
+            return null;
+        }
+    }
+
+
+    private static String getFileName(HttpURLConnection conn){
+        String newUrl = conn.getURL().getFile();
+        if (newUrl!=null && newUrl.length()>0){
+            try {
+                newUrl = URLDecoder.decode(newUrl,"UTF-8");
+            }catch (UnsupportedEncodingException e){
+                e.printStackTrace();
+            }
+            int pos = newUrl.indexOf("?");
+            if (pos>=0){
+                newUrl = newUrl.substring(0,pos);
+            }
+            pos = newUrl.lastIndexOf("/");
+            return newUrl.substring(pos+1);
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+        Map<String, Object> objectMap = getFileDownloadStreamByUrl("https://gitee.com/shaoming123/file-management-service-system.git");
+
+
     }
 
 }

@@ -35,22 +35,15 @@ public class LoginInterceptor implements HandlerInterceptor {
                 return false;
             }else {
                 session.setAttribute("isInstall",true);
-                session.setMaxInactiveInterval(60);
+                session.setMaxInactiveInterval(1800);
             }
         }
-
-        Subject subject = SecurityUtils.getSubject();
-        if (subject.isRemembered()){
-            if (subject.getPrincipal() ==null) {
+            if (isLogin!=null && isLogin){
+                return true;
+            }else {
                 response.sendRedirect("/login");
                 return false;
             }
-            if (isLogin == null){
-                response.sendRedirect("/login");
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

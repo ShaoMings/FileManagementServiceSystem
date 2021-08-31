@@ -5,6 +5,7 @@ import org.apache.commons.codec.binary.Base64;
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
+import java.util.Date;
 
 /**
  * Description AES加解密工具类
@@ -21,8 +22,7 @@ public class AesUtils {
      * 加密
      * @param content 加密的字符串
      * @param encryptKey key值
-     * @return
-     * @throws Exception
+     * @return 加密后的密文
      */
     public static String encrypt(String content, String encryptKey) throws Exception {
         KeyGenerator kgen = KeyGenerator.getInstance("AES");
@@ -39,8 +39,7 @@ public class AesUtils {
      * 解密
      * @param encryptStr 解密的字符串
      * @param decryptKey 解密的key值
-     * @return
-     * @throws Exception
+     * @return 解密后的明文
      */
     public static String decrypt(String encryptStr, String decryptKey) throws Exception {
         KeyGenerator kgen = KeyGenerator.getInstance("AES");
@@ -53,33 +52,61 @@ public class AesUtils {
         return new String(decryptBytes);
     }
 
+    /**
+     *  指定加密方式对明文加密
+     * @param content 明文
+     * @return 加密后的密文
+     */
     public static String encrypt(String content) throws Exception {
         return encrypt(content, Constant.AES_KEY);
     }
+
+    /**
+     *  指定解密方式对密文进行解密
+     * @param encryptStr 密文
+     * @return 明文
+     */
     public static String decrypt(String encryptStr) throws Exception {
         return decrypt(encryptStr,  Constant.AES_KEY);
     }
 
 
+    /**
+     *  通过密文获取校验码
+     * @param encryptStr 密文
+     * @return 校验码 提取码
+     */
     public static String getCheckCodeByEncryptStr(String encryptStr){
         return getCheckCode(encryptStr);
     }
 
+    /**
+     *  获取校验码
+     * @param encryptStr 密文
+     * @return 校验码
+     */
     private static String getCheckCode(String encryptStr){
-        char t = encryptStr.charAt(3);
-        int begin = t % 4;
+        int len = encryptStr.length();
+        int lastPartIndex = (len*2)/3;
+        int begin = lastPartIndex + len % (len - lastPartIndex);
+        if (begin>= len){
+            begin = lastPartIndex +  (begin % lastPartIndex);
+        }
         char a = encryptStr.charAt(begin);
+        if (begin<(lastPartIndex/2)){
+            begin+=(len%(len - lastPartIndex));
+        }
         int tmp = begin;
         a = getChar(encryptStr,a,tmp);
-        begin +=4;
+        begin -=3;
         char b = encryptStr.charAt(begin);
         tmp = begin;
        b = getChar(encryptStr,b,tmp);
-        begin +=4;
+        begin -=3;
         char c = encryptStr.charAt(begin);
         tmp = begin;
         c = getChar(encryptStr,c,tmp);
-        begin +=4;
+        begin -=3;
         char d = encryptStr.charAt(begin);
         tmp = begin;
         d = getChar(encryptStr,d,tmp);
@@ -88,14 +115,14 @@ public class AesUtils {
 
     private static char getChar(String encryptStr,char c,int tmp){
         while (!isUsefulChar(c)){
-            if (tmp<encryptStr.length()){
+            if (tmp>=0){
                 c = encryptStr.charAt(tmp);
-                tmp++;
+                tmp--;
             }else {
                 break;
             }
         }
-        return c;
+        return isUsefulChar(c)?c:'Q';
     }
 
     private static boolean isUsefulChar(char t){
@@ -106,7 +133,7 @@ public class AesUtils {
     }
 
     public static void main(String[] args) throws Exception {
-        String content = "/admin/test/doc/Chapter_2.pdf@2021-08-31 20:53";
+        String content = "/admin/test/doc/Chapter_2.pdf@"+DateConverter.getFormatDate(new Date(),"yyyy-MM-dd HH:mm:ss");
 
         System.out.println("加密前：" + content);
 

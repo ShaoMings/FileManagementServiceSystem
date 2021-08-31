@@ -29,6 +29,24 @@ $('#mkdir').click(function () {
         });
         layer.close(index);
     });
+});
+
+$('#import').click(function () {
+    layer.prompt({
+        title: '输入异源文件URL',
+        formType: 0,
+    }, function (name, index) {
+        // $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
+        //     if (res.code === 200) {
+        //         openDir(current_path.replace("files/", ""));
+        //         layer.msg("创建成功");
+        //     } else {
+        //         layer.msg(res.msg);
+        //     }
+        // });
+        // layer.close(index);
+        layer.msg(name);
+    });
 })
 
 /*监听重命名操作*/
@@ -182,8 +200,7 @@ function checkSystemRightTime() {
         async: false,
         url: 'https://quan.suning.com/getSysTime.do',
         success: function (data) {
-            data = data.sysTime2;
-            networkTime = data.slice(0, 16);
+            networkTime = data.sysTime2;
         }
     });
     Date.prototype.Format = function (fmt) {
@@ -202,8 +219,8 @@ function checkSystemRightTime() {
             if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length === 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
         return fmt;
     }
-    let localTime = (new Date()).Format("yyyy-MM-dd hh:mm");
-    return networkTime === localTime;
+    let localTime = (new Date()).Format("yyyy-MM-dd hh:mm:ss");
+    return Math.abs(Date.parse(networkTime) - Date.parse(localTime)) < 18000;
 }
 
 

@@ -179,7 +179,7 @@ public class DateConverter {
      * @return true过时了 反之不过时
      */
     public static boolean isOverdueBaseNow(String time) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date now = new Date();
         try {
             Date dateTime = sdf.parse(time);
@@ -243,10 +243,10 @@ public class DateConverter {
      * @return 计算后的日期字符串
      */
     public static String dayCalculateBaseOnNow(int days) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = null;
         try {
-            date = sdf.parse(getFormatDate("yyyy-MM-dd HH:mm"));
+            date = sdf.parse(getFormatDate("yyyy-MM-dd HH:mm:ss"));
         } catch (ParseException e) {
             e.printStackTrace();
         }

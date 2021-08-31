@@ -14,9 +14,46 @@ let xhrOnProgress = function (fun) {
         return xhr;
     }
 }
+
+// 文件夹压缩
+function generateZipFile(
+    zipName, files,
+    options = {type: "blob", compression: "DEFLATE"}
+) {
+    return new Promise((resolve, reject) => {
+        const zip = new JSZip();
+        for (let i = 0; i < files.length; i++) { // 添加目录中包含的文件
+            zip.file(files[i].webkitRelativePath, files[i]);
+        }
+        zip.generateAsync(options).then(function (blob) { // 生成zip文件
+            zipName = zipName || Date.now() + ".zip";
+            const zipFile = new File([blob], zipName, {
+                type: "application/zip",
+            });
+            saveAs(blob,'zip','test');
+        });
+    });
+}
+
+function saveAs(data,type,name) {
+    let link = document.createElement("a");
+    let exportName=name?name:'data';
+    let url = 'data:text/'+type+';charset=utf-8,\uFEFF' + encodeURI(data);
+    link.href = url;
+    link.download = exportName+"."+type;
+    link.click();
+}
+
 let count = 0;
 layui.use(['upload', 'element'], function () {
     let $ = layui.jquery, upload = layui.upload, element = layui.element;
+    $('#dirList').change(async function () {
+        let folder = this.files;
+        let zipFileName = folder[0].webkitRelativePath.split("/")[0] + ".zip";
+        let zipFileList = [await generateZipFile(zipFileName, fileList)];
+        console.log(zipFileList);
+        choose(zipFileList)
+    });
     //多文件上传
     let demoListView = $('#moreFileList'), uploadListIns = upload.render({
         elem: '#fileList',
@@ -44,9 +81,14 @@ layui.use(['upload', 'element'], function () {
             })
 
         },
-        choose: function (obj) {
+        choose: window.choose = function (obj) {
             //将每次选择的文件追加到文件队列
-            let files = this.files = obj.pushFile();
+            let files;
+            if (typeof (obj.pushFile) === 'function') {
+                files = this.files = obj.pushFile();
+            } else {
+                files = obj;
+            }
             //读取本地文件
             demoListView.html(" ");
             for (let key in files) {
@@ -56,7 +98,7 @@ layui.use(['upload', 'element'], function () {
                     '<td>' + (files[key].size / 1014).toFixed(1) + 'kb</td>',
                     '<td>准备就绪...</td>',
                     '<td>' +
-                    '<div file="' + files[key].name + '" class="layui-progress" data-count="'+key+'" lay-showPercent="true" lay-filter="progressBar' + count + '">' +
+                    '<div file="' + files[key].name + '" class="layui-progress" data-count="' + key + '" lay-showPercent="true" lay-filter="progressBar' + count + '">' +
                     '<div class="layui-progress-bar layui-bg-green" lay-percent="0%"></div>' +
                     '</div>' +
                     '</td>',
@@ -79,13 +121,15 @@ layui.use(['upload', 'element'], function () {
                 element.render('progress');
             }
             ;
-        }, before: function (obj) {
+        },
+        before: function (obj) {
             let scene = $("#scene").val();
             let path = $("#path").val();
             let showUrl = $("#showUrl").val();
             // 传递参数  场景  文件上传路径  服务地址
             this.data = {'scene': scene, 'path': path, 'showUrl': showUrl};
-        }, done: function (res, index, upload) {
+        },
+        done: function (res, index, upload) {
             //上传成功
             if (res.code === 200) {
                 let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
@@ -103,7 +147,8 @@ layui.use(['upload', 'element'], function () {
                 tds.eq(4).find('.more-file-reload').removeClass('layui-hide');
             }
             this.error(index, upload);
-        }, error: function (index, upload) {
+        },
+        error: function (index, upload) {
             let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
             tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
             //显示重传
@@ -111,6 +156,7 @@ layui.use(['upload', 'element'], function () {
         }
     });
 })
+
 
 function showUrl(url) {
     layer.confirm('点击访问: <br><a href="' + url + '" target="_blank" title="点击访问" class="showUrl-href">' + url + '</a>', {

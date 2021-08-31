@@ -49,7 +49,7 @@ public class SignController {
     @ResponseBody
     public FileResponseVo doLogin(UserLoginVo user, HttpSession session) {
         try {
-            UsernamePasswordToken token = new UsernamePasswordToken(user.getAccount(), user.getPassword(), true);
+            UsernamePasswordToken token = new UsernamePasswordToken(user.getAccount(), user.getPassword(), false);
             Subject subject = SecurityUtils.getSubject();
             subject.login(token);
             LOGGER.info("用户:{} 登录!", user.getAccount());

@@ -3,6 +3,7 @@ package com.graduation.controller;
 import com.graduation.utils.AesUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.utils.FileUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,6 +13,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 
 /**
@@ -25,8 +27,14 @@ import java.io.*;
 @RequestMapping("/s")
 public class ShareFileController extends BaseController {
 
+    @Value("${default.server.peerAddress}")
+    private String peerAddress;
+
     @GetMapping("/download")
-    public void downloadFileByLink(String code, HttpServletResponse response) throws Exception {
+    public void downloadFileByLink(String code, HttpServletResponse response, HttpSession session) throws Exception {
+        if (session.getAttribute("isLogin")!=null && (Boolean) session.getAttribute("isLogin")){
+            peerAddress = getPeersUrl();
+        }
         code = code.replaceAll(" ", "+");
         String path = AesUtils.decrypt(code);
         String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
@@ -34,7 +42,7 @@ public class ShareFileController extends BaseController {
         if (!DateConverter.isOverdueBaseNow(untilToTime)){
             String filename = groupFilePath.substring(groupFilePath.lastIndexOf("/")+1);
             String tmpPath = groupFilePath.substring(groupFilePath.indexOf("/")+1,groupFilePath.lastIndexOf("/"));
-            InputStream inputStream = FileUtils.getFileDownloadStream(tmpPath,filename,getPeersUrl());
+            InputStream inputStream = FileUtils.getFileDownloadStream(tmpPath,filename,peerAddress);
             response.setCharacterEncoding("UTF-8");
             response.setHeader("content-type", "application/octet-stream;charset=UTF-8");
             response.setContentType("application/octet-stream;charset=UTF-8");

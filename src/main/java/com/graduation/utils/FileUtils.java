@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipFile;
 
 /**
  * Description 文件操作工具类
@@ -231,6 +232,7 @@ public class FileUtils {
 
 
     public static boolean uploadDirectoryAndFile(){
+
         return false;
     }
 

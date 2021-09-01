@@ -62,6 +62,13 @@ public class UploadController extends BaseController{
         if (StrUtil.isBlank(serverAddress)){
             serverAddress = getUploadShowUrl();
         }
+
+        // 文件夹处理
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
+
+        }
+
         FileResponseVo responseVo = FileUtils.upload(file, path, scene, getPeersUrl() + Constant.API_UPLOAD, serverAddress);
         UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
         String filePath = resultVo.getPath();

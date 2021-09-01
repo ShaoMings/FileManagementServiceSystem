@@ -9,15 +9,19 @@ $('#mkdir').click(function () {
     let dir_path = $('#dir-path').data('path');
     let file_path = $('#file-path').data('path');
     let current_path = "files/";
-    if (dir_path !== undefined) {
+    if (dir_path !== undefined && file_path === undefined) {
         current_path += dir_path;
     }
-    if (file_path !== undefined) {
+    if (file_path !== undefined && dir_path === undefined) {
         current_path += file_path;
     }
     if (dir_path === undefined && file_path === undefined) {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
     }
+    if (dir_path !== undefined && file_path !== undefined){
+        current_path += dir_path;
+    }
+    console.log(current_path);
     layer.prompt({title: '输入文件夹名称', formType: 0}, function (name, index) {
         $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
             if (res.code === 200) {
@@ -58,14 +62,17 @@ $('#file-result').on('click', '.rename-file-btn', function () {
         md5 = "";
     }
     let current_path = "files/";
-    if (dir_path !== undefined) {
+    if (dir_path !== undefined && file_path === undefined) {
         current_path += dir_path;
     }
-    if (file_path !== undefined) {
+    if (file_path !== undefined && dir_path === undefined) {
         current_path += file_path;
     }
     if (dir_path === undefined && file_path === undefined) {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
+    }
+    if (dir_path !== undefined && file_path !== undefined){
+        current_path += dir_path;
     }
     let oldName = $(this).data('name');
     layer.prompt({
@@ -157,6 +164,7 @@ $('#file-result').on('click', '.share-btn', function () {
                     $.post("/file/share",data,function (res) {
                         if (res.code === 200){
                             layer.close(index);
+                            let loadIndex = layer.load();
                             let html = '<div class="file-details-box">' +
                                 '<ul>' +
                                 '<li><span>有效期至:&nbsp;</span>' + res.data.until + '</li>' +
@@ -179,6 +187,7 @@ $('#file-result').on('click', '.share-btn', function () {
                                         width:150,
                                         height:150
                                     });
+                                    layer.close(loadIndex);
                                     qrcode.makeCode(res.data.link +"&check="+ res.data.check);
                                 }
                             })
@@ -231,14 +240,17 @@ $('#file-result').on('click', '.converter-btn', function () {
     let dir_path = $('#dir-path').data('path');
     let file_path = $('#file-path').data('path');
     let current_path = "files/";
-    if (dir_path !== undefined) {
+    if (dir_path !== undefined && file_path === undefined) {
         current_path += dir_path;
     }
-    if (file_path !== undefined) {
+    if (file_path !== undefined && dir_path === undefined) {
         current_path += file_path;
     }
     if (dir_path === undefined && file_path === undefined) {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
+    }
+    if (dir_path !== undefined && file_path !== undefined){
+        current_path += dir_path;
     }
     let oldName = $(this).data('name');
     let suffix = oldName.substring(oldName.lastIndexOf(".") + 1);
@@ -322,6 +334,7 @@ $('#file-result').on('click', '.converter-btn', function () {
                 layer.msg("格式转换花费的时间较长,请耐心等待!");
                 let load_index = layer.load();
                 let path = current_path.substring(current_path.indexOf("/") + 1)
+                console.log(current_path);
                 // post: path filename src dest
                 if (audio_types.indexOf(before) !== -1) {
                     $.post("/file/audioConverter", {

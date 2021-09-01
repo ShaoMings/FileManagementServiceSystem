@@ -76,7 +76,11 @@ public class Constant {
     /** 状态常量词 */
     public static final String STATUS_CONSTANT = "status";
 
+    /** 文件暂存路径 */
     public static final String OUTPUT_TMP_FILE_PATH = "src/main/java/com/graduation/utils/tmp/";
+
+    /**  文件名结尾标识文件夹常量 */
+    public static final String DIR_FLAG_CONSTANT = "@dir.zip";
 
     /** 图片jpg格式 */
     public static final String PICTURE_TYPE_JPG = "jpg";

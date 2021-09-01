@@ -18,41 +18,55 @@ let xhrOnProgress = function (fun) {
 // 文件夹压缩
 function generateZipFile(
     zipName, files,
-    options = {type: "blob", compression: "DEFLATE"}
+    options = {type: "blob", compression: "DEFLATE",compressionOptions: {
+            level: 9
+        }}
 ) {
     return new Promise((resolve, reject) => {
         const zip = new JSZip();
         for (let i = 0; i < files.length; i++) { // 添加目录中包含的文件
+            let fileName = files[i].name;
+            if (fileName.replace(".", "").length < 1) {
+                continue;
+            }
             zip.file(files[i].webkitRelativePath, files[i]);
         }
         zip.generateAsync(options).then(function (blob) { // 生成zip文件
-            zipName = zipName || Date.now() + ".zip";
             const zipFile = new File([blob], zipName, {
                 type: "application/zip",
             });
-            saveAs(blob,'zip','test');
+            resolve(zipFile);
         });
     });
 }
 
-function saveAs(data,type,name) {
-    let link = document.createElement("a");
-    let exportName=name?name:'data';
-    let url = 'data:text/'+type+';charset=utf-8,\uFEFF' + encodeURI(data);
-    link.href = url;
-    link.download = exportName+"."+type;
-    link.click();
+function ran() {
+    let num = new Date().getTime();
+    return num.toString();
 }
 
 let count = 0;
+let uploadFileList = {}
+let saveLastObj;
 layui.use(['upload', 'element'], function () {
     let $ = layui.jquery, upload = layui.upload, element = layui.element;
+
+    $('#dirList').on('click',function (event) {
+        if (saveLastObj === undefined){
+            layer.msg("请先选择文件上传,之后才可以进行上传文件夹操作!");
+            event.preventDefault();
+            return false;
+        }
+    })
+
     $('#dirList').change(async function () {
         let folder = this.files;
+        if (folder === null || folder === undefined){
+            return;
+        }
         let zipFileName = folder[0].webkitRelativePath.split("/")[0] + ".zip";
-        let zipFileList = [await generateZipFile(zipFileName, fileList)];
-        console.log(zipFileList);
-        choose(zipFileList)
+        let zipFileList = [ran()+'-dir',await generateZipFile(zipFileName, folder)];
+        choose(zipFileList);
     });
     //多文件上传
     let demoListView = $('#moreFileList'), uploadListIns = upload.render({
@@ -79,22 +93,37 @@ layui.use(['upload', 'element'], function () {
                     element.progress(progressBarName, percent + '%');
                 }
             })
-
         },
         choose: window.choose = function (obj) {
             //将每次选择的文件追加到文件队列
-            let files;
+            let files = {}
             if (typeof (obj.pushFile) === 'function') {
-                files = this.files = obj.pushFile();
+                saveLastObj = obj;
+                uploadFileList = obj.pushFile();
             } else {
-                files = obj;
+                if (saveLastObj !==undefined){
+                    if (typeof (saveLastObj.setFile) === 'function') {
+                        saveLastObj.setFile(obj[0],obj[1]);
+                        uploadFileList[obj[0]] = obj[1];
+                    }
+                }
             }
             //读取本地文件
             demoListView.html(" ");
+            files = this.files = uploadFileList;
             for (let key in files) {
                 count++;
+                let name;
+                if (key.endsWith("dir")){
+                    name = files[key].name.substring(0,files[key].name.lastIndexOf("."));
+                    let dirFlagName = name + "@dir.zip";
+                    files[key] = new File([files[key]],dirFlagName,{type:files[key].type});
+                }else {
+                    name = files[key].name;
+                }
+                console.log(files);
                 let tr = $(['<tr id="upload-' + key + '">',
-                    '<td>' + files[key].name + '</td>',
+                    '<td>' + name + '</td>',
                     '<td>' + (files[key].size / 1014).toFixed(1) + 'kb</td>',
                     '<td>准备就绪...</td>',
                     '<td>' +
@@ -120,7 +149,6 @@ layui.use(['upload', 'element'], function () {
                 demoListView.append(tr);
                 element.render('progress');
             }
-            ;
         },
         before: function (obj) {
             let scene = $("#scene").val();

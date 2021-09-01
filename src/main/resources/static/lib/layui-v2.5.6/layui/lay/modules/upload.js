@@ -12,11 +12,16 @@
             var e = this;
             return {
                 upload: function (i) {
+                    console.log("hihihi")
                     e.upload.call(e, i)
-                }, config: e.config
+                },
+                config: e.config
+
             }
-        }, r = "upload", u = "layui-upload-file", c = "layui-upload-form", f = "layui-upload-iframe",
-        s = "layui-upload-choose", p = function (e) {
+        },
+        r = "upload", u = "layui-upload-file", c = "layui-upload-form", f = "layui-upload-iframe",
+        s = "layui-upload-choose",
+        p = function (e) {
             var t = this;
             t.config = i.extend({}, t.config, o.config, e), t.render()
         };
@@ -33,7 +38,8 @@
         size: 0,
         number: 0,
         multiple: !1
-    }, p.prototype.render = function (e) {
+    },
+        p.prototype.render = function (e) {
         var t = this, e = t.config;
         e.elem = i(e.elem), e.bindAction = i(e.bindAction), t.file(), t.events()
     }, p.prototype.file = function () {
@@ -75,7 +81,7 @@
             };
             layui.each(a, function (e, a) {
                 var r = new FormData;
-                r.append(l.field, a), layui.each(l.data, function(e, i) {
+                r.append(l.field, a), layui.each(l.data, function (e, i) {
                     i = "function" == typeof i ? i() : i, r.append(e, i)
                 }), i.ajax({
                     url: l.url,
@@ -84,16 +90,16 @@
                     contentType: !1,
                     processData: !1,
                     dataType: "json",
-                    xhr:l.xhr(function(e){//此处为新添加功能
-                        var percent=Math.floor((e.loaded / e.total)*100);//计算百分比
-                        l.progress(e,a);//回调将数值返回
+                    xhr: l.xhr(function (e) {//此处为新添加功能
+                        var percent = Math.floor((e.loaded / e.total) * 100);//计算百分比
+                        l.progress(e, a);//回调将数值返回
                         //console.log(e,"e2")
                     }),
                     headers: l.headers || {},
-                    success: function(i) {
+                    success: function (i) {
                         t++, d(e, i), u()
                     },
-                    error: function() {
+                    error: function () {
                         n++, o.msg("请求上传接口出现异常"), m(e), u()
                     }
                 })
@@ -128,6 +134,9 @@
                 i.push(t.name)
             }), i
         }(), g = {
+            setFile:function (e,i) {
+                o.files[e] = i
+            },
             preview: function (e) {
                 o.preview(e)
             }, upload: function (e, i) {

@@ -88,7 +88,7 @@ public class AesUtils {
     private static String getCheckCode(String encryptStr){
         int len = encryptStr.length();
         int lastPartIndex = (len*2)/3;
-        int begin = lastPartIndex + len % (len - lastPartIndex);
+        int begin = lastPartIndex + encryptStr.charAt(len-2) % (len - lastPartIndex);
         if (begin>= len){
             begin = lastPartIndex +  (begin % lastPartIndex);
         }
@@ -98,15 +98,15 @@ public class AesUtils {
         }
         int tmp = begin;
         a = getChar(encryptStr,a,tmp);
-        begin -=3;
+        begin -=(a%9);
         char b = encryptStr.charAt(begin);
         tmp = begin;
        b = getChar(encryptStr,b,tmp);
-        begin -=3;
+        begin -=(b%9);
         char c = encryptStr.charAt(begin);
         tmp = begin;
         c = getChar(encryptStr,c,tmp);
-        begin -=3;
+        begin -=(c%9);
         char d = encryptStr.charAt(begin);
         tmp = begin;
         d = getChar(encryptStr,d,tmp);

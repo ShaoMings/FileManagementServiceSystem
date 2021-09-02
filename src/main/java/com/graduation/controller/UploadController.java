@@ -2,6 +2,7 @@ package com.graduation.controller;
 
 import cn.hutool.core.util.StrUtil;
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
 import com.graduation.service.FileService;
 import com.graduation.utils.Constant;
@@ -14,6 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Enumeration;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * Description 文件上传控制器
@@ -45,31 +52,30 @@ public class UploadController extends BaseController{
 
     /**
      * 文件上传
-     * @param file 前端入参文件
-     * @param scene 场景
-     * @param serverAddress 服务地址 不含组名与api
+     * @param param 前端入参文件
      * @return 响应对象
      */
     @RequestMapping("/upload/moreFileUpload")
     @ResponseBody
-    public FileResponseVo fileUpload(@RequestParam("file")MultipartFile file,String scene,String path,@RequestParam("showUrl") String serverAddress){
-        if (file.isEmpty()) {
+    public FileResponseVo fileUpload(UploadParamVo param){
+        if (param.getFile().isEmpty()) {
             return FileResponseVo.fail("请先选择要上传的文件");
         }
-        if (StrUtil.isBlank(scene)){
+        if (StrUtil.isBlank(param.getScene())){
             return FileResponseVo.fail("请先选择上传场景");
         }
-        if (StrUtil.isBlank(serverAddress)){
-            serverAddress = getUploadShowUrl();
+        if (StrUtil.isBlank(param.getShowUrl())){
+            param.setShowUrl(getUploadShowUrl());
         }
 
         // 文件夹处理
-        String originalFilename = file.getOriginalFilename();
+        String originalFilename = param.getFile().getOriginalFilename();
         if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
 
         }
 
-        FileResponseVo responseVo = FileUtils.upload(file, path, scene, getPeersUrl() + Constant.API_UPLOAD, serverAddress);
+        FileResponseVo responseVo = FileUtils.upload(param.getFile(), param.getPath(), param.getScene(),
+                getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
         UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
         String filePath = resultVo.getPath();
         fileService.saveFilePathByUserId(getUser().getId(),filePath);

@@ -3,6 +3,7 @@ package com.graduation.controller;
 import com.graduation.utils.AesUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.utils.FileUtils;
+import com.graduation.utils.NetUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,13 +28,17 @@ import java.io.*;
 @RequestMapping("/s")
 public class ShareFileController extends BaseController {
 
-    @Value("${default.server.peerAddress}")
     private String peerAddress;
+
+    @Value("${default.server.port}")
+    private String port;
 
     @GetMapping("/download")
     public void downloadFileByLink(String code, HttpServletResponse response, HttpSession session) throws Exception {
         if (session.getAttribute("isLogin")!=null && (Boolean) session.getAttribute("isLogin")){
             peerAddress = getPeersUrl();
+        }else {
+            peerAddress = NetUtils.getLocalIpV4Address()+":"+port+"/group1";
         }
         code = code.replaceAll(" ", "+");
         String path = AesUtils.decrypt(code);

@@ -13,6 +13,7 @@ upload.temp.path: /temp/
 # 用户离线配置
 default:
   server:
+    port: 8080
     address: http://10.60.1.101:8080
     group: group1
     peerAddress: http://10.60.1.101:8080/group1

@@ -9,6 +9,7 @@ import com.graduation.exception.FileConverterException;
 import com.graduation.exception.FileDownloadException;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -26,10 +27,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
 /**
@@ -52,7 +51,7 @@ public class FileUtils {
      * @param tempPath      临时路径
      * @return File对象
      */
-    private static File multipartFileToFile(MultipartFile multipartFile, String tempPath) {
+    public static File multipartFileToFile(MultipartFile multipartFile, String tempPath) {
         // 获得文件原本的文件名
         String fileName = multipartFile.getOriginalFilename();
         File file = new File(tempPath + fileName);
@@ -369,6 +368,11 @@ public class FileUtils {
     }
 
 
+    /**
+     * 通过git链接获取git文件名
+     * @param conn 连接对象
+     * @return 文件名
+     */
     private static String getFileName(HttpURLConnection conn){
         String newUrl = conn.getURL().getFile();
         if (newUrl!=null && newUrl.length()>0){
@@ -386,6 +390,29 @@ public class FileUtils {
         }
         return null;
     }
+
+
+    public static FileResponseVo uploadDirZip(UploadParamVo param){
+        String originalFilename = param.getFile().getOriginalFilename();
+        String srcFilePath = Constant.OUTPUT_TMP_FILE_PATH+originalFilename;
+        File zipSource = FileUtils.multipartFileToFile(param.getFile(), srcFilePath);
+        String destDirPath = Constant.OUTPUT_TMP_FILE_PATH+originalFilename.substring(0,originalFilename.lastIndexOf("@"))+"/";
+        try {
+            ZipFile zipFile = new ZipFile(zipSource);
+            // 解压
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()){
+                ZipEntry entry = entries.nextElement();
+                if (entry.isDirectory()){
+
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return FileResponseVo.fail("上传失败!");
+    }
+
 
     public static void main(String[] args) {
         Map<String, Object> objectMap = getFileDownloadStreamByUrl("https://gitee.com/shaoming123/file-management-service-system.git");

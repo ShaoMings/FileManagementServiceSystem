@@ -1,7 +1,9 @@
 /** layui-v2.4.5 MIT License By https://www.layui.com */
 ;layui.define("layer", function (e) {
     "use strict";
+    let saveObj;
     var i = layui.$, t = layui.layer, n = layui.hint(), a = layui.device(), o = {
+
             config: {}, set: function (e) {
                 var t = this;
                 return t.config = i.extend({}, t.config, e), t
@@ -15,8 +17,9 @@
                     console.log("hihihi")
                     e.upload.call(e, i)
                 },
-                config: e.config
-
+                config: e.config,
+                // !!!!!!!!!
+                saveObj,
             }
         },
         r = "upload", u = "layui-upload-file", c = "layui-upload-form", f = "layui-upload-iframe",
@@ -40,12 +43,15 @@
         multiple: !1
     },
         p.prototype.render = function (e) {
-        var t = this, e = t.config;
-        e.elem = i(e.elem), e.bindAction = i(e.bindAction), t.file(), t.events()
-    }, p.prototype.file = function () {
+            var t = this, e = t.config;
+            e.elem = i(e.elem), e.bindAction = i(e.bindAction), t.file(), t.events()
+        },
+
+        p.prototype.file = function () {
         var e = this, t = e.config,
             n = e.elemFile = i(['<input class="' + u + '" type="file" accept="' + t.acceptMime + '" name="' + t.field + '"', t.multiple ? " multiple" : "", ">"].join("")),
             o = t.elem.next();
+        // saveObj = e;
         (o.hasClass(u) || o.hasClass(c)) && o.remove(), a.ie && a.ie < 10 && t.elem.wrap('<div class="layui-upload-wrap"></div>'), e.isFile() ? (e.elemFile = t.elem, t.field = t.elem[0].name) : t.elem.after(n), a.ie && a.ie < 10 && e.initIE()
     }, p.prototype.initIE = function () {
         var e = this, t = e.config,
@@ -70,123 +76,139 @@
                 e && e(i, t, this.result)
             }
         })
-    }, p.prototype.upload = function (e, t) {
-        var n, o = this, l = o.config, r = o.elemFile[0], u = function () {
-            var t = 0, n = 0, a = e || o.files || o.chooseFiles || r.files, u = function () {
-                l.multiple && t + n === o.fileLength && "function" == typeof l.allDone && l.allDone({
-                    total: o.fileLength,
-                    successful: t,
-                    aborted: n
-                })
-            };
-            layui.each(a, function (e, a) {
-                var r = new FormData;
-                r.append(l.field, a), layui.each(l.data, function (e, i) {
-                    i = "function" == typeof i ? i() : i, r.append(e, i)
-                }), i.ajax({
-                    url: l.url,
-                    type: "post",
-                    data: r,
-                    contentType: !1,
-                    processData: !1,
-                    dataType: "json",
-                    xhr: l.xhr(function (e) {//此处为新添加功能
-                        var percent = Math.floor((e.loaded / e.total) * 100);//计算百分比
-                        l.progress(e, a);//回调将数值返回
-                        //console.log(e,"e2")
-                    }),
-                    headers: l.headers || {},
-                    success: function (i) {
-                        t++, d(e, i), u()
+    },
+        // 上传按钮点击触发 选择文件后也会触发
+        p.prototype.upload = function (e, t) {
+            var n, o = this, l = o.config, r = o.elemFile[0], u = function () {
+                    var t = 0, n = 0, a = e || o.files || o.chooseFiles || r.files, u = function () {
+                        // 上传状态
+                        l.multiple && t + n === o.fileLength && "function" == typeof l.allDone && l.allDone({
+                            total: o.fileLength,
+                            successful: t,
+                            aborted: n
+                        })
+                    };
+                    // 文件列表
+                    layui.each(a, function (e, a) {
+                        var r = new FormData;
+                        r.append(l.field, a), layui.each(l.data, function (e, i) {
+                            i = "function" == typeof i ? i() : i, r.append(e, i)
+                        }), i.ajax({
+                            url: l.url,
+                            type: "post",
+                            data: r,
+                            contentType: !1,
+                            processData: !1,
+                            dataType: "json",
+                            xhr: l.xhr(function (e) {//此处为新添加功能
+                                var percent = Math.floor((e.loaded / e.total) * 100);//计算百分比
+                                l.progress(e, a);//回调将数值返回
+                                //console.log(e,"e2")
+                            }),
+                            headers: l.headers || {},
+                            success: function (i) {
+                                console.log(e,i);   // key,UploadResultVo
+                                t++, d(e, i), u()
+                            },
+                            error: function () {
+                                n++, o.msg("请求上传接口出现异常"), m(e), u()
+                            }
+                        })
+                    })
+                },
+                c = function () {
+                    var e = i("#" + f);
+                    o.elemFile.parent().submit(), clearInterval(p.timer), p.timer = setInterval(function () {
+                        var i, t = e.contents().find("body");
+                        try {
+                            i = t.text()
+                        } catch (n) {
+                            o.msg("获取上传后的响应信息出现异常"), clearInterval(p.timer), m()
+                        }
+                        i && (clearInterval(p.timer), t.html(""), d(0, i))
+                    }, 30)
+                }, d = function (e, i) {
+                    if (o.elemFile.next("." + s).remove(), r.value = "", "object" != typeof i) try {
+                        i = JSON.parse(i)
+                    } catch (t) {
+                        return i = {}, o.msg("请对上传接口返回有效JSON")
+                    }
+                    "function" == typeof l.done && l.done(i, e || 0, function (e) {
+                        o.upload(e)
+                    })
+                }, m = function (e) {
+                    l.auto && (r.value = ""), "function" == typeof l.error && l.error(e || 0, function (e) {
+                        o.upload(e)
+                    })
+                }, h = l.exts,
+                v = function () {
+                    var i = [];
+                    console.log(o.chooseFiles)
+                    return layui.each(e || o.chooseFiles, function (e, t) {
+                        i.push(t.name)
+                    }), i
+                }(), g = {
+                    setFile: function (e, i) {
+                        o.files[e] = i
                     },
-                    error: function () {
-                        n++, o.msg("请求上传接口出现异常"), m(e), u()
+                    preview: function (e) {
+                        o.preview(e)
+                    }, upload: function (e, i) {
+                        var t = {};
+                        t[e] = i, o.upload(t)
+                    }, pushFile: function () {
+                        return o.files = o.files || {}, layui.each(o.chooseFiles, function (e, i) {
+                            o.files[e] = i
+                        }), o.files
+                    }, resetFile: function (e, i, t) {
+                        var n = new File([i], t);
+                        o.files = o.files || {}, o.files[e] = n
                     }
-                })
-            })
-        }, c = function () {
-            var e = i("#" + f);
-            o.elemFile.parent().submit(), clearInterval(p.timer), p.timer = setInterval(function () {
-                var i, t = e.contents().find("body");
-                try {
-                    i = t.text()
-                } catch (n) {
-                    o.msg("获取上传后的响应信息出现异常"), clearInterval(p.timer), m()
+                }, y = function () {
+                    if ("choose" !== t && !l.auto || (l.choose && l.choose(g), "choose" !== t))
+                        return l.before && l.before(g), a.ie ? a.ie > 9 ? u() : c() : void u()
+                };
+            console.log(v,r);
+            if (v = 0 === v.length ? r.value.match(/[^\/\\]+\..+/g) || [] || "" : v, 0 !== v.length) {
+                console.log(l);
+                switch (l.accept) {
+                    case"file":
+                        if (h && !RegExp("\\w\\.(" + h + ")$", "i").test(escape(v))){
+                            console.log("istrue")
+                            return o.msg("选择的文件中包含不支持的格式"), r.value = "";
+                        }
+                        break;
+                    case"video":
+                        if (!RegExp("\\w\\.(" + (h || "avi|mp4|wma|rmvb|rm|flash|3gp|flv") + ")$", "i").test(escape(v))) return o.msg("选择的视频中包含不支持的格式"), r.value = "";
+                        break;
+                    case"audio":
+                        if (!RegExp("\\w\\.(" + (h || "mp3|wav|mid") + ")$", "i").test(escape(v))) return o.msg("选择的音频中包含不支持的格式"), r.value = "";
+                        break;
+                    default:
+                        if (layui.each(v, function (e, i) {
+                            RegExp("\\w\\.(" + (h || "jpg|png|gif|bmp|jpeg$") + ")", "i").test(escape(i)) || (n = !0)
+                        }), n) return o.msg("选择的图片中包含不支持的格式"), r.value = ""
                 }
-                i && (clearInterval(p.timer), t.html(""), d(0, i))
-            }, 30)
-        }, d = function (e, i) {
-            if (o.elemFile.next("." + s).remove(), r.value = "", "object" != typeof i) try {
-                i = JSON.parse(i)
-            } catch (t) {
-                return i = {}, o.msg("请对上传接口返回有效JSON")
+                if (o.fileLength = function () {
+                    var i = 0, t = e || o.files || o.chooseFiles || r.files;
+                    return layui.each(t, function () {
+                        i++
+                    }), i
+                }(), l.number && o.fileLength > l.number) return o.msg("同时最多只能上传的数量为：" + l.number);
+                if (l.size > 0 && !(a.ie && a.ie < 10)) {
+                    var F;
+                    if (layui.each(o.chooseFiles, function (e, i) {
+                        if (i.size > 1024 * l.size) {
+                            var t = l.size / 1024;
+                            t = t >= 1 ? t.toFixed(2) + "MB" : l.size + "KB", r.value = "", F = t
+                        }
+                    }), F) return o.msg("文件不能超过" + F)
+                }
+                y()
             }
-            "function" == typeof l.done && l.done(i, e || 0, function (e) {
-                o.upload(e)
-            })
-        }, m = function (e) {
-            l.auto && (r.value = ""), "function" == typeof l.error && l.error(e || 0, function (e) {
-                o.upload(e)
-            })
-        }, h = l.exts, v = function () {
-            var i = [];
-            return layui.each(e || o.chooseFiles, function (e, t) {
-                i.push(t.name)
-            }), i
-        }(), g = {
-            setFile:function (e,i) {
-                o.files[e] = i
-            },
-            preview: function (e) {
-                o.preview(e)
-            }, upload: function (e, i) {
-                var t = {};
-                t[e] = i, o.upload(t)
-            }, pushFile: function () {
-                return o.files = o.files || {}, layui.each(o.chooseFiles, function (e, i) {
-                    o.files[e] = i
-                }), o.files
-            }, resetFile: function (e, i, t) {
-                var n = new File([i], t);
-                o.files = o.files || {}, o.files[e] = n
-            }
-        }, y = function () {
-            if ("choose" !== t && !l.auto || (l.choose && l.choose(g), "choose" !== t)) return l.before && l.before(g), a.ie ? a.ie > 9 ? u() : c() : void u()
-        };
-        if (v = 0 === v.length ? r.value.match(/[^\/\\]+\..+/g) || [] || "" : v, 0 !== v.length) {
-            switch (l.accept) {
-                case"file":
-                    if (h && !RegExp("\\w\\.(" + h + ")$", "i").test(escape(v))) return o.msg("选择的文件中包含不支持的格式"), r.value = "";
-                    break;
-                case"video":
-                    if (!RegExp("\\w\\.(" + (h || "avi|mp4|wma|rmvb|rm|flash|3gp|flv") + ")$", "i").test(escape(v))) return o.msg("选择的视频中包含不支持的格式"), r.value = "";
-                    break;
-                case"audio":
-                    if (!RegExp("\\w\\.(" + (h || "mp3|wav|mid") + ")$", "i").test(escape(v))) return o.msg("选择的音频中包含不支持的格式"), r.value = "";
-                    break;
-                default:
-                    if (layui.each(v, function (e, i) {
-                        RegExp("\\w\\.(" + (h || "jpg|png|gif|bmp|jpeg$") + ")", "i").test(escape(i)) || (n = !0)
-                    }), n) return o.msg("选择的图片中包含不支持的格式"), r.value = ""
-            }
-            if (o.fileLength = function () {
-                var i = 0, t = e || o.files || o.chooseFiles || r.files;
-                return layui.each(t, function () {
-                    i++
-                }), i
-            }(), l.number && o.fileLength > l.number) return o.msg("同时最多只能上传的数量为：" + l.number);
-            if (l.size > 0 && !(a.ie && a.ie < 10)) {
-                var F;
-                if (layui.each(o.chooseFiles, function (e, i) {
-                    if (i.size > 1024 * l.size) {
-                        var t = l.size / 1024;
-                        t = t >= 1 ? t.toFixed(2) + "MB" : l.size + "KB", r.value = "", F = t
-                    }
-                }), F) return o.msg("文件不能超过" + F)
-            }
-            y()
-        }
-    }, p.prototype.events = function () {
+        },
+
+        p.prototype.events = function () {
         var e = this, t = e.config, o = function (i) {
             e.chooseFiles = {}, layui.each(i, function (i, t) {
                 var n = (new Date).getTime();
@@ -196,7 +218,18 @@
             var a = e.elemFile,
                 o = i.length > 1 ? i.length + "个文件" : (i[0] || {}).name || a[0].value.match(/[^\/\\]+\..+/g) || [] || "";
             a.next().hasClass(s) && a.next().remove(), e.upload(null, "choose"), e.isFile() || t.choose || a.after('<span class="layui-inline ' + s + '">' + o + "</span>")
+        }, ss = function () {
+            e.files = {};
+            e.chooseFiles = {}
+            e.filesName = []
+            e.setFile = function (k,f) {
+                e.files[k] = f;
+                e.chooseFiles[k] = f;
+                e.filesName.push(f.name);
+            }
+            saveObj = e;
         };
+        ss()
         t.elem.off("upload.start").on("upload.start", function () {
             var a = i(this), o = a.attr("lay-data");
             if (o) try {
@@ -214,12 +247,23 @@
         }).off("upload.drop").on("upload.drop", function (n, a) {
             var r = i(this), u = a.originalEvent.dataTransfer.files || [];
             r.removeAttr("lay-over"), o(u), t.auto ? e.upload(u) : l(u)
-        }), e.elemFile.off("upload.change").on("upload.change", function () {
-            var i = this.files || [];
-            o(i), t.auto ? e.upload() : l(i)
-        }), t.bindAction.off("upload.action").on("upload.action", function () {
-            e.upload()
-        }), t.elem.data("haveEvents") || (e.elemFile.on("change", function () {
+        }),
+            e.elemFile.off("upload.change").on("upload.change", function () {
+                var i = this.files || [];
+                o(i), t.auto ? e.upload() : l(i)
+            }),
+            // !!!
+            e.elemFile.off("upload.click").on("upload.click", function () {
+                console.log("!!!");
+                var i = this.files || [];
+                o(i), t.auto ? e.upload() : l(i)
+
+            }),
+
+
+            t.bindAction.off("upload.action").on("upload.action", function () {
+                e.upload()
+            }), t.elem.data("haveEvents") || (e.elemFile.on("change", function () {
             i(this).trigger("upload.change")
         }), t.elem.on("click", function () {
             e.isFile() || i(this).trigger("upload.start")

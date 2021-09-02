@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -71,15 +72,23 @@ public class UploadController extends BaseController{
         // 文件夹处理
         String originalFilename = param.getFile().getOriginalFilename();
         if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
+            List<FileResponseVo> list = FileUtils.uploadDirZip(param, getPeersUrl() + Constant.API_UPLOAD);
+            list.forEach(e ->{
+                UploadResultVo resultVo = (UploadResultVo) e.getData();
+                String filePath = resultVo.getPath();
+                fileService.saveFilePathByUserId(getUser().getId(),filePath);
+            });
+            UploadResultVo resultVo = new UploadResultVo();
 
+            return FileResponseVo.success("上传文件夹成功!");
+        }else {
+            FileResponseVo responseVo = FileUtils.upload(param.getFile(), param.getPath(), param.getScene(),
+                    getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
+            UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
+            String filePath = resultVo.getPath();
+            fileService.saveFilePathByUserId(getUser().getId(),filePath);
+            return responseVo;
         }
-
-        FileResponseVo responseVo = FileUtils.upload(param.getFile(), param.getPath(), param.getScene(),
-                getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
-        UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
-        String filePath = resultVo.getPath();
-        fileService.saveFilePathByUserId(getUser().getId(),filePath);
-        return responseVo;
     }
 
 

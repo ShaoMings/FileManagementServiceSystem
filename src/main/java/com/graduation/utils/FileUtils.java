@@ -11,6 +11,7 @@ import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -30,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 /**
  * Description 文件操作工具类
@@ -68,7 +70,7 @@ public class FileUtils {
      * 将inputStream转为file对象
      *
      * @param inputStream 输入流
-     * @param outputPath 输出文件路径
+     * @param outputPath  输出文件路径
      * @return file对象
      */
     public static File inputStreamToFile(InputStream inputStream, String outputPath) {
@@ -229,11 +231,61 @@ public class FileUtils {
         }
     }
 
+    /**
+     * 通过输入流以及文件名上传文件
+     *
+     * @param inputStream   文件输入流
+     * @param fileName      文件名
+     * @param uploadPath    自定义上传路径 不含文件名
+     * @param scene         场景
+     * @param uploadApiUrl  服务地址/组名/上传文件api
+     * @param serverAddress 服务地址     用于拼接为文件资源访问
+     * @return 是否上传成功
+     */
+    public static FileResponseVo uploadDirFileByInputStream(InputStream inputStream, String fileName, String uploadPath, String scene, String uploadApiUrl, String serverAddress) {
+        try {
+            CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+            CloseableHttpResponse httpResponse = null;
+            // 设置请求对象属性
+            if (uploadPath == null) {
+                uploadPath = "";
+            }
+            RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(200000)
+                    .setSocketTimeout(200000)
+                    .build();
+            // 创建post请求对象 并指定请求url
+            HttpPost httpPost = new HttpPost(uploadApiUrl);
+            httpPost.setConfig(requestConfig);
+            MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .setCharset(StandardCharsets.UTF_8)
+                    .addTextBody("output", "json")
+                    .addTextBody("path", uploadPath)
+                    .addTextBody("scene", scene)
+                    .addBinaryBody("file", inputStream,
+                            ContentType.DEFAULT_BINARY, fileName);
+            httpPost.setEntity(multipartEntityBuilder.build());
+            httpResponse = httpClient.execute(httpPost);
 
-    public static boolean uploadDirectoryAndFile(){
+            if (httpResponse.getStatusLine().getStatusCode() == Constant.SUCCESS_STATUS_CODE) {
+                String respStr = EntityUtils.toString(httpResponse.getEntity());
+                UploadResultVo resultVo = JSONUtil.toBean(respStr, UploadResultVo.class);
+                String serverFilePath = resultVo.getPath();
+                resultVo.setUrl(serverAddress + serverFilePath);
+                // serverFilePath为文件服务器存放的真实路径 前缀有组名 如果设置了组名的话
+                return FileResponseVo.success(resultVo);
+            }
+            httpClient.close();
+            httpResponse.close();
+            return FileResponseVo.fail("文件上传出错!");
+        } catch (Exception e) {
+            return FileResponseVo.fail("文件上传出错!");
 
-        return false;
+        }
     }
+
+
+
 
 
     /**
@@ -347,22 +399,23 @@ public class FileUtils {
 
     /**
      * 通过url下载文件到输入流
+     *
      * @param downloadUrl 文件下载url
      * @return 文件输入流 以及 文件名
      */
-    public static Map<String, Object> getFileDownloadStreamByUrl(String downloadUrl){
+    public static Map<String, Object> getFileDownloadStreamByUrl(String downloadUrl) {
         BufferedInputStream in = null;
         HashMap<String, Object> objectHashMap = new HashMap<>();
         try {
-            URL  url= new URL(downloadUrl);
-            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            URL url = new URL(downloadUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setConnectTimeout(5000);
             String filename = getFileName(conn);
             in = new BufferedInputStream(url.openStream());
-            objectHashMap.put("inputStream",in);
-            objectHashMap.put("filename",filename);
+            objectHashMap.put("inputStream", in);
+            objectHashMap.put("filename", filename);
             return objectHashMap;
-        }catch (IOException e){
+        } catch (IOException e) {
             return null;
         }
     }
@@ -370,54 +423,80 @@ public class FileUtils {
 
     /**
      * 通过git链接获取git文件名
+     *
      * @param conn 连接对象
      * @return 文件名
      */
-    private static String getFileName(HttpURLConnection conn){
+    private static String getFileName(HttpURLConnection conn) {
         String newUrl = conn.getURL().getFile();
-        if (newUrl!=null && newUrl.length()>0){
+        if (newUrl != null && newUrl.length() > 0) {
             try {
-                newUrl = URLDecoder.decode(newUrl,"UTF-8");
-            }catch (UnsupportedEncodingException e){
+                newUrl = URLDecoder.decode(newUrl, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
             int pos = newUrl.indexOf("?");
-            if (pos>=0){
-                newUrl = newUrl.substring(0,pos);
+            if (pos >= 0) {
+                newUrl = newUrl.substring(0, pos);
             }
             pos = newUrl.lastIndexOf("/");
-            return newUrl.substring(pos+1);
+            return newUrl.substring(pos + 1);
         }
         return null;
     }
 
 
-    public static FileResponseVo uploadDirZip(UploadParamVo param){
+    public static List<FileResponseVo> uploadDirZip(UploadParamVo param,String uploadUrl) {
         String originalFilename = param.getFile().getOriginalFilename();
-        String srcFilePath = Constant.OUTPUT_TMP_FILE_PATH+originalFilename;
-        File zipSource = FileUtils.multipartFileToFile(param.getFile(), srcFilePath);
-        String destDirPath = Constant.OUTPUT_TMP_FILE_PATH+originalFilename.substring(0,originalFilename.lastIndexOf("@"))+"/";
+        String srcFilePath = Constant.OUTPUT_TMP_FILE_PATH + originalFilename.substring(0, originalFilename.lastIndexOf("@"))+".zip";
+        MultipartFile multipartFile = param.getFile();
+        ZipFile zipFile = null;
+        File zipSource = null;
+        List<FileResponseVo> list = new ArrayList<>();
         try {
-            ZipFile zipFile = new ZipFile(zipSource);
-            // 解压
+            InputStream fileInputStream = multipartFile.getInputStream();
+            FileOutputStream fos = new FileOutputStream(srcFilePath);
+            IOUtils.copy(fileInputStream, fos);
+            fos.flush();
+            fileInputStream.close();
+            fos.close();
+            zipSource = new File(srcFilePath);
+            if (!zipSource.exists()){
+                throw new RuntimeException(originalFilename + "不存在");
+            }
+            zipFile = new ZipFile(zipSource);
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()){
                 ZipEntry entry = entries.nextElement();
-                if (entry.isDirectory()){
-
+                if (!entry.isDirectory()){
+                    InputStream inputStream = zipFile.getInputStream(entry);
+                    String uploadPath = param.getPath() +"/"+  entry.getName().substring(0,entry.getName().lastIndexOf("/"));
+                    String filename = entry.getName().substring(entry.getName().lastIndexOf("/")+1);
+                    FileResponseVo responseVo = uploadDirFileByInputStream(inputStream, filename, uploadPath, param.getScene(), uploadUrl, param.getShowUrl());
+                    list.add(responseVo);
+                    inputStream.close();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+            if (zipFile!=null){
+                try {
+                    zipFile.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (zipSource!=null){
+                zipSource.delete();
+            }
         }
-        return FileResponseVo.fail("上传失败!");
+        return list;
     }
 
 
     public static void main(String[] args) {
         Map<String, Object> objectMap = getFileDownloadStreamByUrl("https://gitee.com/shaoming123/file-management-service-system.git");
-
-
     }
 
 }

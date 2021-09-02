@@ -47,16 +47,21 @@ function ran() {
 
 let count = 0;
 let uploadFileList = {}
-let saveLastObj;
+let tmp;
 layui.use(['upload', 'element'], function () {
     let $ = layui.jquery, upload = layui.upload, element = layui.element;
 
     $('#dirList').on('click',function (event) {
-        if (saveLastObj === undefined){
-            layer.msg("请先选择文件上传,之后才可以进行上传文件夹操作!");
-            event.preventDefault();
-            return false;
-        }
+        tmp = uploadListIns;
+        // if (saveLastObj === undefined){
+        //     layer.msg("请先选择文件上传,之后才可以进行上传文件夹操作!");
+        //     $('#fileList').trigger('click');
+        //     $('#fileList').on('click',function (event) {
+        //         event.preventDefault();
+        //     });
+        //     event.preventDefault();
+        //     return false;
+        // }
     })
 
     $('#dirList').change(async function () {
@@ -66,6 +71,8 @@ layui.use(['upload', 'element'], function () {
         }
         let zipFileName = folder[0].webkitRelativePath.split("/")[0] + ".zip";
         let zipFileList = [ran()+'-dir',await generateZipFile(zipFileName, folder)];
+        console.log(tmp);
+        tmp.saveObj.setFile(zipFileList[0],zipFileList[1]);
         choose(zipFileList);
     });
     //多文件上传
@@ -95,31 +102,36 @@ layui.use(['upload', 'element'], function () {
             })
         },
         choose: window.choose = function (obj) {
+            console.log(uploadListIns);
+            console.log(obj);
             //将每次选择的文件追加到文件队列
             let files = {}
             if (typeof (obj.pushFile) === 'function') {
-                saveLastObj = obj;
-                uploadFileList = obj.pushFile();
+                uploadFileList =  obj.pushFile();
             } else {
-                if (saveLastObj !==undefined){
-                    if (typeof (saveLastObj.setFile) === 'function') {
-                        saveLastObj.setFile(obj[0],obj[1]);
+                if (tmp !==undefined){
+                    if (typeof (tmp.saveObj.setFile) === 'function') {
+                        if (obj[0].endsWith("dir") && !obj[1].name.endsWith("@dir.zip")){
+                            let dirFlagName = obj[1].name.substring(0,obj[1].name.lastIndexOf(".")) + "@dir.zip";
+                            obj[1] = new File([obj[1]],dirFlagName,{type:obj[1].type});
+                        }
+                        tmp.saveObj.setFile(obj[0],obj[1]);
                         uploadFileList[obj[0]] = obj[1];
                     }
                 }
             }
+            console.log(tmp)
             //读取本地文件
             demoListView.html(" ");
             files = this.files = uploadFileList;
             for (let key in files) {
                 count++;
                 let name;
-                if (key.endsWith("dir")){
-                    name = files[key].name.substring(0,files[key].name.lastIndexOf("."));
-                    let dirFlagName = name + "@dir.zip";
-                    files[key] = new File([files[key]],dirFlagName,{type:files[key].type});
+                console.log(key,files[key].name);
+                if (files[key].name.endsWith("@dir.zip")){
+                    name = files[key].name.substring(0,files[key].name.lastIndexOf("@"));
                 }else {
-                    name = files[key].name;
+                    name =files[key].name;
                 }
                 console.log(files);
                 let tr = $(['<tr id="upload-' + key + '">',
@@ -167,7 +179,8 @@ layui.use(['upload', 'element'], function () {
                 tds.eq(4).html('');
                 tds.eq(4).html('<a class="layui-btn layui-btn-xs" target="_blank" onclick="showUrl(\'' + res.data.url + '\');">查看链接</a>');
                 //删除文件队列已经上传成功的文件
-                return delete this.files[index];
+                this.files = uploadFileList;
+                return delete this.files[index] && delete uploadFileList[index];
             } else {
                 let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
                 tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');

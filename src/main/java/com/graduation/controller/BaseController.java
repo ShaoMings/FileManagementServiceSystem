@@ -13,6 +13,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * Description 控制层方法基类
@@ -26,6 +27,8 @@ public class BaseController {
 
     @Autowired
     PeersService peersService;
+
+    public HttpSession session;
 
     /**
      * 获取登录用户信息

@@ -12,9 +12,11 @@ import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
+import com.graduation.utils.api.ProgressCallback;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -194,7 +196,6 @@ public class FileUtils {
             ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
             StringBody stringPath = new StringBody(uploadPath,contentType);
             StringBody stringScene = new StringBody(scene,contentType);
-
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setCharset(StandardCharsets.UTF_8)
                     .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
@@ -203,7 +204,16 @@ public class FileUtils {
                     .addPart("scene", stringScene)
                     .addBinaryBody("file", multipartFile.getInputStream(),
                             ContentType.DEFAULT_BINARY, multipartFile.getOriginalFilename());
-            httpPost.setEntity(multipartEntityBuilder.build());
+            HttpEntity entity = multipartEntityBuilder.build();
+            httpPost.setEntity(entity);
+
+
+            // 实时上传进度
+            ProgressHttpEntityWrapper entityWrapper = new ProgressHttpEntityWrapper(entity, progress -> {
+                   System.out.println(progress);
+            },multipartFile.getSize());
+
+            httpPost.setEntity(entityWrapper);
             httpResponse = httpClient.execute(httpPost);
 
             if (httpResponse.getStatusLine().getStatusCode() == Constant.SUCCESS_STATUS_CODE) {

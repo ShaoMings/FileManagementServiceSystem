@@ -1,5 +1,6 @@
 package com.graduation.utils;
 
+import cn.hutool.core.io.resource.InputStreamResource;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
@@ -11,6 +12,7 @@ import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
+import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.config.RequestConfig;
@@ -19,14 +21,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.zip.ZipEntry;
@@ -93,48 +98,75 @@ public class FileUtils {
     /**
      * 文件上传操作  采用hutools工具包post上传
      *
-     * @param tempPath      临时路径 创建文件对象用
-     * @param url           服务器地址
-     * @param path          路径
+     * @param inputStream   文件输入流
+     * @param fileName      文件名
+     * @param uploadPath    自定义上传路径 不含文件名
      * @param scene         场景
-     * @param multipartFile 文件对象
-     * @param backUrl       回调url 用于文件资源访问
+     * @param uploadApiUrl  服务地址/组名/上传文件api
+     * @param serverAddress 服务地址     用于拼接为文件资源访问
      * @return 文件响应对象
      */
-    public static FileResponseVo upload(String tempPath, String url, String path,
-                                        String scene, MultipartFile multipartFile, String backUrl) {
-        File parentFile = new File(tempPath);
-        // 对象存在
-        if (parentFile.exists()) {
-            // 不是目录
-            if (!parentFile.isDirectory()) {
-                return FileResponseVo.fail("该临时目录不是一个文件夹");
-            }
-        } else {
-            // 不存在 创建该目录
-            parentFile.mkdir();
-        }
-        File file = FileUtils.multipartFileToFile(multipartFile, tempPath);
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("output", "json");
-        map.put("path", path);
-        map.put("scene", scene);
-        map.put("file", file);
+    public static FileResponseVo upload(InputStream inputStream, String fileName, String uploadPath, String scene, String uploadApiUrl, String serverAddress) {
         try {
-            String result = HttpUtil.post(url, map);
+            InputStreamResource isr = new InputStreamResource(inputStream,
+                    fileName);
+            HashMap<String, Object> map = new HashMap<>(8);
+            map.put("output", "json");
+            map.put("path", uploadPath);
+            map.put("scene", scene);
+            map.put("file", isr);
+            String result = HttpUtil.post(uploadApiUrl, map);
             UploadResultVo resultVo = JSONUtil.toBean(result, UploadResultVo.class);
-            resultVo.setUrl(backUrl + resultVo.getPath());
+            resultVo.setUrl(serverAddress + resultVo.getPath());
             return FileResponseVo.success(resultVo);
         } catch (Exception e) {
-            file.delete();
             return FileResponseVo.fail("文件上传出错!");
         }
     }
 
 
     /**
+     * 通过 OKHttp3上传文件
+     * @param multipartFile 文件对象
+     * @param uploadPath 文件上传的路径
+     * @param scene 场景
+     * @param uploadApiUrl 上传接口
+     * @param serverAddress 服务地址
+     * @return 文件上传响应对象
+     */
+    public static FileResponseVo uploadFilesByOkHttp(MultipartFile multipartFile, String uploadPath, String scene, String uploadApiUrl, String serverAddress) {
+        try {
+            OkHttpClient httpClient = new OkHttpClient();
+            MultipartBody multipartBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+                    .addFormDataPart("output", "json")
+                    .addFormDataPart("path", uploadPath)
+                    .addFormDataPart("scene", scene)
+                    .addFormDataPart("file", multipartFile.getOriginalFilename(),
+                            RequestBody.create(MediaType.parse("multipart/form-data;charset=utf-8"), multipartFile.getBytes())).build();
+            Request request = new Request.Builder()
+                    .url(uploadApiUrl)
+                    .post(multipartBody)
+                    .build();
+            Response response = httpClient.newCall(request).execute();
+            if (response.isSuccessful()){
+                ResponseBody body = response.body();
+                if (body!=null){
+                    UploadResultVo resultVo = JSONUtil.toBean(body.string(), UploadResultVo.class);
+                    resultVo.setUrl(serverAddress + resultVo.getPath());
+                    return FileResponseVo.success(resultVo);
+                }
+            }
+            return FileResponseVo.fail("文件上传出错!");
+        }catch (Exception e){
+            return FileResponseVo.fail("文件上传出错!");
+        }
+    }
+
+
+
+    /**
      * 文件上传操作  采用httpClient方式上传文件
-     * 为什么要用这个方式?  hutool和okhttp上传大文件都会有内存溢出的报错
+     * 为什么要用这个方式?  hutool和okhttp 上传大文件都会有内存溢出的报错
      *
      * @param multipartFile 文件对象
      * @param scene         场景
@@ -157,12 +189,18 @@ public class FileUtils {
             // 创建post请求对象 并指定请求url
             HttpPost httpPost = new HttpPost(uploadApiUrl);
             httpPost.setConfig(requestConfig);
+
+            // 解决字符串参数中文乱码问题
+            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
+            StringBody stringPath = new StringBody(uploadPath,contentType);
+            StringBody stringScene = new StringBody(scene,contentType);
+
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
-                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                     .setCharset(StandardCharsets.UTF_8)
+                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
                     .addTextBody("output", "json")
-                    .addTextBody("path", uploadPath)
-                    .addTextBody("scene", scene)
+                    .addPart("path", stringPath)
+                    .addPart("scene", stringScene)
                     .addBinaryBody("file", multipartFile.getInputStream(),
                             ContentType.DEFAULT_BINARY, multipartFile.getOriginalFilename());
             httpPost.setEntity(multipartEntityBuilder.build());
@@ -210,8 +248,7 @@ public class FileUtils {
             HttpPost httpPost = new HttpPost(uploadApiUrl);
             httpPost.setConfig(requestConfig);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
-                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                    .setCharset(StandardCharsets.UTF_8)
+                    .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
                     .addTextBody("path", uploadPath)
                     .addTextBody("scene", scene)
@@ -219,7 +256,6 @@ public class FileUtils {
                             ContentType.DEFAULT_BINARY, fileName);
             httpPost.setEntity(multipartEntityBuilder.build());
             httpResponse = httpClient.execute(httpPost);
-
             if (httpResponse.getStatusLine().getStatusCode() == Constant.SUCCESS_STATUS_CODE) {
                 return true;
             }
@@ -257,8 +293,7 @@ public class FileUtils {
             HttpPost httpPost = new HttpPost(uploadApiUrl);
             httpPost.setConfig(requestConfig);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
-                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
-                    .setCharset(StandardCharsets.UTF_8)
+                    .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
                     .addTextBody("path", uploadPath)
                     .addTextBody("scene", scene)
@@ -283,9 +318,6 @@ public class FileUtils {
 
         }
     }
-
-
-
 
 
     /**
@@ -446,9 +478,9 @@ public class FileUtils {
     }
 
 
-    public static List<FileResponseVo> uploadDirZip(UploadParamVo param,String uploadUrl) {
+    public static List<FileResponseVo> uploadDirZip(UploadParamVo param, String uploadUrl) {
         String originalFilename = param.getFile().getOriginalFilename();
-        String srcFilePath = Constant.OUTPUT_TMP_FILE_PATH + originalFilename.substring(0, originalFilename.lastIndexOf("@"))+".zip";
+        String srcFilePath = Constant.OUTPUT_TMP_FILE_PATH + originalFilename.substring(0, originalFilename.lastIndexOf("@")) + ".zip";
         MultipartFile multipartFile = param.getFile();
         ZipFile zipFile = null;
         File zipSource = null;
@@ -461,33 +493,33 @@ public class FileUtils {
             fileInputStream.close();
             fos.close();
             zipSource = new File(srcFilePath);
-            if (!zipSource.exists()){
+            if (!zipSource.exists()) {
                 throw new RuntimeException(originalFilename + "不存在");
             }
             zipFile = new ZipFile(zipSource);
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
-            while (entries.hasMoreElements()){
+            while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                if (!entry.isDirectory()){
+                if (!entry.isDirectory()) {
                     InputStream inputStream = zipFile.getInputStream(entry);
-                    String uploadPath = param.getPath() +"/"+  entry.getName().substring(0,entry.getName().lastIndexOf("/"));
-                    String filename = entry.getName().substring(entry.getName().lastIndexOf("/")+1);
-                    FileResponseVo responseVo = uploadDirFileByInputStream(inputStream, filename, uploadPath, param.getScene(), uploadUrl, param.getShowUrl());
+                    String filename = entry.getName().substring(entry.getName().lastIndexOf("/") + 1);
+                    String uploadPath = param.getPath() + "/" + entry.getName().substring(0, entry.getName().lastIndexOf("/"));
+                    FileResponseVo responseVo = upload(inputStream,filename, uploadPath, param.getScene(),uploadUrl, param.getShowUrl());
                     list.add(responseVo);
                     inputStream.close();
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
-        }finally {
-            if (zipFile!=null){
+        } finally {
+            if (zipFile != null) {
                 try {
                     zipFile.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            if (zipSource!=null){
+            if (zipSource != null) {
                 zipSource.delete();
             }
         }

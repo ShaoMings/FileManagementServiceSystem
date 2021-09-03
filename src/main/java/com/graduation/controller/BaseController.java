@@ -78,6 +78,7 @@ public class BaseController {
             Integer userPeersId = getUser().getPeersid();
             Peers userPeers = peersService.getById(userPeersId);
             if (!StringUtils.isBlank(userPeers.getGroupName())) {
+                getRequest().getSession().setAttribute("peers",userPeers);
                 return userPeers.getServerAddress() + "/" + userPeers.getGroupName();
             }
             return userPeers.getServerAddress();

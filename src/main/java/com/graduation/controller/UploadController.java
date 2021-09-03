@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import static com.graduation.utils.FileUtils.upload;
+
 /**
  * Description 文件上传控制器
  *
@@ -68,9 +70,9 @@ public class UploadController extends BaseController{
         if (StrUtil.isBlank(param.getShowUrl())){
             param.setShowUrl(getUploadShowUrl());
         }
-
+        MultipartFile multipartFile = param.getFile();
         // 文件夹处理
-        String originalFilename = param.getFile().getOriginalFilename();
+        String originalFilename = multipartFile.getOriginalFilename();
         if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
             List<FileResponseVo> list = FileUtils.uploadDirZip(param, getPeersUrl() + Constant.API_UPLOAD);
             list.forEach(e ->{
@@ -79,11 +81,14 @@ public class UploadController extends BaseController{
                 fileService.saveFilePathByUserId(getUser().getId(),filePath);
             });
             UploadResultVo resultVo = new UploadResultVo();
-
             return FileResponseVo.success("上传文件夹成功!");
         }else {
-            FileResponseVo responseVo = FileUtils.upload(param.getFile(), param.getPath(), param.getScene(),
-                    getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
+            FileResponseVo responseVo = null;
+            //                responseVo = upload(multipartFile.getInputStream(),multipartFile.getOriginalFilename(),param.getPath(),
+//                        param.getScene(),getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
+            responseVo = upload(multipartFile,param.getPath(),
+                    param.getScene(),getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
+            assert responseVo != null;
             UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
             String filePath = resultVo.getPath();
             fileService.saveFilePathByUserId(getUser().getId(),filePath);

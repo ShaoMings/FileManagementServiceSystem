@@ -53,25 +53,16 @@ layui.use(['upload', 'element'], function () {
 
     $('#dirList').on('click',function (event) {
         tmp = uploadListIns;
-        // if (saveLastObj === undefined){
-        //     layer.msg("请先选择文件上传,之后才可以进行上传文件夹操作!");
-        //     $('#fileList').trigger('click');
-        //     $('#fileList').on('click',function (event) {
-        //         event.preventDefault();
-        //     });
-        //     event.preventDefault();
-        //     return false;
-        // }
     })
-
+    let dirLoadIndex;
     $('#dirList').change(async function () {
         let folder = this.files;
         if (folder === null || folder === undefined){
             return;
         }
+        dirLoadIndex = layer.load();
         let zipFileName = folder[0].webkitRelativePath.split("/")[0] + ".zip";
         let zipFileList = [ran()+'-dir',await generateZipFile(zipFileName, folder)];
-        console.log(tmp);
         tmp.saveObj.setFile(zipFileList[0],zipFileList[1]);
         choose(zipFileList);
     });
@@ -117,17 +108,16 @@ layui.use(['upload', 'element'], function () {
                         }
                         tmp.saveObj.setFile(obj[0],obj[1]);
                         uploadFileList[obj[0]] = obj[1];
+                        layer.close(dirLoadIndex);
                     }
                 }
             }
-            console.log(tmp)
             //读取本地文件
             demoListView.html(" ");
             files = this.files = uploadFileList;
             for (let key in files) {
                 count++;
                 let name;
-                console.log(key,files[key].name);
                 if (files[key].name.endsWith("@dir.zip")){
                     name = files[key].name.substring(0,files[key].name.lastIndexOf("@"));
                 }else {

@@ -84,8 +84,6 @@ public class UploadController extends BaseController{
             return FileResponseVo.success("上传文件夹成功!");
         }else {
             FileResponseVo responseVo = null;
-            //                responseVo = upload(multipartFile.getInputStream(),multipartFile.getOriginalFilename(),param.getPath(),
-//                        param.getScene(),getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
             responseVo = upload(multipartFile,param.getPath(),
                     param.getScene(),getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
             assert responseVo != null;

@@ -208,6 +208,7 @@ public class FileUtils {
             httpPost.setEntity(entity);
 
 
+
             // 实时上传进度
             ProgressHttpEntityWrapper entityWrapper = new ProgressHttpEntityWrapper(entity, progress -> {
                    System.out.println(progress);

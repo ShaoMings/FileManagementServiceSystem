@@ -4,6 +4,7 @@ import com.graduation.utils.AesUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.utils.FileUtils;
 import com.graduation.utils.NetUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 
 /**
  * Description 文件分享处理类
@@ -38,7 +42,7 @@ public class ShareFileController extends BaseController {
         if (session.getAttribute("isLogin")!=null && (Boolean) session.getAttribute("isLogin")){
             peerAddress = getPeersUrl();
         }else {
-            peerAddress = NetUtils.getLocalIpV4Address()+":"+port+"/group1";
+            peerAddress = "http://"+NetUtils.getLocalIpV4Address()+":"+port+"/group1";
         }
         code = code.replaceAll(" ", "+");
         String path = AesUtils.decrypt(code);
@@ -47,12 +51,16 @@ public class ShareFileController extends BaseController {
         if (!DateConverter.isOverdueBaseNow(untilToTime)){
             String filename = groupFilePath.substring(groupFilePath.lastIndexOf("/")+1);
             String tmpPath = groupFilePath.substring(groupFilePath.indexOf("/")+1,groupFilePath.lastIndexOf("/"));
-            InputStream inputStream = FileUtils.getFileDownloadStream(tmpPath,filename,peerAddress);
+            filename = URLEncoder.encode(filename, "UTF-8");
+            filename = StringUtils.replace(filename, "+", "%20");
+            URL url = new URL(peerAddress + "/" + tmpPath + "/" + filename);
+            URLConnection conn = url.openConnection();
+            InputStream inputStream = conn.getInputStream();
+            response.reset();
+            response.setContentType(conn.getContentType());
             response.setCharacterEncoding("UTF-8");
-            response.setHeader("content-type", "application/octet-stream;charset=UTF-8");
-            response.setContentType("application/octet-stream;charset=UTF-8");
             try {
-                response.setHeader("Content-Disposition", "attachment;filename=" + java.net.URLEncoder.encode(filename.trim(), "UTF-8"));
+                response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"));
             } catch (UnsupportedEncodingException e1) {
                 e1.printStackTrace();
             }

@@ -1,6 +1,8 @@
 server:
   tomcat:
     uri-encoding: UTF-8
+    max-keep-alive-requests: -1
+    connection-timeout: 15000
   port: 8081
   servlet:
     session:
@@ -14,9 +16,9 @@ upload.temp.path: /temp/
 default:
   server:
     port: 8080
-    address: http://10.60.1.101:8080
+    address: http://1.15.221.117:8080
     group: group1
-    peerAddress: http://10.60.1.101:8080/group1
+    peerAddress: http://1.15.221.117:8080/group1
 
 spring:
   thymeleaf:

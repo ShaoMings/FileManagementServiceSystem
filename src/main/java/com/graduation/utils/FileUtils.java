@@ -208,10 +208,9 @@ public class FileUtils {
             httpPost.setEntity(entity);
 
 
-
             // 实时上传进度
             ProgressHttpEntityWrapper entityWrapper = new ProgressHttpEntityWrapper(entity, progress -> {
-                   System.out.println(progress);
+//                   System.out.println(progress);
             },multipartFile.getSize());
 
             httpPost.setEntity(entityWrapper);
@@ -255,14 +254,20 @@ public class FileUtils {
             RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(200000)
                     .setSocketTimeout(200000)
                     .build();
+
+            // 解决字符串参数中文乱码问题
+            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
+            StringBody stringPath = new StringBody(uploadPath,contentType);
+            StringBody stringScene = new StringBody(scene,contentType);
+
             // 创建post请求对象 并指定请求url
             HttpPost httpPost = new HttpPost(uploadApiUrl);
             httpPost.setConfig(requestConfig);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
-                    .addTextBody("path", uploadPath)
-                    .addTextBody("scene", scene)
+                    .addPart("path", stringPath)
+                    .addPart("scene", stringScene)
                     .addBinaryBody("file", inputStream,
                             ContentType.DEFAULT_BINARY, fileName);
             httpPost.setEntity(multipartEntityBuilder.build());
@@ -300,14 +305,20 @@ public class FileUtils {
             RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(200000)
                     .setSocketTimeout(200000)
                     .build();
+
+            // 解决字符串参数中文乱码问题
+            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
+            StringBody stringPath = new StringBody(uploadPath,contentType);
+            StringBody stringScene = new StringBody(scene,contentType);
+
             // 创建post请求对象 并指定请求url
             HttpPost httpPost = new HttpPost(uploadApiUrl);
             httpPost.setConfig(requestConfig);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
-                    .addTextBody("path", uploadPath)
-                    .addTextBody("scene", scene)
+                    .addPart("path", stringPath)
+                    .addPart("scene", stringScene)
                     .addBinaryBody("file", inputStream,
                             ContentType.DEFAULT_BINARY, fileName);
             httpPost.setEntity(multipartEntityBuilder.build());

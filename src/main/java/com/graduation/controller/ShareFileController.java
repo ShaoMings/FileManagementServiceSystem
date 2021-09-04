@@ -4,6 +4,7 @@ import com.graduation.utils.AesUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.utils.FileUtils;
 import com.graduation.utils.NetUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -39,55 +40,52 @@ public class ShareFileController extends BaseController {
 
     @GetMapping("/download")
     public void downloadFileByLink(String code, HttpServletResponse response, HttpSession session) throws Exception {
-        if (session.getAttribute("isLogin")!=null && (Boolean) session.getAttribute("isLogin")){
+        if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
             peerAddress = getPeersUrl();
-        }else {
-            peerAddress = "http://"+NetUtils.getLocalIpV4Address()+":"+port+"/group1";
+        } else {
+            peerAddress = "http://" + NetUtils.getLocalIpV4Address() + ":" + port + "/group1";
         }
         code = code.replaceAll(" ", "+");
         String path = AesUtils.decrypt(code);
         String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
         String untilToTime = path.substring(path.lastIndexOf("@") + 1);
-        if (!DateConverter.isOverdueBaseNow(untilToTime)){
-            String filename = groupFilePath.substring(groupFilePath.lastIndexOf("/")+1);
-            String tmpPath = groupFilePath.substring(groupFilePath.indexOf("/")+1,groupFilePath.lastIndexOf("/"));
+        if (!DateConverter.isOverdueBaseNow(untilToTime)) {
+            String filename = groupFilePath.substring(groupFilePath.lastIndexOf("/") + 1);
+            String tmpPath = groupFilePath.substring(groupFilePath.indexOf("/") + 1, groupFilePath.lastIndexOf("/"));
             filename = URLEncoder.encode(filename, "UTF-8");
             filename = StringUtils.replace(filename, "+", "%20");
-            URL url = new URL(peerAddress + "/" + tmpPath + "/" + filename);
-            URLConnection conn = url.openConnection();
-            InputStream inputStream = conn.getInputStream();
-            response.reset();
-            response.setContentType(conn.getContentType());
-            response.setCharacterEncoding("UTF-8");
-            try {
-                response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(filename, "UTF-8"));
-            } catch (UnsupportedEncodingException e1) {
-                e1.printStackTrace();
-            }
-            byte[] buff = new byte[1024];
             BufferedInputStream bis = null;
             OutputStream os = null;
             try {
+                URL url = new URL(peerAddress + "/" + tmpPath + "/" + filename);
+                URLConnection conn = url.openConnection();
+                conn.setReadTimeout(20 * 1000);
+                conn.setConnectTimeout(20 * 1000);
+                final ByteArrayOutputStream output = new ByteArrayOutputStream();
+                IOUtils.copy(conn.getInputStream(), output);
+                response.reset(); // 非常重要
+                response.setHeader("Content-Disposition", "attachment; filename=" + filename);
+                response.setContentType("application/x-download");
+                response.setContentLength(conn.getContentLength());
+                byte[] buff = new byte[1024];
                 os = response.getOutputStream();
-                bis = new BufferedInputStream(inputStream);
-                int i = bis.read(buff);
-                while (i != -1) {
-                    os.write(buff, 0, buff.length);
+                bis = new BufferedInputStream(new ByteArrayInputStream(output.toByteArray()));
+                int i = 0;
+                while ((i = bis.read(buff)) != -1) {
+                    os.write(buff, 0, i);
                     os.flush();
-                    i = bis.read(buff);
                 }
-            }catch (Exception e){
+            } catch (IOException e) {
                 e.printStackTrace();
-            }finally {
-                if (bis != null) {
-                    try {
-                        bis.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            } finally {
+                try {
+                    assert bis != null;
+                    bis.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-        }else {
+        } else {
             response.sendRedirect("/error/overdue");
         }
     }

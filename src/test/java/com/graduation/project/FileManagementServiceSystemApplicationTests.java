@@ -11,6 +11,8 @@ import com.graduation.service.UserService;
 import com.graduation.utils.Constant;
 import com.graduation.utils.NetUtils;
 import com.graduation.utils.PictureConverter;
+import com.graduation.utils.download.SiteFileFetch;
+import com.graduation.utils.download.SiteInfoBean;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -48,11 +50,12 @@ class FileManagementServiceSystemApplicationTests {
     }
 
     @Test
-    void testStream() throws FileNotFoundException {
+    void testStream() {
 
     }
 
     @Test
     void testUpdatePath() {
+
     }
 }

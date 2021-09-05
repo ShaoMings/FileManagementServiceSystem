@@ -1,8 +1,11 @@
 package com.graduation.utils;
 
+import com.graduation.utils.download.SiteFileFetch;
+import com.graduation.utils.download.SiteInfoBean;
 import ws.schild.jave.Encoder;
 import ws.schild.jave.EncoderException;
 
+import java.io.FileOutputStream;
 import java.security.MessageDigest;
 
 /**
@@ -43,7 +46,17 @@ public class Md5Utils {
     }
 
     public static void main(String[] args) {
-//        System.out.println(encode("shaoming"));
+        try {
+            String url = "http://node-1:8080/group1/我的文件/TheWormValley.mp4";
+            String outputPath = Constant.OUTPUT_TMP_FILE_PATH;
+            String filename = "TheWormValley.mp4";
+            FileOutputStream fileOutputStream = new FileOutputStream(outputPath + "/test/"+filename);
+            SiteInfoBean bean = new SiteInfoBean(url, outputPath,filename,fileOutputStream, 5);
+            SiteFileFetch fileFetch = new SiteFileFetch(bean);
+            fileFetch.start();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

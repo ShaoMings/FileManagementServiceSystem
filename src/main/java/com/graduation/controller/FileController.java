@@ -269,6 +269,13 @@ public class FileController extends BaseController {
         }
     }
 
+    /**
+     * 文件分享 接口
+     * @param shareFileVo 分享信息封装类
+     * @param request 请求对象
+     * @return 响应对象
+     * @throws Exception 异常
+     */
     @RequestMapping("/share")
     @ResponseBody
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
@@ -281,6 +288,12 @@ public class FileController extends BaseController {
         return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/s/download?code=" + code, check, untilToTime));
     }
 
+    /**
+     *  异源文件导入接口
+     * @param path 当前保存路径
+     * @param link 异源链接
+     * @return 响应对象
+     */
     @RequestMapping("/import")
     @ResponseBody
     public FileResponseVo downloadFromLink(String path,String link){

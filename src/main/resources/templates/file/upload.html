@@ -58,19 +58,19 @@
 			<div class="layui-card">
 				<div class="layui-card-header">上传配置</div>
 				<div class="layui-card-body">
-					<div class="layui-form-item">
+					<div class="layui-form-item layui-hide">
 						<label class="layui-form-label">场景</label>
 						<div class="layui-input-block">
 							<input id="scene" type="text" name="scene" value="default" placeholder="请输入场景" autocomplete="off" class="layui-input">
 						</div>
 					</div>
 					<div class="layui-form-item">
-						<label class="layui-form-label">路径</label>
-						<div class="layui-input-block">
+						<label class="layui-form-label" style="width: 30px;">路径</label>
+						<div class="layui-input-block" style="margin-left: 60px;">
 							<input id="path" type="text" name="path" value="" autocomplete="off" class="layui-input" placeholder="请输入上传路径,默认不填为default">
 						</div>
 					</div>
-					<div class="layui-form-item">
+					<div class="layui-form-item layui-hide">
 						<label class="layui-form-label">服务地址</label>
 						<div class="layui-input-block">
 							<input id="showUrl" type="text" name="showUrl" value="" autocomplete="off" class="layui-input" placeholder="默认为服务地址" th:value="${showAddress}">

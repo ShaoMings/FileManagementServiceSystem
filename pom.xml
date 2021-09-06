@@ -248,6 +248,13 @@
             <systemPath>${project.basedir}/lib/aspose-slides-20.4-jdk16-c.jar</systemPath>
         </dependency>
 
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>5.12.0.202106070339-r</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>

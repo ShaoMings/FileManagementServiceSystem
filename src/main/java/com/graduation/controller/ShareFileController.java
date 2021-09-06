@@ -1,5 +1,9 @@
 package com.graduation.controller;
 
+import com.graduation.exception.FileDownloadException;
+import com.graduation.model.pojo.Peers;
+import com.graduation.service.FileService;
+import com.graduation.service.PeersService;
 import com.graduation.utils.AesUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.utils.FileUtils;
@@ -16,6 +20,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -33,6 +38,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 
 /**
@@ -46,23 +52,39 @@ import java.util.List;
 @RequestMapping("/s")
 public class ShareFileController extends BaseController {
 
+    @Autowired
+    PeersService peersService;
+    @Autowired
+    FileService fileService;
+
     private String peerAddress;
 
     @Value("${default.server.port}")
     private String port;
 
+    @Value("${default.server.group}")
+    private String group;
+
     @GetMapping("/download")
-    public void downloadFileByLink(String code,HttpServletRequest request, HttpServletResponse response, HttpSession session) throws Exception {
-        if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
-            peerAddress = getPeersUrl();
-        } else {
-            peerAddress = "http://" + NetUtils.getLocalIpV4Address() + ":" + port + "/group1";
-        }
-//        peerAddress = "http://node-1:" + port + "/group1";
+    public void downloadFileByLink(String code, HttpServletResponse response, HttpSession session) throws Exception {
         code = code.replaceAll(" ", "+");
         String path = AesUtils.decrypt(code);
         String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
         String untilToTime = path.substring(path.lastIndexOf("@") + 1);
+        if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
+            peerAddress = getPeersUrl();
+        } else {
+            // fileserver 与 web 同机器
+//            peerAddress = "http://" + NetUtils.getLocalIpV4Address() + ":" + port + "/group1";
+            Integer peerId = fileService.getFilePeerIdByFilePath("/" + group + groupFilePath);
+            if (peerId!=null){
+                Peers peers = peersService.getById(peerId);
+                peerAddress = peers.getServerAddress()+"/"+group;
+            }else {
+                throw new FileDownloadException("文件服务地址有误!");
+            }
+        }
+
         if (!DateConverter.isOverdueBaseNow(untilToTime)) {
             String name = groupFilePath.substring(groupFilePath.lastIndexOf("/") + 1);
             String tmpPath = groupFilePath.substring(groupFilePath.indexOf("/") + 1, groupFilePath.lastIndexOf("/"));

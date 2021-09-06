@@ -18,10 +18,10 @@ $('#mkdir').click(function () {
     if (dir_path === undefined && file_path === undefined) {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
     }
-    if (dir_path !== undefined && file_path !== undefined){
+    if (dir_path !== undefined && file_path !== undefined) {
         current_path += dir_path;
     }
-    console.log(current_path);
+
     layer.prompt({title: '输入文件夹名称', formType: 0}, function (name, index) {
         $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
             if (res.code === 200) {
@@ -35,21 +35,46 @@ $('#mkdir').click(function () {
     });
 });
 
+//  从url导入文件监听
 $('#import').click(function () {
+    let dir_path = $('#dir-path').data('path');
+    let file_path = $('#file-path').data('path');
+    let current_path = "files/";
+    if (dir_path !== undefined && file_path === undefined) {
+        current_path += dir_path;
+    }
+    if (file_path !== undefined && dir_path === undefined) {
+        current_path += file_path;
+    }
+    if (dir_path === undefined && file_path === undefined) {
+        current_path = "files" + $('#path-side').children("a:last-child").data("path");
+    }
+    if (dir_path !== undefined && file_path !== undefined) {
+        current_path += dir_path;
+    }
+
     layer.prompt({
-        title: '输入异源文件URL',
+        title: '输入异源链接  (git链接或者下载链接)',
         formType: 0,
-    }, function (name, index) {
-        // $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
-        //     if (res.code === 200) {
-        //         openDir(current_path.replace("files/", ""));
-        //         layer.msg("创建成功");
-        //     } else {
-        //         layer.msg(res.msg);
-        //     }
-        // });
-        // layer.close(index);
-        layer.msg(name);
+    }, function (url, index) {
+        if (url === "" || url.replace(" ","").length === 0) {
+            layer.close(index);
+            layer.msg("链接不能为空!");
+        } else {
+            layer.msg("后台正在为您导入中，请耐心稍等。(提示: 导入时长与仓库或文件大小有关)");
+            let loadIndex = layer.load();
+            $.post('/file/import', {"path": current_path, "link": url}, function (res) {
+                if (res.code === 200) {
+                    layer.close(loadIndex);
+                    openDir(current_path.replace("files/", ""));
+                    layer.msg("导入成功");
+                } else {
+                    layer.close(loadIndex);
+                    layer.msg(res.msg);
+                }
+            });
+            layer.close(index);
+        }
     });
 })
 
@@ -71,7 +96,7 @@ $('#file-result').on('click', '.rename-file-btn', function () {
     if (dir_path === undefined && file_path === undefined) {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
     }
-    if (dir_path !== undefined && file_path !== undefined){
+    if (dir_path !== undefined && file_path !== undefined) {
         current_path += dir_path;
     }
     let oldName = $(this).data('name');
@@ -126,12 +151,12 @@ $('#search').on('input', function (e) {
     }
 })
 
+// 监听文件分享
 $('#file-result').on('click', '.share-btn', function () {
-    let md5 = $(this).data('md5');
     let path = $(this).data('path');
     let filename = $(this).data('name');
     let html = '<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">' +
-        '  <legend style="font-size: 15px;margin-left: 9px">分享文件:'+filename+'</legend>' +
+        '  <legend style="font-size: 15px;margin-left: 9px">分享文件:' + filename + '</legend>' +
         '</fieldset>';
     let select = '<label class="layui-form-label" style="text-align: center;">分享有效期:</label>' +
         '<div class="layui-input-inline">\n' +
@@ -154,21 +179,21 @@ $('#file-result').on('click', '.share-btn', function () {
         anim: 2,
         shadeClose: true, //开启遮罩关闭
         area: ['510px', '320px'],
-        content: '<div class="share-file"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>'+confirm_btn+'</form></div>',
+        content: '<div class="share-file"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>' + confirm_btn + '</form></div>',
         success: function (name, index) {
             form.render('select');
-            $('#share-btn').on('click',function () {
+            $('#share-btn').on('click', function () {
                 if (checkSystemRightTime()) {
                     let shareTime = $('#share-time option:selected').val();
-                    let data = {"path":path,"filename":filename,"days":shareTime};
-                    $.post("/file/share",data,function (res) {
-                        if (res.code === 200){
+                    let data = {"path": path, "filename": filename, "days": shareTime};
+                    $.post("/file/share", data, function (res) {
+                        if (res.code === 200) {
                             layer.close(index);
                             let loadIndex = layer.load();
                             let html = '<div class="file-details-box">' +
                                 '<ul>' +
                                 '<li><span>有效期至:&nbsp;</span>' + res.data.until + '</li>' +
-                                '<li><span>访问链接:</span></br><a href=' + res.data.link +"&check="+ res.data.check+ '>' + res.data.link +"&check="+ res.data.check+ '</a></li>' +
+                                '<li><span>访问链接:</span></br><a href=' + res.data.link + "&check=" + res.data.check + '>' + res.data.link + "&check=" + res.data.check + '</a></li>' +
                                 '<li><span>提取码:&nbsp;</span>' + res.data.check + '</li>' +
                                 '<li><span>二维码:</span></br><div id="qrcode" style="width:150px; height:150px; margin:0 auto;"></div></li>' +
                                 '</ul>';
@@ -181,19 +206,19 @@ $('#file-result').on('click', '.share-btn', function () {
                                 anim: 2,
                                 shadeClose: true, //开启遮罩关闭
                                 area: ['710px', '520px'],
-                                content:html,
-                                success:function () {
-                                    let qrcode = new QRCode(document.getElementById("qrcode"),{
-                                        width:150,
-                                        height:150
+                                content: html,
+                                success: function () {
+                                    let qrcode = new QRCode(document.getElementById("qrcode"), {
+                                        width: 150,
+                                        height: 150
                                     });
                                     layer.close(loadIndex);
-                                    qrcode.makeCode(res.data.link +"&check="+ res.data.check);
+                                    qrcode.makeCode(res.data.link + "&check=" + res.data.check);
                                 }
                             })
                         }
                     })
-                }else {
+                } else {
                     layer.msg("本地时间与网络标准时间相差过大,请检查!");
                 }
             });
@@ -249,7 +274,7 @@ $('#file-result').on('click', '.converter-btn', function () {
     if (dir_path === undefined && file_path === undefined) {
         current_path = "files" + $('#path-side').children("a:last-child").data("path");
     }
-    if (dir_path !== undefined && file_path !== undefined){
+    if (dir_path !== undefined && file_path !== undefined) {
         current_path += dir_path;
     }
     let oldName = $(this).data('name');
@@ -334,7 +359,7 @@ $('#file-result').on('click', '.converter-btn', function () {
                 layer.msg("格式转换花费的时间较长,请耐心等待!");
                 let load_index = layer.load();
                 let path = current_path.substring(current_path.indexOf("/") + 1)
-                console.log(current_path);
+
                 // post: path filename src dest
                 if (audio_types.indexOf(before) !== -1) {
                     $.post("/file/audioConverter", {
@@ -650,6 +675,19 @@ $("#file-result").on("click", ".resultFile", function () {
             content: resObj.responseText
         });
         // window.open(source + "?download=0");
+    } else if (kit.getFileType(suffix) === "code") {
+        let resObj = $.ajax({url: source, async: false});
+        let converter = new showdown.Converter();
+        let context = converter.makeHtml('```md\n' + resObj.responseText + '\n```');
+        layer.open({
+            type: 1,
+            skin: 'layui-layer-rim', //加上边框
+            title: '文件内容',
+            shadeClose: true,
+            shade: 0.3,
+            area: ['90%', '90vh'],
+            content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
+        });
     } else if (kit.getFileType(suffix) === "md") {
         // MarkDown文件预览
         let resObj = $.ajax({url: source, async: false});

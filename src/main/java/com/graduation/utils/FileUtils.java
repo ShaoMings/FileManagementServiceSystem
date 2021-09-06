@@ -129,10 +129,11 @@ public class FileUtils {
 
     /**
      * 通过 OKHttp3上传文件
+     *
      * @param multipartFile 文件对象
-     * @param uploadPath 文件上传的路径
-     * @param scene 场景
-     * @param uploadApiUrl 上传接口
+     * @param uploadPath    文件上传的路径
+     * @param scene         场景
+     * @param uploadApiUrl  上传接口
      * @param serverAddress 服务地址
      * @return 文件上传响应对象
      */
@@ -150,20 +151,19 @@ public class FileUtils {
                     .post(multipartBody)
                     .build();
             Response response = httpClient.newCall(request).execute();
-            if (response.isSuccessful()){
+            if (response.isSuccessful()) {
                 ResponseBody body = response.body();
-                if (body!=null){
+                if (body != null) {
                     UploadResultVo resultVo = JSONUtil.toBean(body.string(), UploadResultVo.class);
                     resultVo.setUrl(serverAddress + resultVo.getPath());
                     return FileResponseVo.success(resultVo);
                 }
             }
             return FileResponseVo.fail("文件上传出错!");
-        }catch (Exception e){
+        } catch (Exception e) {
             return FileResponseVo.fail("文件上传出错!");
         }
     }
-
 
 
     /**
@@ -193,9 +193,9 @@ public class FileUtils {
             httpPost.setConfig(requestConfig);
 
             // 解决字符串参数中文乱码问题
-            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
-            StringBody stringPath = new StringBody(uploadPath,contentType);
-            StringBody stringScene = new StringBody(scene,contentType);
+            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), StandardCharsets.UTF_8);
+            StringBody stringPath = new StringBody(uploadPath, contentType);
+            StringBody stringScene = new StringBody(scene, contentType);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setCharset(StandardCharsets.UTF_8)
                     .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
@@ -211,7 +211,7 @@ public class FileUtils {
             // 实时上传进度
             ProgressHttpEntityWrapper entityWrapper = new ProgressHttpEntityWrapper(entity, progress -> {
 //                   System.out.println(progress);
-            },multipartFile.getSize());
+            }, multipartFile.getSize());
 
             httpPost.setEntity(entityWrapper);
             httpResponse = httpClient.execute(httpPost);
@@ -256,9 +256,9 @@ public class FileUtils {
                     .build();
 
             // 解决字符串参数中文乱码问题
-            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
-            StringBody stringPath = new StringBody(uploadPath,contentType);
-            StringBody stringScene = new StringBody(scene,contentType);
+            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), StandardCharsets.UTF_8);
+            StringBody stringPath = new StringBody(uploadPath, contentType);
+            StringBody stringScene = new StringBody(scene, contentType);
 
             // 创建post请求对象 并指定请求url
             HttpPost httpPost = new HttpPost(uploadApiUrl);
@@ -307,9 +307,9 @@ public class FileUtils {
                     .build();
 
             // 解决字符串参数中文乱码问题
-            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(),StandardCharsets.UTF_8);
-            StringBody stringPath = new StringBody(uploadPath,contentType);
-            StringBody stringScene = new StringBody(scene,contentType);
+            ContentType contentType = ContentType.create(ContentType.TEXT_PLAIN.getMimeType(), StandardCharsets.UTF_8);
+            StringBody stringPath = new StringBody(uploadPath, contentType);
+            StringBody stringScene = new StringBody(scene, contentType);
 
             // 创建post请求对象 并指定请求url
             HttpPost httpPost = new HttpPost(uploadApiUrl);
@@ -357,7 +357,9 @@ public class FileUtils {
         }
         String result = HttpUtil.post(serverAddress + Constant.API_LIST_DIR, param);
         JSONObject parseObj = JSONUtil.parseObj(result);
+        ArrayList<FileInfoVo> dirs = new ArrayList<>();
         ArrayList<FileInfoVo> files = new ArrayList<>();
+        ArrayList<FileInfoVo> list = new ArrayList<>();
         if ("".equals(parseObj.getStr(PARAM_KEY_MSG)) && StrUtil.isNotBlank(parseObj.getStr(PARAM_KEY_DATA))) {
             JSONArray array = parseObj.getJSONArray(PARAM_KEY_DATA);
             for (int i = 0; i < array.size(); i++) {
@@ -374,15 +376,18 @@ public class FileUtils {
                 fileInfoVo.setPeerAddr(backUrl);
                 // 如果是文件夹
                 if (file.getBool("is_dir")) {
+                    dirs.add(fileInfoVo);
                     fileInfoVo.setSize("0");
                 } else {
                     fileInfoVo.setSize(FileSizeConverter.getLength(Long.parseLong(file.getStr("size"))));
+                    files.add(fileInfoVo);
                 }
                 fileInfoVo.setMTime(DateConverter.timeStampToDate(file.getStr("mtime"), null));
-                files.add(fileInfoVo);
             }
         }
-        return files;
+        list.addAll(dirs);
+        list.addAll(files);
+        return list;
     }
 
 
@@ -526,7 +531,7 @@ public class FileUtils {
                     InputStream inputStream = zipFile.getInputStream(entry);
                     String filename = entry.getName().substring(entry.getName().lastIndexOf("/") + 1);
                     String uploadPath = param.getPath() + "/" + entry.getName().substring(0, entry.getName().lastIndexOf("/"));
-                    FileResponseVo responseVo = upload(inputStream,filename, uploadPath, param.getScene(),uploadUrl, param.getShowUrl());
+                    FileResponseVo responseVo = upload(inputStream, filename, uploadPath, param.getScene(), uploadUrl, param.getShowUrl());
                     list.add(responseVo);
                     inputStream.close();
                 }
@@ -549,8 +554,28 @@ public class FileUtils {
     }
 
 
-    public static void main(String[] args) {
-        Map<String, Object> objectMap = getFileDownloadStreamByUrl("https://gitee.com/shaoming123/file-management-service-system.git");
+    public static List<FileResponseVo> uploadDir(String scene, String path, String uploadUrl, String showUrl, List<String> filesPath) {
+        if (filesPath.size() <= 0) {
+            throw new FileDownloadException("文件路径有误!");
+        }
+        if ("".equals(scene) || scene == null) {
+            scene = "link";
+        }
+        List<FileResponseVo> responseVoList = new ArrayList<>();
+        String finalScene = scene;
+        filesPath.forEach(p -> {
+            try {
+                FileInputStream inputStream = new FileInputStream(p);
+                String filename = p.substring(p.lastIndexOf("/") + 1);
+                p = p.replace(Constant.OUTPUT_TMP_FILE_PATH, path + "/");
+                String uploadPath = p.substring(0, p.lastIndexOf("/"));
+                responseVoList.add(upload(inputStream, filename, uploadPath, finalScene, uploadUrl, showUrl));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
+        return responseVoList;
     }
+
 
 }

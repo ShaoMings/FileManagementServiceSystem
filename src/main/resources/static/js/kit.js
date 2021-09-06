@@ -1,5 +1,6 @@
 (function($){
-    var kit = function(){}
+    let kit = function(){}
+    let codeType = ['java','py','c','cpp','html','css','js','go','xml','yml','yaml','properties']
     kit.prototype = {
         getIconName: function(suffix) {
             var iconName;
@@ -123,6 +124,8 @@
                 fileType = "md";
             }else if (suffix == "pdf"){
                 fileType = "pdf";
+            }else if (codeType.indexOf(suffix)!=-1) {
+                fileType = "code";
             } else{
                 fileType = "other";
             }

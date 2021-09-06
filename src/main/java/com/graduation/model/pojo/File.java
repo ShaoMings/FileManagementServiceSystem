@@ -39,4 +39,8 @@ public class File implements Serializable {
     private String filePath;
 
 
+    @ApiModelProperty(value = "所属集群id")
+    private Integer peerId;
+
+
 }

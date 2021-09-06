@@ -93,9 +93,10 @@ public interface FileService extends IService<File> {
      * 通过用户id保存文件路径
      * @param id 用户id 唯一
      * @param filePath 组名+服务器存放文件路径
+     * @param peerId 所属集群id
      * @return 是否保存成功
      */
-    boolean saveFilePathByUserId(Integer id,String filePath);
+    boolean saveFilePathByUserId(Integer id,String filePath,Integer peerId);
 
 
     /**
@@ -105,6 +106,13 @@ public interface FileService extends IService<File> {
      * @return 符合要求的所有文件
      */
     List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress,String keyword);
+
+    /**
+     * 通过存储在数据库的文件路径获取文件的集群id
+     * @param filePath 文件路径
+     * @return 文件所属集群id
+     */
+    Integer getFilePeerIdByFilePath(String filePath);
 
     /**
      * 更新格式转换后记录信息

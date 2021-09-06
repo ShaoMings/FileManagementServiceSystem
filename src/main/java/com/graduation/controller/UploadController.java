@@ -73,12 +73,13 @@ public class UploadController extends BaseController{
         MultipartFile multipartFile = param.getFile();
         // 文件夹处理
         String originalFilename = multipartFile.getOriginalFilename();
+        assert originalFilename != null;
         if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
             List<FileResponseVo> list = FileUtils.uploadDirZip(param, getPeersUrl() + Constant.API_UPLOAD);
             list.forEach(e ->{
                 UploadResultVo resultVo = (UploadResultVo) e.getData();
                 String filePath = resultVo.getPath();
-                fileService.saveFilePathByUserId(getUser().getId(),filePath);
+                fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
             });
             UploadResultVo resultVo = new UploadResultVo();
             return FileResponseVo.success("上传文件夹成功!");
@@ -89,7 +90,7 @@ public class UploadController extends BaseController{
             assert responseVo != null;
             UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
             String filePath = resultVo.getPath();
-            fileService.saveFilePathByUserId(getUser().getId(),filePath);
+            fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
             return responseVo;
         }
     }

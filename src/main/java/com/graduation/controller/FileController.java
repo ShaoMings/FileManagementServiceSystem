@@ -1,13 +1,9 @@
 package com.graduation.controller;
 
 
-import com.graduation.model.vo.FileResponseVo;
-import com.graduation.model.vo.ConvertVo;
-import com.graduation.model.vo.ShareFileLinkVo;
-import com.graduation.model.vo.ShareFileVo;
+import com.graduation.model.vo.*;
 import com.graduation.service.FileService;
-import com.graduation.utils.AesUtils;
-import com.graduation.utils.DateConverter;
+import com.graduation.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -17,9 +13,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.io.InputStream;
+import java.net.*;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -280,6 +279,47 @@ public class FileController extends BaseController {
         String check = AesUtils.getCheckCodeByEncryptStr(code);
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/s/download?code=" + code, check, untilToTime));
+    }
+
+    @RequestMapping("/import")
+    @ResponseBody
+    public FileResponseVo downloadFromLink(String path,String link){
+        if (StringUtils.isNotBlank(link)){
+            if (link.endsWith(".git")) {
+                List<String> filesPath = GitUtils.pullFilesFromGit(link);
+                List<FileResponseVo> list = FileUtils.uploadDir("git", path, getPeersUrl() + Constant.API_UPLOAD, getBackUrl(), filesPath);
+                list.forEach(e ->{
+                    UploadResultVo resultVo = (UploadResultVo) e.getData();
+                    String filePath = resultVo.getPath();
+                    fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
+                });
+                String deletePath = Constant.OUTPUT_TMP_FILE_PATH + link.substring(link.lastIndexOf("/")+1,link.lastIndexOf("."));
+                File tmpPath = new File(deletePath);
+                if (tmpPath.exists()){
+                    GitUtils.deleteDir(tmpPath);
+                }
+                return FileResponseVo.success();
+            }else {
+                URL url = null;
+                try {
+                    url = new URL(link);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    InputStream inputStream = conn.getInputStream();
+                    String contentDisposition = new String(conn.getHeaderField("Content-Disposition").getBytes("utf-8"), "utf-8");
+                    String filename = URLDecoder.decode(contentDisposition.substring(contentDisposition.indexOf("=") + 1).trim(),"UTF-8");
+                    FileResponseVo responseVo = FileUtils.upload(inputStream, filename, path, "link",
+                            getPeersUrl() + Constant.API_UPLOAD, getBackUrl());
+                    UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
+                    String filePath = resultVo.getPath();
+                    fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
+                    return responseVo;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+        return FileResponseVo.fail("导入失败!");
     }
 
 }

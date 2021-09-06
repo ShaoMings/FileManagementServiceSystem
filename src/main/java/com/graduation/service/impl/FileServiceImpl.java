@@ -148,13 +148,20 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean saveFilePathByUserId(Integer id, String filePath) {
+    public boolean saveFilePathByUserId(Integer id, String filePath,Integer peerId) {
         String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
-        File file = new File(id, filename, filePath);
-        boolean flag1 = this.save(file);
-        Integer fileId = file.getId();
-        boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
-        return flag1 && flag2;
+        QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
+        fileQueryWrapper.eq("file_name",filename);
+        fileQueryWrapper.eq("file_path",filePath);
+        fileQueryWrapper.eq("peer_id",peerId);
+        if (this.list(fileQueryWrapper).size()<=0) {
+            File file = new File(id, filename, filePath,peerId);
+            boolean flag1 = this.save(file);
+            Integer fileId = file.getId();
+            boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
+            return flag1 && flag2;
+        }
+        return true;
     }
 
 
@@ -172,6 +179,18 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             fileInfoVos.addAll(fileList);
         });
         return fileInfoVos;
+    }
+
+    @Override
+    public Integer getFilePeerIdByFilePath(String filePath) {
+        QueryWrapper<File> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("file_path",filePath);
+        List<File> list = this.list(queryWrapper);
+        if (list.size()>0){
+            File file = list.get(0);
+            return file.getPeerId();
+        }
+        return null;
     }
 
     @Override

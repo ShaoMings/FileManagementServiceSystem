@@ -58,7 +58,7 @@ public class ShareFileController extends BaseController {
         } else {
             peerAddress = "http://" + NetUtils.getLocalIpV4Address() + ":" + port + "/group1";
         }
-        peerAddress = "http://node-1:" + port + "/group1";
+//        peerAddress = "http://node-1:" + port + "/group1";
         code = code.replaceAll(" ", "+");
         String path = AesUtils.decrypt(code);
         String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
@@ -71,22 +71,21 @@ public class ShareFileController extends BaseController {
                 // 将文件名 encode 确保 new URL 不出错
                 String filename = URLEncoder.encode(name, "UTF-8");
                 filename = StringUtils.replace(filename, "+", "%20");
-                request.getRequestDispatcher(peerAddress + "/" + tmpPath + "/" + filename).forward(request,response);
-//                URL url = new URL(peerAddress + "/" + tmpPath + "/" + filename);
-//                int contentLength = url.openConnection().getContentLength();
-//                in = new BufferedInputStream(url.openStream());
-//                response.reset();
-//                // 将原本的文件名 encode为utf8后 空格被转为+了  要替换回原来的空格
-//                name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", " ");
-//                response.setContentType("application/octet-stream");
-//                response.setContentLength(contentLength);
-//                response.setHeader("Content-Disposition", "attachment;filename=" + name);
-//                // 将网络输入流转为输出流
-//                int len;
-//                while ((len = in.read()) != -1) {
-//                    response.getOutputStream().write(len);
-//                }
-//                response.getOutputStream().close();
+                URL url = new URL(peerAddress + "/" + tmpPath + "/" + filename);
+                int contentLength = url.openConnection().getContentLength();
+                in = new BufferedInputStream(url.openStream());
+                response.reset();
+                // 将原本的文件名 encode为utf8后 空格被转为+了  要替换回原来的空格
+                name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", " ");
+                response.setContentType("application/octet-stream");
+                response.setContentLength(contentLength);
+                response.setHeader("Content-Disposition", "attachment;filename=" + name);
+                // 将网络输入流转为输出流
+                int len;
+                while ((len = in.read()) != -1) {
+                    response.getOutputStream().write(len);
+                }
+                response.getOutputStream().close();
             } catch (IOException e) {
                 System.out.println(e.getMessage());
             } finally {

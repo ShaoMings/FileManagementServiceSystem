@@ -3,6 +3,7 @@ package com.graduation.utils;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.TransportException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -35,8 +36,8 @@ public class GitUtils {
         }
         try {
             Git.cloneRepository().setDirectory(tmpDir).setURI(cloneUrl).call();
-        } catch (GitAPIException e) {
-            e.printStackTrace();
+        }catch (GitAPIException e){
+            System.out.println(e.getMessage());
         }
         return getAllFilePathFromDirectory(tmpDir.getPath());
     }

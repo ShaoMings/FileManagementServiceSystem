@@ -556,7 +556,7 @@ public class FileUtils {
 
     public static List<FileResponseVo> uploadDir(String scene, String path, String uploadUrl, String showUrl, List<String> filesPath) {
         if (filesPath.size() <= 0) {
-            throw new FileDownloadException("文件路径有误!");
+            return null;
         }
         if ("".equals(scene) || scene == null) {
             scene = "link";

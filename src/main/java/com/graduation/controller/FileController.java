@@ -301,6 +301,9 @@ public class FileController extends BaseController {
             if (link.endsWith(".git")) {
                 List<String> filesPath = GitUtils.pullFilesFromGit(link);
                 List<FileResponseVo> list = FileUtils.uploadDir("git", path, getPeersUrl() + Constant.API_UPLOAD, getBackUrl(), filesPath);
+                if (list == null){
+                    return FileResponseVo.fail("链接需要身份认证，请输入开源的git仓库链接!");
+                }
                 list.forEach(e ->{
                     UploadResultVo resultVo = (UploadResultVo) e.getData();
                     String filePath = resultVo.getPath();

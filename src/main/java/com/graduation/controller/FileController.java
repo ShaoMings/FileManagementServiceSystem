@@ -281,7 +281,7 @@ public class FileController extends BaseController {
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
         String content = "/" + getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
-                + untilToTime;
+                + untilToTime + "#" + shareFileVo.getMd5();
         String code = AesUtils.encrypt(content);
         String check = AesUtils.getCheckCodeByEncryptStr(code);
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");

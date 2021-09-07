@@ -153,6 +153,7 @@ $('#search').on('input', function (e) {
 
 // 监听文件分享
 $('#file-result').on('click', '.share-btn', function () {
+    let fileMd5 = $(this).data('md5');
     let path = $(this).data('path');
     let filename = $(this).data('name');
     let html = '<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">' +
@@ -185,7 +186,7 @@ $('#file-result').on('click', '.share-btn', function () {
             $('#share-btn').on('click', function () {
                 if (checkSystemRightTime()) {
                     let shareTime = $('#share-time option:selected').val();
-                    let data = {"path": path, "filename": filename, "days": shareTime};
+                    let data = {"path": path,"md5":fileMd5, "filename": filename, "days": shareTime};
                     $.post("/file/share", data, function (res) {
                         if (res.code === 200) {
                             layer.close(index);
@@ -261,7 +262,6 @@ function checkSystemRightTime() {
 /*监听格式转换按钮 */
 $('#file-result').on('click', '.converter-btn', function () {
 
-    let fileMd5 = $('this').data('md5');
     let dir_path = $('#dir-path').data('path');
     let file_path = $('#file-path').data('path');
     let current_path = "files/";
@@ -536,6 +536,37 @@ $("#file-result").on("click", ".upload-file-btn", function () {
             let body = layer.getChildFrame('body', index);
             // 获取上传页面的元素进行初始化渲染
             body.contents().find("#path").val(path + "/" + name);
+        }
+    });
+})
+
+/*监听页面上传按钮*/
+$("#upload").click(function () {
+    let dir = $('#path-side').children("a:last-child").data("path");
+    let path = "";
+    if (dir !== ""){
+        path = path + dir;
+    }else {
+        path = "/files"
+    }
+    layer.open({
+        type: 2,
+        skin: 'layui-layer-rim', //加上边框
+        title: '文件上传',
+        shadeClose: true,
+        shade: 0.3,
+        area: ['90%', '90vh'],
+        content: "/file/upload",
+        success: function (obj, index) {
+            let body = layer.getChildFrame('body', index);
+            // 获取上传页面的元素进行初始化渲染
+            body.contents().find("#path").val(path);
+        },
+        cancel:function () {
+            if (path === "/files"){
+                path = "";
+            }
+            openDir(path);
         }
     });
 })

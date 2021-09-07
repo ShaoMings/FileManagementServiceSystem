@@ -1,5 +1,7 @@
 package com.graduation.utils;
 
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.digest.MD5;
 import com.graduation.utils.download.SiteFileFetch;
 import com.graduation.utils.download.SiteInfoBean;
 import ws.schild.jave.Encoder;
@@ -47,6 +49,7 @@ public class Md5Utils {
 
     public static void main(String[] args) {
         try {
+            SecureUtil.md5();
             String url = "http://node-1:8080/group1/我的文件/TheWormValley.mp4";
             String outputPath = Constant.OUTPUT_TMP_FILE_PATH;
             String filename = "TheWormValley.mp4";

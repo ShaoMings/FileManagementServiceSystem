@@ -1,5 +1,10 @@
 package com.graduation.utils;
 
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.crypto.symmetric.AES;
+import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
+import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import org.apache.commons.codec.binary.Base64;
 
 import javax.crypto.Cipher;
@@ -15,12 +20,15 @@ import java.util.Date;
  * @since 1.0
  */
 public class AesUtils {
-    /** 参数分别代表 算法名称/加密模式/数据填充方式 */
+    /**
+     * 参数分别代表 算法名称/加密模式/数据填充方式
+     */
     private static final String ALGORITHM_STR = "AES/ECB/PKCS5Padding";
 
     /**
      * 加密
-     * @param content 加密的字符串
+     *
+     * @param content    加密的字符串
      * @param encryptKey key值
      * @return 加密后的密文
      */
@@ -37,6 +45,7 @@ public class AesUtils {
 
     /**
      * 解密
+     *
      * @param encryptStr 解密的字符串
      * @param decryptKey 解密的key值
      * @return 解密后的明文
@@ -53,7 +62,8 @@ public class AesUtils {
     }
 
     /**
-     *  指定加密方式对明文加密
+     * 指定加密方式对明文加密
+     *
      * @param content 明文
      * @return 加密后的密文
      */
@@ -62,86 +72,100 @@ public class AesUtils {
     }
 
     /**
-     *  指定解密方式对密文进行解密
+     * 指定解密方式对密文进行解密
+     *
      * @param encryptStr 密文
      * @return 明文
      */
     public static String decrypt(String encryptStr) throws Exception {
-        return decrypt(encryptStr,  Constant.AES_KEY);
+        return decrypt(encryptStr, Constant.AES_KEY);
     }
 
 
     /**
-     *  通过密文获取校验码
+     * 通过密文获取校验码
+     *
      * @param encryptStr 密文
      * @return 校验码 提取码
      */
-    public static String getCheckCodeByEncryptStr(String encryptStr){
+    public static String getCheckCodeByEncryptStr(String encryptStr) {
         return getCheckCode(encryptStr);
     }
 
     /**
-     *  获取校验码
+     * 获取校验码
+     *
      * @param encryptStr 密文
      * @return 校验码
      */
-    private static String getCheckCode(String encryptStr){
+    private static String getCheckCode(String encryptStr) {
         int len = encryptStr.length();
-        int lastPartIndex = (len*2)/3;
-        int begin = lastPartIndex + encryptStr.charAt(len-2) % (len - lastPartIndex);
-        if (begin>= len){
-            begin = lastPartIndex +  (begin % lastPartIndex);
+        int lastPartIndex = (len * 2) / 3;
+        int begin = lastPartIndex + encryptStr.charAt(len - 2) % (len - lastPartIndex);
+        if (begin >= len) {
+            begin = lastPartIndex + (begin % lastPartIndex);
         }
         char a = encryptStr.charAt(begin);
-        if (begin<(lastPartIndex/2)){
-            begin+=(len%(len - lastPartIndex));
+        if (begin < (lastPartIndex / 2)) {
+            begin += (len % (len - lastPartIndex));
         }
         int tmp = begin;
-        a = getChar(encryptStr,a,tmp);
-        begin -=(a%9);
+        a = getChar(encryptStr, a, tmp);
+        begin -= (a % 9);
         char b = encryptStr.charAt(begin);
         tmp = begin;
-       b = getChar(encryptStr,b,tmp);
-        begin -=(b%9);
+        b = getChar(encryptStr, b, tmp);
+        begin -= (b % 9);
         char c = encryptStr.charAt(begin);
         tmp = begin;
-        c = getChar(encryptStr,c,tmp);
-        begin -=(c%9);
+        c = getChar(encryptStr, c, tmp);
+        begin -= (c % 9);
         char d = encryptStr.charAt(begin);
         tmp = begin;
-        d = getChar(encryptStr,d,tmp);
-        return String.valueOf(new char[]{a,b,c,d});
+        d = getChar(encryptStr, d, tmp);
+        return String.valueOf(new char[]{a, b, c, d});
     }
 
-    private static char getChar(String encryptStr,char c,int tmp){
-        while (!isUsefulChar(c)){
-            if (tmp>=0){
+    private static char getChar(String encryptStr, char c, int tmp) {
+        while (!isUsefulChar(c)) {
+            if (tmp >= 0) {
                 c = encryptStr.charAt(tmp);
                 tmp--;
-            }else {
+            } else {
                 break;
             }
         }
-        return isUsefulChar(c)?c:'Q';
+        return isUsefulChar(c) ? c : 'Q';
     }
 
-    private static boolean isUsefulChar(char t){
-        boolean f1 = 48<= t && t <=57;
-        boolean f2 = 65<= t && t <=90;
-        boolean f3 = 97<= t && t <=122;
+    private static boolean isUsefulChar(char t) {
+        boolean f1 = 48 <= t && t <= 57;
+        boolean f2 = 65 <= t && t <= 90;
+        boolean f3 = 97 <= t && t <= 122;
         return f1 || f2 || f3;
     }
 
     public static void main(String[] args) throws Exception {
-        String content = "/admin/test/doc/Chapter_2.pdf@"+DateConverter.getFormatDate(new Date(),"yyyy-MM-dd HH:mm:ss");
+        String content = "/admin/test/doc/Chapter_2.pdf@" + DateConverter.getFormatDate(new Date(), "yyyy-MM-dd HH:mm:ss");
 
         System.out.println("加密前：" + content);
 
-        String encrypt = encrypt(content, Constant.AES_KEY);
-        System.out.println("加密后：" + encrypt);
+//        String encrypt = encrypt(content, Constant.AES_KEY);
+//        System.out.println("加密后：" + encrypt);
+//
+//        String decrypt = decrypt(encrypt, Constant.AES_KEY);
+//        System.out.println("解密后：" + decrypt);
+//        System.out.println(getCheckCodeByEncryptStr(encrypt));
+        //随机生成密钥
+        byte[] key = SecureUtil.generateKey(SymmetricAlgorithm.AES.getValue()).getEncoded();
+        SymmetricCrypto aes = new SymmetricCrypto(SymmetricAlgorithm.AES, key);
 
-        String decrypt = decrypt(encrypt, Constant.AES_KEY);
-        System.out.println("解密后：" + decrypt);
-        System.out.println(getCheckCodeByEncryptStr(encrypt));
+// 加密为16进制表示
+        String encryptHex = aes.encryptHex(content);
+        System.out.println("加密后："+encryptHex);
+// 解密
+        String decryptStr = aes.decryptStr(encryptHex, CharsetUtil.CHARSET_UTF_8);
+        System.out.println("解密后：" + decryptStr);
+
     }
 }

@@ -57,7 +57,7 @@ $('#import').click(function () {
         title: '输入异源链接  (git链接或者下载链接)',
         formType: 0,
     }, function (url, index) {
-        if (url === "" || url.replace(" ","").length === 0) {
+        if (url === "" || url.replace(" ", "").length === 0) {
             layer.close(index);
             layer.msg("链接不能为空!");
         } else {
@@ -153,7 +153,6 @@ $('#search').on('input', function (e) {
 
 // 监听文件分享
 $('#file-result').on('click', '.share-btn', function () {
-    let fileMd5 = $(this).data('md5');
     let path = $(this).data('path');
     let filename = $(this).data('name');
     let html = '<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">' +
@@ -186,7 +185,7 @@ $('#file-result').on('click', '.share-btn', function () {
             $('#share-btn').on('click', function () {
                 if (checkSystemRightTime()) {
                     let shareTime = $('#share-time option:selected').val();
-                    let data = {"path": path,"md5":fileMd5, "filename": filename, "days": shareTime};
+                    let data = {"path": path, "filename": filename, "days": shareTime};
                     $.post("/file/share", data, function (res) {
                         if (res.code === 200) {
                             layer.close(index);
@@ -544,9 +543,9 @@ $("#file-result").on("click", ".upload-file-btn", function () {
 $("#upload").click(function () {
     let dir = $('#path-side').children("a:last-child").data("path");
     let path = "";
-    if (dir !== ""){
+    if (dir !== "") {
         path = path + dir;
-    }else {
+    } else {
         path = "/files"
     }
     layer.open({
@@ -562,8 +561,8 @@ $("#upload").click(function () {
             // 获取上传页面的元素进行初始化渲染
             body.contents().find("#path").val(path);
         },
-        cancel:function () {
-            if (path === "/files"){
+        cancel: function () {
+            if (path === "/files") {
                 path = "";
             }
             openDir(path);
@@ -652,8 +651,28 @@ $("#file-result").on("click", ".delete-file-btn", function () {
 $("#file-result").on("click", ".resultFile", function () {
     let name = $(this).data("name");
     let path = $(this).data("path");
-    let peer = $(this).data("peer");
-    let source = peer + "/" + path + "/" + name;
+    let group = $(this).data("peer");
+    let token;
+    let address;
+    $.ajax({
+        url: "/peers/address",
+        async: false,
+        success: function (res) {
+            address = res;
+        }
+    })
+    let source = address + "/" + (path === "" ? name : path + "/" + name);
+    // 文件预览token
+    $.ajax({
+        url: "/preview/token",
+        method: "post",
+        data: {"filePath": path === "" ? name : path + "/" + name},
+        async: false,
+        success: function (res) {
+            token = res;
+            source = source + "?auth_token=" + token;
+        }
+    });
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
@@ -724,7 +743,6 @@ $("#file-result").on("click", ".resultFile", function () {
         let resObj = $.ajax({url: source, async: false});
         let converter = new showdown.Converter();
         let context = converter.makeHtml(resObj.responseText);
-        // console.log(context);
         layer.open({
             type: 1,
             title: '文件内容',
@@ -733,7 +751,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = peer + "/" + path + "/" + name + "?download=0";
+        let viewer_url = source + "?auth_token=" + token;
         layer.open({
             type: 2,
             title: '文件内容',

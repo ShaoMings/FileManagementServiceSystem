@@ -53,6 +53,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     public boolean deleteFile(String peersUrl, String groupName, String path, boolean isUpdatePath) {
         HashMap<String, Object> param = new HashMap<>(8);
         param.put("path", path);
+        param.put("auth_token", TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path)));
         String filename = path.substring(path.lastIndexOf("/") + 1);
         JSONObject jsonObject = JSONUtil.parseObj(HttpUtil.post(peersUrl + Constant.API_DELETE, param));
         boolean isDeleted = Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr("status"));

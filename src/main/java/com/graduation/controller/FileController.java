@@ -243,8 +243,16 @@ public class FileController extends BaseController {
             filename = StringUtils.replace(filename, "+", "%20");
             response.setHeader("Content-Disposition", "attachment;filename=" + name);
             response.setContentType("application/octet-stream");
-            URL url = new URL(getPeersUrl() + "/" + path + "/" + filename);
-            in = new BufferedInputStream(url.openStream());
+            URL url;
+            String token;
+            if ("".equals(path)){
+                token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(name));
+            }else {
+                token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path + "/" + name));
+            }
+            url = new URL(getPeersUrl() + "/" + path + "/" + filename+"?auth_token="+token);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            in = new BufferedInputStream(conn.getInputStream());
             response.reset();
             // 将原本的文件名 encode为utf8后 空格被转为+了  要替换回原来的空格
             name = URLEncoder.encode(name, "UTF-8").replaceAll("\\+", " ");
@@ -281,7 +289,7 @@ public class FileController extends BaseController {
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
         String content = "/" + getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
-                + untilToTime + "#" + shareFileVo.getMd5();
+                + untilToTime;
         String code = AesUtils.encrypt(content);
         String check = AesUtils.getCheckCodeByEncryptStr(code);
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");

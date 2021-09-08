@@ -5,10 +5,7 @@ import com.graduation.exception.FileDownloadException;
 import com.graduation.model.pojo.Peers;
 import com.graduation.service.FileService;
 import com.graduation.service.PeersService;
-import com.graduation.utils.AesUtils;
-import com.graduation.utils.DateConverter;
-import com.graduation.utils.FileUtils;
-import com.graduation.utils.NetUtils;
+import com.graduation.utils.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
@@ -76,10 +73,7 @@ public class ShareFileController extends BaseController {
         String path = AesUtils.decrypt(code);
         String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
         String untilToTime = path.substring(path.lastIndexOf("@") + 1);
-        String md5 = path.substring(path.lastIndexOf("#")+1);
-        String timestamp = System.currentTimeMillis() + "";
-        timestamp = timestamp.substring(0,timestamp.length()-3);
-        String token = MD5.create().digestHex(md5 + timestamp);
+        String token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(groupFilePath.substring(2)));
         if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
             peerAddress = getPeersUrl();
         } else {
@@ -102,7 +96,7 @@ public class ShareFileController extends BaseController {
             filename = StringUtils.replace(filename, "+", "%20");
             filePath = StringUtils.replace(filePath, "+", "%20");
 
-            response.sendRedirect(peerAddress + "/" + filePath + "/" + filename+"?token="+token+"&timestamp="+timestamp);
+            response.sendRedirect(peerAddress + "/" + filePath + "/" + filename+"?auth_token="+token);
 //            BufferedInputStream in = null;
 //            try {
 //                // 将文件名 encode 确保 new URL 不出错

@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class ShareFileVo {
     private String path;
-    private String md5;
     private String filename;
     private Integer days;
 

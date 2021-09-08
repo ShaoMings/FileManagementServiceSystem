@@ -93,6 +93,21 @@ public class AesUtils {
     }
 
     /**
+     * 通过明文获取校验码
+     *
+     * @param decryptStr 明文
+     * @return 校验码 提取码
+     */
+    public static String getCheckCodeByDecryptStr(String decryptStr) {
+        try {
+            return getCheckCode(encrypt(decryptStr,Constant.AES_KEY));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * 获取校验码
      *
      * @param encryptStr 密文

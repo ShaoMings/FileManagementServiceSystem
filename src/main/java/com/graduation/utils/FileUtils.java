@@ -115,6 +115,7 @@ public class FileUtils {
             HashMap<String, Object> map = new HashMap<>(8);
             map.put("output", "json");
             map.put("path", uploadPath);
+            map.put("auth_token", TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(uploadPath)));
             map.put("scene", scene);
             map.put("file", isr);
             String result = HttpUtil.post(uploadApiUrl, map);
@@ -143,6 +144,7 @@ public class FileUtils {
             MultipartBody multipartBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
                     .addFormDataPart("output", "json")
                     .addFormDataPart("path", uploadPath)
+                    .addFormDataPart("auth_token", TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(uploadPath)))
                     .addFormDataPart("scene", scene)
                     .addFormDataPart("file", multipartFile.getOriginalFilename(),
                             RequestBody.create(MediaType.parse("multipart/form-data;charset=utf-8"), multipartFile.getBytes())).build();
@@ -197,9 +199,9 @@ public class FileUtils {
             StringBody stringPath = new StringBody(uploadPath, contentType);
             StringBody stringScene = new StringBody(scene, contentType);
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
-                    .setCharset(StandardCharsets.UTF_8)
-                    .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+                    .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
+                    .addTextBody("auth_token", TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(uploadPath)))
                     .addPart("path", stringPath)
                     .addPart("scene", stringScene)
                     .addBinaryBody("file", multipartFile.getInputStream(),
@@ -266,6 +268,7 @@ public class FileUtils {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
+                    .addTextBody("auth_token", TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(uploadPath)))
                     .addPart("path", stringPath)
                     .addPart("scene", stringScene)
                     .addBinaryBody("file", inputStream,
@@ -317,6 +320,7 @@ public class FileUtils {
             MultipartEntityBuilder multipartEntityBuilder = MultipartEntityBuilder.create()
                     .setMode(HttpMultipartMode.RFC6532)
                     .addTextBody("output", "json")
+                    .addTextBody("auth_token", TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(uploadPath)))
                     .addPart("path", stringPath)
                     .addPart("scene", stringScene)
                     .addBinaryBody("file", inputStream,
@@ -447,7 +451,16 @@ public class FileUtils {
             // 将文件名 encode 确保 new URL 不出错
             String filename = URLEncoder.encode(name, "UTF-8");
             filename = StringUtils.replace(filename, "+", "%20");
-            URL url = new URL(peerAddress + "/" + path + "/" + filename);
+            String token;
+            URL url;
+            System.out.println(path);
+            if ("".equals(path)){
+                token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(name));
+            }else {
+                token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path + "/" + name));
+            }
+            System.out.println(token);
+            url = new URL(peerAddress + "/" + path + "/" + filename+"?auth_token="+token);
             in = new BufferedInputStream(url.openStream());
             return in;
         } catch (IOException e) {

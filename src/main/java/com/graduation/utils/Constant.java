@@ -100,4 +100,7 @@ public class Constant {
     /** 文档pdf格式 */
     public static final String DOCUMENT_TYPE_PDF = "pdf";
 
+    /** 用于生成token的salt */
+    public static final String MAKE_AUTH_TOKEN_SALT = "localhost@shaomingauth_token";
+
 }

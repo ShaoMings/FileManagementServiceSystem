@@ -41,6 +41,13 @@ public class PeersController extends BaseController {
     private PeersService peersService;
 
 
+    @RequestMapping("/address")
+    @ResponseBody
+    public String getAddress(){
+        return getPeersUrl();
+    }
+
+
     /**
      * 集群列表页面
      *

@@ -245,12 +245,12 @@ public class FileController extends BaseController {
             response.setContentType("application/octet-stream");
             URL url;
             String token;
-            if ("".equals(path)){
+            if ("".equals(path)) {
                 token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(name));
-            }else {
+            } else {
                 token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path + "/" + name));
             }
-            url = new URL(getPeersUrl() + "/" + path + "/" + filename+"?auth_token="+token);
+            url = new URL(getPeersUrl() + "/" + path + "/" + filename + "?auth_token=" + token);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             in = new BufferedInputStream(conn.getInputStream());
             response.reset();
@@ -279,8 +279,9 @@ public class FileController extends BaseController {
 
     /**
      * 文件分享 接口
+     *
      * @param shareFileVo 分享信息封装类
-     * @param request 请求对象
+     * @param request     请求对象
      * @return 响应对象
      * @throws Exception 异常
      */
@@ -288,8 +289,14 @@ public class FileController extends BaseController {
     @ResponseBody
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
-        String content = "/" + getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
-                + untilToTime;
+        String content;
+        if ("".equals(shareFileVo.getPath())) {
+            content = "/" + getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
+                    + untilToTime;
+        } else {
+            content = "/" + getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
+                    + untilToTime;
+        }
         String code = AesUtils.encrypt(content);
         String check = AesUtils.getCheckCodeByEncryptStr(code);
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
@@ -297,45 +304,46 @@ public class FileController extends BaseController {
     }
 
     /**
-     *  异源文件导入接口
+     * 异源文件导入接口
+     *
      * @param path 当前保存路径
      * @param link 异源链接
      * @return 响应对象
      */
     @RequestMapping("/import")
     @ResponseBody
-    public FileResponseVo downloadFromLink(String path,String link){
-        if (StringUtils.isNotBlank(link)){
+    public FileResponseVo downloadFromLink(String path, String link) {
+        if (StringUtils.isNotBlank(link)) {
             if (link.endsWith(".git")) {
                 List<String> filesPath = GitUtils.pullFilesFromGit(link);
                 List<FileResponseVo> list = FileUtils.uploadDir("git", path, getPeersUrl() + Constant.API_UPLOAD, getBackUrl(), filesPath);
-                if (list == null){
+                if (list == null) {
                     return FileResponseVo.fail("链接需要身份认证，请输入开源的git仓库链接!");
                 }
-                list.forEach(e ->{
+                list.forEach(e -> {
                     UploadResultVo resultVo = (UploadResultVo) e.getData();
                     String filePath = resultVo.getPath();
-                    fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
+                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId());
                 });
-                String deletePath = Constant.OUTPUT_TMP_FILE_PATH + link.substring(link.lastIndexOf("/")+1,link.lastIndexOf("."));
+                String deletePath = Constant.OUTPUT_TMP_FILE_PATH + link.substring(link.lastIndexOf("/") + 1, link.lastIndexOf("."));
                 File tmpPath = new File(deletePath);
-                if (tmpPath.exists()){
+                if (tmpPath.exists()) {
                     GitUtils.deleteDir(tmpPath);
                 }
                 return FileResponseVo.success();
-            }else {
+            } else {
                 URL url = null;
                 try {
                     url = new URL(link);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     InputStream inputStream = conn.getInputStream();
                     String contentDisposition = new String(conn.getHeaderField("Content-Disposition").getBytes("utf-8"), "utf-8");
-                    String filename = URLDecoder.decode(contentDisposition.substring(contentDisposition.indexOf("=") + 1).trim(),"UTF-8");
+                    String filename = URLDecoder.decode(contentDisposition.substring(contentDisposition.indexOf("=") + 1).trim(), "UTF-8");
                     FileResponseVo responseVo = FileUtils.upload(inputStream, filename, path, "link",
                             getPeersUrl() + Constant.API_UPLOAD, getBackUrl());
                     UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
                     String filePath = resultVo.getPath();
-                    fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
+                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId());
                     return responseVo;
                 } catch (IOException e) {
                     e.printStackTrace();

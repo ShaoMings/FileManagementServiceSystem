@@ -14,7 +14,6 @@
             var e = this;
             return {
                 upload: function (i) {
-                    console.log("hihihi")
                     e.upload.call(e, i)
                 },
                 config: e.config,
@@ -107,7 +106,7 @@
                             }),
                             headers: l.headers || {},
                             success: function (i) {
-                                console.log(e,i);   // key,UploadResultVo
+                                // console.log(e,i);   // key,UploadResultVo
                                 t++, d(e, i), u()
                             },
                             error: function () {
@@ -143,7 +142,7 @@
                 }, h = l.exts,
                 v = function () {
                     var i = [];
-                    console.log(o.chooseFiles)
+                    // console.log(o.chooseFiles)
                     return layui.each(e || o.chooseFiles, function (e, t) {
                         i.push(t.name)
                     }), i
@@ -168,13 +167,13 @@
                     if ("choose" !== t && !l.auto || (l.choose && l.choose(g), "choose" !== t))
                         return l.before && l.before(g), a.ie ? a.ie > 9 ? u() : c() : void u()
                 };
-            console.log(v,r);
+            // console.log(v,r);
             if (v = 0 === v.length ? r.value.match(/[^\/\\]+\..+/g) || [] || "" : v, 0 !== v.length) {
-                console.log(l);
+                // console.log(l);
                 switch (l.accept) {
                     case"file":
                         if (h && !RegExp("\\w\\.(" + h + ")$", "i").test(escape(v))){
-                            console.log("istrue")
+                            // console.log("istrue")
                             return o.msg("选择的文件中包含不支持的格式"), r.value = "";
                         }
                         break;
@@ -254,7 +253,7 @@
             }),
             // !!!
             e.elemFile.off("upload.click").on("upload.click", function () {
-                console.log("!!!");
+                // console.log("!!!");
                 var i = this.files || [];
                 o(i), t.auto ? e.upload() : l(i)
 

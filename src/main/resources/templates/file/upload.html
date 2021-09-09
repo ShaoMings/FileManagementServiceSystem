@@ -10,7 +10,7 @@
 	.showUrl-href{color: #2F4056;font-size: 13px;text-decoration: underline;}
 	.showUrl-href:hover{color:#01AAED;}
 	.layui-container{padding: 0}
-	#fileList{
+	#fileList ,#bigFile{
 		background-color: #627aad;
 		height: 33px;
 		line-height: 33px;
@@ -84,10 +84,10 @@
 				<div class="layui-card-body">
 					<div class="layui-upload">
 						<button type="button" class="layui-btn layui-btn-normal" id="fileList">选择文件</button>
-
 						<a href="javascript:;" class="file">选择文件夹
 							<input type="file" name="" id="dirList" webkitdirectory>
 						</a>
+						<button type="button" class="layui-btn layui-btn-normal" id="bigFile">大文件断点续传</button>
 						<button type="button" class="layui-btn" id="fileListAction">开始上传</button>
 						<div class="layui-upload-list" style="overflow: auto;">
 							<table class="layui-table">

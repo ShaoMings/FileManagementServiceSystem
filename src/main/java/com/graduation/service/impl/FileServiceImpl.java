@@ -142,7 +142,11 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             FileDetailsVo detailsVo = JSONUtil.toBean(jsonObject.getStr("data"), FileDetailsVo.class);
             detailsVo.setSize(FileSizeConverter.getLength(Long.parseLong(detailsVo.getSize())));
             detailsVo.setTimeStamp(DateConverter.getFormatDate(new Date(Long.parseLong(detailsVo.getTimeStamp()) * 1000)));
-            detailsVo.setUrl(peersUrl + "/" + detailsVo.getPath().replace("files/", "") + "/" + detailsVo.getName());
+            if ("".equals(detailsVo.getPath())){
+                detailsVo.setUrl(peersUrl + "/"+ detailsVo.getName());
+            }else {
+                detailsVo.setUrl(peersUrl + "/" + detailsVo.getPath().replace("files/", "") + "/" + detailsVo.getName());
+            }
             return FileResponseVo.success(detailsVo);
         }
         return FileResponseVo.fail("获取文件信息失败");

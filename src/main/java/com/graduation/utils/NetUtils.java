@@ -1,9 +1,12 @@
 package com.graduation.utils;
 
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.*;
 import java.util.Enumeration;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -11,55 +14,84 @@ import java.util.Enumeration;
  */
 public class NetUtils {
 
+    /** 接口超时时间 */
+    private static final Integer TIME_OUT = 1000;
+
+    /** 内网IP */
+    public static String INTRANET_IP = getIntranetIp();
+    /**  外网IP */
+    public static String INTERNET_IP = getV4IP();
+
+
+    private NetUtils(){}
+
     /**
-     * 获取本机的内网ip地址
-     * @return
-     * @throws SocketException
+     * 获得内网IP
+     * @return 内网IP
      */
-    public static String getLocalIpV4Address() throws SocketException {
-        String localip = null;
-        String netip = null;
-        Enumeration<NetworkInterface> netInterfaces;
-        netInterfaces = NetworkInterface.getNetworkInterfaces();
-        InetAddress ip = null;
-        boolean finded = false;
-        while (netInterfaces.hasMoreElements() && !finded) {
-            NetworkInterface ni = netInterfaces.nextElement();
-            Enumeration<InetAddress> address = ni.getInetAddresses();
-            while (address.hasMoreElements()) {
-                ip = address.nextElement();
-                if (!ip.isSiteLocalAddress()
-                        && !ip.isLoopbackAddress()
-                        && !ip.getHostAddress().contains(":")) {
-                    netip = ip.getHostAddress();
-                    finded = true;
-                    break;
-                } else if (ip.isSiteLocalAddress()
-                        && !ip.isLoopbackAddress()
-                        && !ip.getHostAddress().contains(":")) {
-                    localip = ip.getHostAddress();
+    private static String getIntranetIp(){
+        try{
+            return InetAddress.getLocalHost().getHostAddress();
+        } catch(Exception e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 获得外网IP
+     * @return 外网IP
+     */
+    private static String getV4IP(){
+        String ip = "";
+        String chinaZ = "https://ip.chinaz.com";
+
+        StringBuilder inputLine = new StringBuilder();
+        String read = "";
+        URL url = null;
+        HttpURLConnection urlConnection = null;
+        BufferedReader in = null;
+        try {
+            url = new URL(chinaZ);
+            try {
+                urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setConnectTimeout(TIME_OUT);
+                urlConnection.setReadTimeout(TIME_OUT);
+                in = new BufferedReader( new InputStreamReader(urlConnection.getInputStream(),"UTF-8"));
+            } catch (Exception e) {
+                //如果超时，则返回内网ip
+                return INTRANET_IP;
+            }
+            while((read=in.readLine())!=null){
+                inputLine.append(read+"\r\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally{
+            if(in!=null){
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
         }
-        if (netip != null && !"".equals(netip)) {
-            return netip;
-        } else {
-            return localip;
-        }
-    }
-    /**
-     * 测试方法
-     * 获取本机的内网ip，外网ip和指定ip的地址
-     * @param args
-     */
-    public static void main(String[] args) {
-        String ip1="";
-        try {
-            ip1 = NetUtils.getLocalIpV4Address();
-        } catch (SocketException e1) {
-            e1.printStackTrace();
-        }
-        System.out.println("内网ip:"+ip1);
 
+        String regx = "\\<dd class\\=\"fz24\">(.*?)\\<\\/dd>";
+        Pattern p = Pattern.compile(regx);
+        Matcher m = p.matcher(inputLine.toString());
+        if(m.find()){
+            String ipstr = m.group(1);
+            ip = ipstr;
+        }
+        if ("".equals(ip)) {
+            // 如果没有外网IP，就返回内网IP
+            return INTRANET_IP;
+        }
+        return ip;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getV4IP());
     }
 }

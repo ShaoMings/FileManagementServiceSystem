@@ -93,8 +93,6 @@ layui.use(['upload', 'element'], function () {
             })
         },
         choose: window.choose = function (obj) {
-            console.log(uploadListIns);
-            console.log(obj);
             //将每次选择的文件追加到文件队列
             let files = {}
             if (typeof (obj.pushFile) === 'function') {
@@ -123,7 +121,6 @@ layui.use(['upload', 'element'], function () {
                 }else {
                     name =files[key].name;
                 }
-                console.log(files);
                 let tr = $(['<tr id="upload-' + key + '">',
                     '<td>' + name + '</td>',
                     '<td>' + (files[key].size / 1014).toFixed(1) + 'kb</td>',
@@ -157,7 +154,7 @@ layui.use(['upload', 'element'], function () {
             let path = $("#path").val();
             let showUrl = $("#showUrl").val();
             // 传递参数  场景  文件上传路径  服务地址
-            this.data = {'scene': scene, 'path': path, 'showUrl': showUrl};
+            this.data = {'scene': scene, 'path': path===""?"":path, 'showUrl': showUrl};
         },
         done: function (res, index, upload) {
             //上传成功

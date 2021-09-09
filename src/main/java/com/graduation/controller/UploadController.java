@@ -69,6 +69,9 @@ public class UploadController extends BaseController{
         if (StrUtil.isBlank(param.getScene())){
             return FileResponseVo.fail("请先选择上传场景");
         }
+        if ("/files".equals(param.getPath())){
+            param.setPath("");
+        }
         if (StrUtil.isBlank(param.getShowUrl())){
             param.setShowUrl(getUploadShowUrl());
         }

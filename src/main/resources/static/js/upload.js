@@ -15,6 +15,28 @@ let xhrOnProgress = function (fun) {
     }
 }
 
+
+
+$("#bigFile").on("click", function () {
+    let showUrl = "http://1.15.221.117:8080";
+    layer.open({
+        type: 2,
+        skin: 'layui-layer-rim', //加上边框
+        title: '文件上传',
+        shadeClose: true,
+        shade: 0.3,
+        area: ['90%', '90vh'],
+        content: "/file/bigFileUpload",
+        success: function (obj, index) {
+            let body = layer.getChildFrame('body', index);
+            // 获取上传页面的元素进行初始化渲染
+            body.contents().find("#filepath").val($("#path").val());
+            console.log($("#path").val())
+        }
+    });
+})
+
+
 // 文件夹压缩
 function generateZipFile(
     zipName, files,

@@ -12,18 +12,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import static com.graduation.utils.FileUtils.upload;
 
@@ -53,6 +45,13 @@ public class UploadController extends BaseController{
     public String index(Model model){
         model.addAttribute("showAddress",getUploadShowUrl());
         return "file/upload";
+    }
+
+
+    @RequestMapping("/bigFileUpload")
+    public String bigFileUpload(Model model){
+        model.addAttribute("showAddress",getUploadShowUrl());
+        return "file/big_file_upload";
     }
 
     /**

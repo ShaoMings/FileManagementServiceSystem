@@ -47,13 +47,6 @@ public class UploadController extends BaseController{
         return "file/upload";
     }
 
-
-    @RequestMapping("/bigFileUpload")
-    public String bigFileUpload(Model model){
-        model.addAttribute("showAddress",getUploadShowUrl());
-        return "file/big_file_upload";
-    }
-
     /**
      * 文件上传
      * @param param 前端入参文件

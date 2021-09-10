@@ -1389,6 +1389,7 @@
 
 @media only screen and (min-width: 820px) {
     .uppy-Dashboard-inner {
+        margin: 0 auto;
         width: 750px;
         height: 550px
     }

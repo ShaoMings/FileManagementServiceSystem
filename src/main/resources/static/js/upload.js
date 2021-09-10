@@ -23,20 +23,19 @@ $("#bigFile").on("click", function () {
     layer.open({
         type: 1,
         skin: 'layui-layer-rim', //加上边框
-        title: '文件上传',
+        title: '断点续传',
         shadeClose: true,
         shade: 0.3,
-        area: ['90%', '90vh'],
+        area: ['50%', '90vh'],
         content: '<div id="app">\n' +
             '    <div id="drag-drop-area"></div>\n' +
             '</div>',
         success: function (obj, index) {
-            console.log($("#path").val())
             let upload = Uppy.Core().use(Uppy.Dashboard, {
                 inline: true,
                 target: '#drag-drop-area'
             }).use(Uppy.Tus, {
-                endpoint: 'http://10.60.1.156:8080/group1/big/upload/'
+                endpoint: 'http://10.60.2.0:8080/group1/big/upload/'
             })
             upload.on('complete', (result) => {
                 // console.log(result) console.log('Upload complete! We’ve uploaded these files:', result.successful)
@@ -44,7 +43,7 @@ $("#bigFile").on("click", function () {
             upload.setMeta({
                 auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',
                 callback_url: 'http://127.0.0.1/callback',
-                path: $("#path").val() === "/files" ? "isnullstring" : $("#path").val()
+                path: $("#path").val()
             })
 
         }

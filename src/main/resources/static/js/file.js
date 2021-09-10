@@ -539,8 +539,6 @@ $("#file-result").on("click", ".upload-file-btn", function () {
     });
 })
 
-/*监听上传按钮*/
-
 
 
 /*监听页面上传按钮*/

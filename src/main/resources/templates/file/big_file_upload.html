@@ -3,32 +3,51 @@
     <meta charset="utf-8"/>
     <title>断点续传</title>
     <link th:href="@{/static/css/uppy.min.css}" rel="stylesheet">
+    <script th:src="@{/static/js/vue.global.js}"></script>
 </head>
 <body>
-<div>
-    <input hidden id="address" th:value="${showAddress}">
-    <input id="filepath" hidden>
+<div id="app">
+    <input v-model="inputVal">
     <div id="drag-drop-area"></div>
-    <script th:src="@{/static/js/uppy.min.js}"></script>
-    <script th:src="@{/static/js/jquery.min.js}"></script>
-    <script>
-        let fileName;
-        var uppy = Uppy.Core().use(Uppy.Dashboard, {
-            inline: true,
-            target: '#drag-drop-area',
-            onBeforeFileAdded: (currentFile, files) => {
-                console.log(currentFile);
-                fileName = currentFile.name;
-            },
-        }).use(Uppy.Tus, {
-            endpoint: 'http://10.60.1.156:8080/group1/big/upload/'
-        })
-        uppy.on('complete', (result) => {
-            // console.log(result) console.log('Upload complete! We’ve uploaded these files:', result.successful)
-        })
-        //uppy.setMeta({ auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',callback_url:'http://127.0.0.1/callback' ,filename:'自定义文件名','path':'自定义path',scene:'自定义场景' })//这里是传递上传的认证参数,callback_url参数中 id为文件的ID,info 文转的基本信息json
-        uppy.setMeta({auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca', callback_url: 'http://127.0.0.1/callback',filename:fileName,path:$('#filepath').val() === "/files"?"":$('#filepath').val()})//自定义参数与普通上传类似（虽然支持自定义，建议不要自定义，海量文件情况下，自定义很可能给自已给埋坑）
-    </script>
 </div>
+<script th:src="@{/static/js/uppy.min.js}"></script>
+<script th:src="@{/static/js/jquery.min.js}"></script>
+<script>
+
+    const app = {
+        data() {
+            return {
+                inputVal: '',
+                timeout: null,
+            }
+        },
+        watch: {
+            inputVal(curVal, oldVal) {
+                // 实现input连续输入，只发一次请求
+                console.log(curVal,oldVal)
+            }
+        }
+    }
+
+    Vue.createApp(app).mount('#app');
+
+    let fileName;
+    let uppy = Uppy.Core().use(Uppy.Dashboard, {
+        inline: true,
+        target: '#drag-drop-area'
+    }).use(Uppy.Tus, {
+        endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
+    })
+    uppy.on('complete', (result) => {
+        // console.log(result) console.log('Upload complete! We’ve uploaded these files:', result.successful)
+    })
+    //uppy.setMeta({ auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',callback_url:'http://127.0.0.1/callback' ,filename:'自定义文件名','path':'自定义path',scene:'自定义场景' })//这里是传递上传的认证参数,callback_url参数中 id为文件的ID,info 文转的基本信息json
+    uppy.setMeta({
+        auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',
+        callback_url: 'http://127.0.0.1/callback',
+        name: fileName,
+        path: $('#filepath').text() === "/files" ? "isnullstring" : $('#filepath').text()
+    })//自定义参数与普通上传类似（虽然支持自定义，建议不要自定义，海量文件情况下，自定义很可能给自已给埋坑）
+</script>
 </body>
 </html>

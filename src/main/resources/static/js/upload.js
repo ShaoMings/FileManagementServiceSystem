@@ -30,8 +30,8 @@ $("#bigFile").on("click", function () {
         success: function (obj, index) {
             let body = layer.getChildFrame('body', index);
             // 获取上传页面的元素进行初始化渲染
-            body.contents().find("#filepath").val($("#path").val());
-            console.log($("#path").val())
+            body.contents().find("#filepath").text($("#path").val());
+            body.contents().find("#filepath").attr("path",$("#path").val());
         }
     });
 })

@@ -78,7 +78,6 @@ public class UploadController extends BaseController{
                 String filePath = resultVo.getPath();
                 fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
             });
-            UploadResultVo resultVo = new UploadResultVo();
             return FileResponseVo.success("上传文件夹成功!");
         }else {
             FileResponseVo responseVo = null;

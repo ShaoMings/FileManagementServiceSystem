@@ -18,8 +18,6 @@ let xhrOnProgress = function (fun) {
 
 
 $("#bigFile").on("click", function () {
-    let showUrl = "http://1.15.221.117:8080";
-
     layer.open({
         type: 1,
         skin: 'layui-layer-rim', //加上边框
@@ -33,16 +31,18 @@ $("#bigFile").on("click", function () {
         success: function (obj, index) {
             let upload = Uppy.Core().use(Uppy.Dashboard, {
                 inline: true,
-                target: '#drag-drop-area'
+                target: '#drag-drop-area',
+                showProgressDetails:true,
+                fileManagerSelectionType: 'both'
             }).use(Uppy.Tus, {
-                endpoint: 'http://10.60.2.0:8080/group1/big/upload/'
+                endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
+                // endpoint: 'http://1.15.221.117:8080/group1/big/upload/'
             })
             upload.on('complete', (result) => {
-                // console.log(result) console.log('Upload complete! We’ve uploaded these files:', result.successful)
+                // console.log(result) console.log('上传成功!')
             })
             upload.setMeta({
                 auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',
-                callback_url: 'http://127.0.0.1/callback',
                 path: $("#path").val()
             })
 

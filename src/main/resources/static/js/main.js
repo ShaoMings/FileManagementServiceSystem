@@ -1,5 +1,14 @@
 let element, layer, laytpl;
 $(function () {
+    $.ajax({
+        url:'/mail-receive/unread',
+        method:'get',
+        success:function (res) {
+            if (res.code !== 200){
+                $('.unread').css('display','none');
+            }
+        }
+    });
     layui.use(['element', 'layer', 'laytpl'], function () {
         element = layui.element;
         layer = layui.layer;
@@ -8,6 +17,7 @@ $(function () {
     initEvent();
     setIframeHeight();
 });
+
 
 /**
  * 页面初始化加载页面事件

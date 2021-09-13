@@ -1,13 +1,18 @@
 package com.graduation.service.impl;
 
+import cn.hutool.http.HttpRequest;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.graduation.model.dto.PageInfoDto;
 import com.graduation.model.pojo.Peers;
 import com.graduation.mapper.PeersMapper;
+import com.graduation.model.vo.ApiResultVo;
+import com.graduation.model.vo.FileResponseVo;
 import com.graduation.service.PeersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.graduation.utils.Constant;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -34,6 +39,21 @@ public class PeersServiceImpl extends ServiceImpl<PeersMapper, Peers> implements
         result.setState(200);
         result.setData(pageInfo.getList());
         return result;
+    }
+
+    @Override
+    public List<Peers> getAllPeers() {
+        return this.list();
+    }
+
+    @Override
+    public boolean checkPeersAddressIsUseful(String serverAddress) {
+        String res = HttpRequest.get(serverAddress+ Constant.API_STAT).timeout(2000).execute().body();
+        ApiResultVo resultVo = JSONUtil.toBean(res, ApiResultVo.class);
+        if (!Constant.API_STATUS_SUCCESS.equals(resultVo.getStatus())) {
+            return false;
+        }
+        return true;
     }
 
     @Override

@@ -60,6 +60,16 @@ public class MailReceiveController extends BaseController{
         return FileResponseVo.fail("删除失败!");
     }
 
+    @RequestMapping("/unread")
+    public FileResponseVo hasUnreadMail(){
+        boolean hasUnRead = receiveService.hasUnreadMessages(getUser().getId());
+        if (hasUnRead){
+            return FileResponseVo.success();
+        }else {
+            return FileResponseVo.fail("没有未读信息!");
+        }
+    }
+
 
     @RequestMapping("/read")
     public FileResponseVo readMail(String id){

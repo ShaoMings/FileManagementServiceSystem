@@ -4,6 +4,8 @@ import com.graduation.model.dto.PageInfoDto;
 import com.graduation.model.pojo.Peers;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -21,6 +23,20 @@ public interface PeersService extends IService<Peers> {
      * @return 集群列表
      */
     PageInfoDto<Peers> listPage(int page, int limit);
+
+    /**
+     * 获取所有保存的集群对象
+     * @return 所有集群
+     */
+    List<Peers> getAllPeers();
+
+    /**
+     * 检查集群地址是否可用
+     * @param serverAddress 集群地址 启用组名则加上组名
+     * @return 是否可用
+     */
+    boolean checkPeersAddressIsUseful(String serverAddress);
+
 
     /**
      *  检查集群是否存在

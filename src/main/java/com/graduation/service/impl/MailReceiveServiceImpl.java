@@ -45,4 +45,12 @@ public class MailReceiveServiceImpl extends ServiceImpl<MailReceiveMapper, MailR
         mailReceive.setState(1);
         return this.updateById(mailReceive);
     }
+
+    @Override
+    public boolean hasUnreadMessages(Integer userId) {
+        QueryWrapper<MailReceive> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("receive_id",userId);
+        queryWrapper.eq("state",0);
+        return this.list(queryWrapper).size()>0;
+    }
 }

@@ -119,9 +119,8 @@ public class InitSystemController {
             if (StrUtil.isNotBlank(peers.getGroupName())) {
                 urlPath += "/" + peers.getGroupName();
             }
-            String res = HttpRequest.get(urlPath+Constant.API_STAT).timeout(2000).execute().body();
-            ApiResultVo resultVo = JSONUtil.toBean(res, ApiResultVo.class);
-            if (!Constant.API_STATUS_SUCCESS.equals(resultVo.getStatus())) {
+            boolean isUseful = peersService.checkPeersAddressIsUseful(urlPath);
+            if (!isUseful) {
                 return FileResponseVo.fail("连接服务地址失败,检查地址是否正确,是否加入白名单!");
             }
             return FileResponseVo.success("校验通过!");

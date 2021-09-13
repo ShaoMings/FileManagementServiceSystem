@@ -43,4 +43,10 @@ public interface MailReceiveService extends IService<MailReceive> {
      * @return 是否修改成功
      */
     boolean changeReadStatusById(Integer id);
+
+    /**
+     *  是否有未读信息
+     * @return 是否有未读信息
+     */
+    boolean hasUnreadMessages(Integer userId);
 }

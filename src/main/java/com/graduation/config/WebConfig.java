@@ -32,7 +32,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(loginInterceptor()).excludePathPatterns("/s/download/**","/s/**","/error/**","/install","/login","/doLogin","/install/**","/static/**")
+        registry.addInterceptor(loginInterceptor()).excludePathPatterns("/s/download/**","/s/**","/error/**","/install","/login","/doLogin","/doSignUp","/install/**","/static/**")
                 .addPathPatterns("/**");
         registry.addInterceptor(fileDownloadInterceptor()).addPathPatterns("/s/**");
     }

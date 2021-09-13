@@ -23,4 +23,11 @@ public interface MailService extends IService<Mail> {
      * @return 邮件信息
      */
     ReceiveResponseVo getMailsByUserId(Integer userId);
+
+    /**
+     * 通过邮件id获取邮件内容
+     * @param mailId 邮件id
+     * @return 邮件内容
+     */
+    String getMailContentByMailId(Integer mailId);
 }

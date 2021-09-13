@@ -35,4 +35,10 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
         receiveList.forEach(e-> list.add(new EmailReceiveVo(this.getById(e.getMailId()),e.getId(),e.getReceiveTime(),e.getState(),e.getSenderName())));
         return new ReceiveResponseVo(0,"",list.size(),list);
     }
+
+    @Override
+    public String getMailContentByMailId(Integer mailId) {
+        Mail mail = this.getById(mailId);
+        return mail.getMailContent();
+    }
 }

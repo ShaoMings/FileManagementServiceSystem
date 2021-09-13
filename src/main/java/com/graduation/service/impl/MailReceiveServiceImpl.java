@@ -7,6 +7,7 @@ import com.graduation.service.MailReceiveService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -28,24 +29,14 @@ public class MailReceiveServiceImpl extends ServiceImpl<MailReceiveMapper, MailR
     }
 
     @Override
-    public boolean deleteMailReceiveByMailId(Integer mailId, Integer userId) {
-        QueryWrapper<MailReceive> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("mail_id",mailId);
-        queryWrapper.eq("receive_id",userId);
-        return this.remove(queryWrapper);
+    public boolean deleteMailReceiveByMailId(Integer mailId) {
+        return this.removeById(mailId);
     }
 
     @Override
-    public boolean deleteMailReceivesByMailIds(int[] ids,Integer userId) {
-        QueryWrapper<MailReceive> queryWrapper = new QueryWrapper<>();
-        boolean isAllDel = true;
-        for (int id : ids) {
-            queryWrapper.eq("mail_id",id);
-            queryWrapper.eq("receive_id",userId);
-            isAllDel = this.remove(queryWrapper);
-            queryWrapper.clear();
-        }
-        return isAllDel;
+    public boolean deleteMailReceivesByMailIds(Integer[] ids) {
+        List<Integer> list = Arrays.asList(ids);
+        return removeByIds(list);
     }
 
     @Override

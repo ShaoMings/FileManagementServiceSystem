@@ -6,7 +6,9 @@ import com.graduation.model.pojo.MailReceive;
 import com.graduation.model.pojo.MailSend;
 import com.graduation.mapper.MailSendMapper;
 import com.graduation.model.pojo.User;
+import com.graduation.model.vo.EmailSendRecordVo;
 import com.graduation.model.vo.EmailSendVo;
+import com.graduation.model.vo.SendResponseVo;
 import com.graduation.service.MailReceiveService;
 import com.graduation.service.MailSendService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -15,7 +17,10 @@ import com.graduation.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>
@@ -59,5 +64,27 @@ public class MailSendServiceImpl extends ServiceImpl<MailSendMapper, MailSend> i
             return isSendSaved && isReceiveSaved;
         }
         return false;
+    }
+
+    @Override
+    public boolean deleteMailSendRecord(Integer id) {
+        return  this.removeById(id);
+    }
+
+    @Override
+    public boolean deleteSelectMailSendRecord(Integer[] ids) {
+        return this.removeByIds(Arrays.asList(ids));
+    }
+
+    @Override
+    public SendResponseVo getUserSendMailRecord(String username) {
+        List<EmailSendRecordVo> records = new ArrayList<>();
+        QueryWrapper<MailSend> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("send_out_name",username);
+        List<MailSend> list = this.list(queryWrapper);
+        list.forEach(e->{
+                records.add(new EmailSendRecordVo(e,mailService.getMailContentByMailId(e.getMailId())));
+        });
+        return new SendResponseVo(0,"",records.size(),records);
     }
 }

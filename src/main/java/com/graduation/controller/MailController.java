@@ -27,6 +27,11 @@ public class MailController {
         return "inboxes";
     }
 
+    @RequestMapping("/sendboxes")
+    public String mailSendBoxes() {
+        return "sendboxes";
+    }
+
     @RequestMapping("/read")
     public String mailRead() {
         return "readMail";

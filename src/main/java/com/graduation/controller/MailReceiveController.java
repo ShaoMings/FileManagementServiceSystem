@@ -7,6 +7,7 @@ import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.ReceiveResponseVo;
 import com.graduation.service.MailReceiveService;
 import com.graduation.service.MailService;
+import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -41,7 +42,7 @@ public class MailReceiveController extends BaseController{
 
     @RequestMapping("/delete")
     public FileResponseVo deleteMail(Integer mailId){
-        boolean isDel = receiveService.deleteMailReceiveByMailId(mailId, getUser().getId());
+        boolean isDel = receiveService.deleteMailReceiveByMailId(mailId);
         if (isDel){
             return FileResponseVo.success();
         }else {
@@ -51,8 +52,8 @@ public class MailReceiveController extends BaseController{
 
     @RequestMapping("/deleteSelected")
     public FileResponseVo deleteSelectedMail(@RequestParam(value = "ids[]") String[] ids){
-        int[] mailIds = Arrays.stream(ids).mapToInt(Integer::parseInt).toArray();
-        boolean isAllDel = receiveService.deleteMailReceivesByMailIds(mailIds, getUser().getId());
+        Integer[] mailIds = (Integer[]) ConvertUtils.convert(ids, Integer.class);
+        boolean isAllDel = receiveService.deleteMailReceivesByMailIds(mailIds);
         if (isAllDel){
             return FileResponseVo.success();
         }

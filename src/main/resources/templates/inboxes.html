@@ -82,7 +82,7 @@
                             }, function () {
                                 let mail_ids = [];
                                 for (let i = 0; i < data.length; i++) {
-                                    mail_ids.push(data[i].id)
+                                    mail_ids.push(data[i].receiveMailId)
                                 }
                                 $.ajax({
                                     url: '/mail-receive/deleteSelected',
@@ -111,7 +111,7 @@
                             $.ajax({
                                 url: '/mail-receive/delete',
                                 method: 'post',
-                                data: {'mailId': data.id},
+                                data: {'mailId': data.receiveMailId},
                                 success: function (res) {
                                     if (res.code === 200) {
                                         layer.msg("删除成功!");

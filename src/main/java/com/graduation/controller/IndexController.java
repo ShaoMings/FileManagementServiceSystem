@@ -1,5 +1,8 @@
 package com.graduation.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graduation.model.pojo.User;
 import com.graduation.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +39,14 @@ public class IndexController extends BaseController{
         userService.updateById(user);
         model.addAttribute("user",user);
         return "index";
+    }
+
+    @GetMapping("/getUser")
+    @ResponseBody
+    public String getLoginUser() throws JsonProcessingException {
+        User user = getUser();
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(user);
     }
 
 

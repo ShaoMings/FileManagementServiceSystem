@@ -1,4 +1,4 @@
-var element, layer, laytpl;
+let element, layer, laytpl;
 $(function () {
     layui.use(['element', 'layer', 'laytpl'], function () {
         element = layui.element;
@@ -113,13 +113,13 @@ function fullScreen() {
     isFull = true;
     $(".f-screen-full-btn-icon").hide();
     $(".f-exit-full-btn-icon").show();
-    var el = document.documentElement;
-    var rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullScreen;
+    let el = document.documentElement;
+    let rfs = el.requestFullScreen || el.webkitRequestFullScreen || el.mozRequestFullScreen || el.msRequestFullScreen;
     if (rfs) {
         rfs.call(el);
     } else if (typeof window.ActiveXObject !== "undefined") {
         //for IE，这里其实就是模拟了按下键盘的F11，使浏览器全屏
-        var wscript = new ActiveXObject("WScript.Shell");
+        let wscript = new ActiveXObject("WScript.Shell");
         if (wscript != null) {
             wscript.SendKeys("{F11}");
         }
@@ -133,13 +133,13 @@ function exitScreen() {
     isFull = false;
     $(".f-screen-full-btn-icon").show();
     $(".f-exit-full-btn-icon").hide();
-    var el = document;
-    var cfs = el.cancelFullScreen || el.webkitCancelFullScreen || el.mozCancelFullScreen || el.exitFullScreen;
+    let el = document;
+    let cfs = el.cancelFullScreen || el.webkitCancelFullScreen || el.mozCancelFullScreen || el.exitFullScreen;
     if (cfs) {
         cfs.call(el);
     } else if (typeof window.ActiveXObject !== "undefined") {
         //for IE，这里和fullScreen相同，模拟按下F11键退出全屏
-        var wscript = new ActiveXObject("WScript.Shell");
+        let wscript = new ActiveXObject("WScript.Shell");
         if (wscript != null) {
             wscript.SendKeys("{F11}");
         }
@@ -193,12 +193,12 @@ function changeTheme(e) {
  * @param tabId
  */
 function openTab(icon, menuName, url, tabId) {
-    var eachcount = 0;
-    var flag = false;
+    let eachcount = 0;
+    let flag = false;
     $(".content-tab-title").find('li').each(function () {
         eachcount++;
-        var layId = $(this).attr("lay-id");
-        if (tabId == layId) {
+        let layId = $(this).attr("lay-id");
+        if (tabId === layId) {
             flag = true;
         }
         if (eachcount >= $(".content-tab-title").find('li').length) {
@@ -207,7 +207,6 @@ function openTab(icon, menuName, url, tabId) {
                 const iframe = $('.f-tab-content>.layui-show>iframe');
                 $(iframe).attr('src', url);
                 setIframeHeight();
-                return;
             } else {
                 //添加tab
                 element.tabAdd('tabNav', {
@@ -222,6 +221,8 @@ function openTab(icon, menuName, url, tabId) {
         }
     });
 }
+
+
 
 function clickMenu(e) {
     const id = $(e).attr("id");

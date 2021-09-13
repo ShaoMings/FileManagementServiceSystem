@@ -1,0 +1,98 @@
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>发信箱</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" th:href="@{/static/lib/layui-v2.5.6/layui/css/layui.css}">
+    <link th:href="@{/static/lib/font-awesome-4.7.0/css/font-awesome.min.css}" rel="stylesheet"/>
+</head>
+<body>
+<form class="layui-form"  onsubmit="return false;">
+    <div class="layui-form-item">
+        <label class="layui-form-label" style="width: auto;">
+            <span>标题 </span>
+            <span class="layui-badge-dot"></span>
+        </label>
+        <div class="layui-input-block" style="margin-left: 90px">
+            <input type="text" name="title" required  lay-verify="required" placeholder="请输入标题" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label" style="width: auto;">
+            <span>收信人 </span>
+            <span class="layui-badge-dot"></span>
+        </label>
+        <div class="layui-input-block" style="margin-left: 90px">
+            <input type="email" name="email" required  lay-verify="required" placeholder="请输入邮箱" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <textarea id="demo" style="display: none;"></textarea>
+    <div class="layui-form-item" style="width: auto;height: auto">
+        <div class="layui-input-block" style="    margin-top: 3%;margin-right: 2%;float: right;">
+            <button class="layui-btn" lay-submit lay-filter="send">立即发送</button>
+        </div>
+    </div>
+</form>
+
+
+<script th:src="@{/static/lib/jquery/jquery-3.5.1.min.js}"></script>
+<script th:src="@{/static/lib/layui-v2.5.6/layui/layui.all.js}"></script>
+<script>
+    layui.use(['layedit','form'], function(){
+        let layedit = layui.layedit;
+        let form = layui.form;
+        //建立编辑器
+        let edit = layedit.build('demo', {
+            tool: [
+                'strong'
+                ,'italic'
+                ,'underline'
+                ,'del'
+                ,'|'
+                ,'left'
+                ,'center'
+                ,'right'
+                ,'face'
+            ],
+            height: 580
+        });
+
+        form.on('submit(send)',function (data) {
+            $.ajax({
+                url:"/getUser",
+                method:"get",
+                async:false,
+                success:function (obj) {
+                    let user = JSON.parse(obj);
+                    if (user.email === data.field.email){
+                        layer.msg("您不能给自己发信息!");
+                        return ;
+                    }
+
+                    let email = {
+                        "title":data.field.title,
+                        "sendOutName":user.username,
+                        "sendEmail":data.field.email,
+                        "content":layedit.getContent(edit)
+                    }
+                    $.ajax({
+                        url:"/mail-send/send",
+                        method: "post",
+                        data:email,
+                        success:function (res) {
+                            if (res.code === 200){
+                                layer.msg("发送成功");
+                            }else {
+                                layer.msg(res.msg);
+                            }
+                        }
+                    })
+                }
+            })
+        })
+
+
+    });
+</script>
+</body>
+</html>

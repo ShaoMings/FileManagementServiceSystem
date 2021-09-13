@@ -52,8 +52,33 @@
                     </li>
 
                     <li class="layui-nav-item f-nav-item">
+                        <a class="" href="javascript:;">
+                            <i class="fa fa-envelope-o" aria-hidden="true"></i>
+                            <span class="f-nav-content">站内信</span>
+                        </a>
+                        <dl class="layui-nav-child">
+                            <dd class="f-child-side">
+                                <a href="javascript:;" class="p-menu-item"
+                                   data-url="/mail/index" id="5" data-icon="fa-envira"
+                                   data-name="写信"
+                                   onclick="clickMenu(this);">
+                                    写信
+                                </a>
+                            </dd>
+                            <dd class="f-child-side">
+                                <a href="javascript:;" class="p-menu-item"
+                                   data-url="/mail/inboxes" id="6" data-icon="fa-envelope-open-o"
+                                   data-name="收信"
+                                   onclick="clickMenu(this);">
+                                    收信
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+
+                    <li class="layui-nav-item f-nav-item">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/settings/user" id="5" data-icon="fa-sliders" data-name="个人中心">
+                           data-url="/settings/user" id="7" data-icon="fa-sliders" data-name="个人中心">
                             <i class="layui-icon layui-icon-friends"></i>
                             <span class="f-nav-content">个人中心</span>
                         </a>

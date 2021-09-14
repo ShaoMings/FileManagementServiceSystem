@@ -25,6 +25,7 @@ import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description 登录登出控制器
@@ -96,21 +97,24 @@ public class SignController {
             for (Peers p : peers) {
                 try {
                     if (peersService.checkPeersAddressIsUseful(p.getServerAddress() + "/" + p.getGroupName())) {
+                        Map<String, Object> peersStatus = peersService.getPeersStatus(p.getServerAddress() + "/" + p.getGroupName());
+                        String diskFreeSize = (String) peersStatus.get("diskFreeSize");
+                        System.out.println("diskFreeSize = " + diskFreeSize);
                         InstallVo installVo = new InstallVo();
                         User voUser = installVo.getUser(user.getPassword(), user.getAccount(), user.getEmail(), user.getName());
                         voUser.setPeersid(p.getId());
                         voUser.setAge(18);
                         isSign = userService.save(voUser);
                     }
-                }catch (Exception e){
-                    continue;
+                }catch (Exception ignored){
+
                 }
 
             }
             if (isSign) {
                 return FileResponseVo.success();
             }
-            return FileResponseVo.fail("注册失败,请检查是否存在可用集群!");
+            return FileResponseVo.fail("注册失败,请联系管理员请检查是否存在可用集群!");
         } else {
             return FileResponseVo.fail("两次密码不一致,请检查后再试!");
         }

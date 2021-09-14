@@ -23,9 +23,10 @@ public interface FileService extends IService<File> {
      *  获取一级目录
      * @param peersGroupName 集群组名
      * @param serverAddress 服务地址
+     * @param userPath 用户名区分用户目录
      * @return  文件信息对象列表
      */
-    List<FileInfoVo> getParentFile(String peersGroupName,String serverAddress);
+    List<FileInfoVo> getParentFile(String peersGroupName,String serverAddress,String userPath);
 
     /**
      *  获取指定的目录

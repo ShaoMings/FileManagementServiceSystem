@@ -61,8 +61,19 @@ public class UploadController extends BaseController{
         if (StrUtil.isBlank(param.getScene())){
             return FileResponseVo.fail("请先选择上传场景");
         }
+        String username = getUser().getUsername();
         if ("/files".equals(param.getPath())){
-            param.setPath("");
+            param.setPath(username);
+        }
+        if ("".equals(param.getPath())){
+            param.setPath(username);
+        }
+        if (!param.getPath().startsWith(username)){
+            if (param.getPath().startsWith("/")){
+                param.setPath(username + param.getPath());
+            }else {
+                param.setPath(username + "/" + param.getPath());
+            }
         }
         if (StrUtil.isBlank(param.getShowUrl())){
             param.setShowUrl(getUploadShowUrl());

@@ -5,6 +5,7 @@ import com.graduation.model.pojo.Peers;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -36,6 +37,13 @@ public interface PeersService extends IService<Peers> {
      * @return 是否可用
      */
     boolean checkPeersAddressIsUseful(String serverAddress);
+
+    /**
+     * 获取集群状态信息
+     * @param serverAddress 集群地址 启用组名则加上组名
+     * @return 集群状态集合
+     */
+    Map<String,Object> getPeersStatus(String serverAddress);
 
 
     /**

@@ -28,7 +28,7 @@ $('#fileList').click(function () {
 
 //切换集群
 $('#switchPeers').click(function () {
-    $.post('/home/getAllPeers', function(result){
+    $.post('/status/getAllPeers', function(result){
         let html = '<form class="layui-form" action="">'+
             '<div class="layui-form-item">'+
             '<div class="layui-input-block" style="margin: 0;padding: 15px;">'+
@@ -50,7 +50,7 @@ $('#switchPeers').click(function () {
                 if(switchPeersId === 0){
                     layer.msg("请选择要切换的集群");
                 }else{
-                    $.post('/home/switchPeers',{"id":switchPeersId}, function(result){
+                    $.post('/status/switchPeers',{"id":switchPeersId}, function(result){
                         if(result.code === 200){
                             layer.close(index);
                             layer.msg("切换成功", {icon: 6});
@@ -73,7 +73,7 @@ $('#repair_stat').click(function () {
     layer.confirm('确定要修正统计信息吗?该操作会修正最近30天的统计数据(耗时较长)', {icon: 3, title:'提示'}, function(index){
         layer.close(index);
         index = layer.load();
-        $.post("/home/repair_stat",function (data) {
+        $.post("/status/repair_stat",function (data) {
             layer.close(index);
             layer.msg(data.msg);
             setTimeout(function(){
@@ -88,7 +88,7 @@ $('#remove_empty_dir').click(function () {
     layer.confirm('确定要删除空目录吗?该操作耗时较长,请勿重复操作', {icon: 3, title:'提示'}, function(index){
         layer.close(index);
         index = layer.load();
-        $.post("/home/remove_empty_dir",function (data) {
+        $.post("/status/remove_empty_dir",function (data) {
             layer.close(index);
             layer.msg(data.msg);
         })
@@ -100,7 +100,7 @@ $('#backup').click(function () {
     layer.confirm('确定要备份元数据吗?该操作将会备份最近30天的数据,耗时较长', {icon: 3, title:'提示'}, function(index){
         layer.close(index);
         index = layer.load();
-        $.post("/home/backup",function (data) {
+        $.post("/status/backup",function (data) {
             layer.close(index);
             layer.msg(data.msg);
         })
@@ -112,7 +112,7 @@ $('#repair').click(function () {
     layer.confirm('确定进行同步失败修复吗?该操作将会修复同步失败数据,耗时较长', {icon: 3, title:'提示'}, function(index){
         layer.close(index);
         index = layer.load();
-        $.post("/home/repair",function (data) {
+        $.post("/status/repair",function (data) {
             layer.close(index);
             layer.msg(data.msg);
         })
@@ -123,7 +123,7 @@ $('#repair').click(function () {
  * 获取文件统计/状态信息
  */
 function getStatus() {
-    $.post('/home/getStatus', function (data) {
+    $.post('/status/getStatus', function (data) {
         let option;
         if (data.code === 200) {
             $("#totalFileCount").text(data.data.totalFileCount);

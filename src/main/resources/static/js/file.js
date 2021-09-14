@@ -548,7 +548,7 @@ $("#upload").click(function () {
     if (dir !== "") {
         path = path + dir;
     } else {
-        path = "/files"
+        path = ""
     }
     layer.open({
         type: 2,
@@ -564,9 +564,6 @@ $("#upload").click(function () {
             body.contents().find("#path").val(path);
         },
         cancel: function () {
-            if (path === "/files") {
-                path = "";
-            }
             openDir(path);
         }
     });
@@ -583,10 +580,7 @@ $("#file-result").on("click", ".details-btn", function () {
         let html = '<div class="file-details-box">' +
             '<ul>' +
             '<li><span>名称:&nbsp;</span>' + result.data.name + '</li>' +
-            '<li><span>路径:&nbsp;</span>' + result.data.path + '</li>' +
-            '<li><span>url:&nbsp;</span>' + result.data.url + '</li>' +
             '<li><span>MD5:&nbsp;</span>' + result.data.md5 + '</li>' +
-            '<li><span>场景:&nbsp;</span>' + result.data.scene + '</li>' +
             '<li><span>大小:&nbsp;</span>' + result.data.size + '</li>' +
             '<li><span>日期:&nbsp;</span>' + result.data.timeStamp + '</li>' +
             '</ul>' +
@@ -596,7 +590,7 @@ $("#file-result").on("click", ".details-btn", function () {
             title: '文件信息',
             shadeClose: true,
             shade: 0.3,
-            area: ['500px', '400px'],
+            area: ['500px', '280px'],
             content: html
         });
     })
@@ -604,7 +598,6 @@ $("#file-result").on("click", ".details-btn", function () {
 
 /*监听文件夹删除按钮*/
 $("#file-result").on("click", ".delete-dir-btn", function () {
-    // layer.msg("该功能未开发完成!");
     let name = $(this).data("name");
     let path = $(this).data("path");
     let $this = $(this);
@@ -653,7 +646,7 @@ $("#file-result").on("click", ".delete-file-btn", function () {
 $("#file-result").on("click", ".resultFile", function () {
     let name = $(this).data("name");
     let path = $(this).data("path");
-    let group = $(this).data("peer");
+    let username;
     let token;
     let address;
     $.ajax({
@@ -662,13 +655,21 @@ $("#file-result").on("click", ".resultFile", function () {
         success: function (res) {
             address = res;
         }
+    });
+    $.ajax({
+        url: "/user/username",
+        async: false,
+        success: function (res) {
+            username = res;
+        }
     })
-    let source = address + "/" + (path === "" ? name : path + "/" + name);
+    let source = address + "/"+ username + "/" + (path === "" ? name : path + "/" + name);
+
     // 文件预览token
     $.ajax({
         url: "/preview/token",
         method: "post",
-        data: {"filePath": path === "" ? name : path + "/" + name},
+        data: {"filePath": username + "/"+(path === "" ? name : path + "/" + name)},
         async: false,
         success: function (res) {
             token = res;
@@ -753,7 +754,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source + "?auth_token=" + token;
+        let viewer_url = source + "?auth_token=" + token+"&download=0";
         layer.open({
             type: 2,
             title: '文件内容',

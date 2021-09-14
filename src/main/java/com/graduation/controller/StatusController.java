@@ -37,8 +37,8 @@ import java.util.Map;
  */
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-@RequestMapping("/home")
-public class HomeController extends BaseController {
+@RequestMapping("/status")
+public class StatusController extends BaseController {
     @Value("${version}")
     private String version;
 
@@ -63,7 +63,7 @@ public class HomeController extends BaseController {
         model.addAttribute("osArch", osInfo.getArch());
         model.addAttribute("version", version);
         model.addAttribute("versionDate", versionDate);
-        return "home";
+        return "status";
     }
 
 

@@ -36,6 +36,26 @@ public class FileController extends BaseController {
     @Autowired
     private FileService fileService;
 
+
+    private String checkUserPath(String dir){
+        String username = getUser().getUsername();
+        if ("".equals(dir)){
+            dir = getUser().getUsername();
+        }
+        if (dir.startsWith("files/")){
+            dir = dir.replace("files/","");
+        }
+        if (!dir.startsWith(username)){
+            if (dir.startsWith("/")) {
+                dir =  username + dir;
+            }else {
+                dir =  username + "/" + dir ;
+            }
+        }
+        return dir;
+    }
+
+
     /**
      * 文件列表页面
      *
@@ -53,8 +73,8 @@ public class FileController extends BaseController {
      */
     @RequestMapping("/getParentFile")
     @ResponseBody
-    public FileResponseVo getParentFile(String dir) {
-        return FileResponseVo.success(fileService.getParentFile(getPeersGroupName(), getPeersUrl()));
+    public FileResponseVo getParentFile() {
+        return FileResponseVo.success(fileService.getParentFile(getPeersGroupName(), getPeersUrl(),getUser().getUsername()));
     }
 
     /**
@@ -66,6 +86,7 @@ public class FileController extends BaseController {
     @RequestMapping("/getDirFile")
     @ResponseBody
     public FileResponseVo getDirFile(String dir) {
+        dir = checkUserPath(dir);
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
     }
 
@@ -80,8 +101,17 @@ public class FileController extends BaseController {
     @RequestMapping("rename")
     @ResponseBody
     public FileResponseVo renameFileOrFolder(String path, String oldName, String newName, String md5) {
-        String oldPath = path + "/" + oldName;
-        String newPath = path + "/" + newName;
+        String oldPath;
+        String newPath;
+        path = "files/" + checkUserPath(path);
+        if (path.endsWith("/")){
+            oldPath = path +  oldName;
+            newPath =  path + newName;
+        }else {
+            oldPath = path + "/" +  oldName;
+            newPath =  path + "/" +  newName;
+        }
+
         if (fileService.renameFileOrFolder(getPeersUrl(), oldPath, newPath, path, getPeersGroupName(), md5)) {
             return FileResponseVo.success();
         } else {
@@ -111,7 +141,8 @@ public class FileController extends BaseController {
     @RequestMapping("/deleteFile")
     @ResponseBody
     public FileResponseVo deleteFile(String path) {
-        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path, false)) {
+        path = checkUserPath(path);
+        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(),  path, false)) {
             return FileResponseVo.success();
         }
         return FileResponseVo.fail("删除文件失败");
@@ -126,6 +157,7 @@ public class FileController extends BaseController {
     @RequestMapping("/deleteDir")
     @ResponseBody
     public FileResponseVo deleteDir(String path) {
+        path =  checkUserPath(path);
         if (fileService.deleteDir(getPeersUrl(), path)) {
             return FileResponseVo.success();
         }
@@ -141,6 +173,7 @@ public class FileController extends BaseController {
     @RequestMapping("/mkdir")
     @ResponseBody
     public FileResponseVo mkdir(String path) {
+        path = "files/" + checkUserPath(path);
         if (fileService.mkdir(getPeersUrl(), path)) {
             return FileResponseVo.success();
         }
@@ -173,6 +206,7 @@ public class FileController extends BaseController {
     @RequestMapping("/picConverter")
     @ResponseBody
     public FileResponseVo convertPicture(String path, String filename, String srcSuffix, String destSuffix) {
+        path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
         boolean isSuccess = fileService.convertPictureFile(convertVo);
@@ -194,6 +228,7 @@ public class FileController extends BaseController {
     @RequestMapping("/audioConverter")
     @ResponseBody
     public FileResponseVo convertAudio(String path, String filename, String srcSuffix, String destSuffix) {
+        path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
         boolean isSuccess = fileService.convertAudioFile(convertVo);
@@ -215,9 +250,9 @@ public class FileController extends BaseController {
     @RequestMapping("/documentConverter")
     @ResponseBody
     public FileResponseVo convertDocument(String path, String filename, String srcSuffix, String destSuffix) {
+        path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        System.out.println(convertVo);
         boolean isSuccess = fileService.convertDocumentFile(convertVo);
         if (isSuccess) {
             return FileResponseVo.success();
@@ -238,6 +273,7 @@ public class FileController extends BaseController {
     public void downloadFile(String path, String name, HttpServletResponse response) {
         BufferedInputStream in = null;
         try {
+            path = checkUserPath(path);
             // 将文件名 encode 确保 new URL 不出错
             String filename = URLEncoder.encode(name, "UTF-8");
             filename = StringUtils.replace(filename, "+", "%20");
@@ -290,11 +326,12 @@ public class FileController extends BaseController {
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
         String content;
+        shareFileVo.setPath(getUser().getUsername()+shareFileVo.getPath());
         if ("".equals(shareFileVo.getPath())) {
-            content = "/" + getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
+            content =  getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
                     + untilToTime;
         } else {
-            content = "/" + getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
+            content =  getUser().getUsername()+ "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
                     + untilToTime;
         }
         String code = AesUtils.encrypt(content);
@@ -313,6 +350,7 @@ public class FileController extends BaseController {
     @RequestMapping("/import")
     @ResponseBody
     public FileResponseVo downloadFromLink(String path, String link) {
+        path = checkUserPath(path);
         if (StringUtils.isNotBlank(link)) {
             if (link.endsWith(".git")) {
                 List<String> filesPath = GitUtils.pullFilesFromGit(link);

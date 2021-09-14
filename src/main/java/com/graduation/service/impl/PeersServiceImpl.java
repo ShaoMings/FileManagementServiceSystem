@@ -1,6 +1,8 @@
 package com.graduation.service.impl;
 
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.github.pagehelper.PageHelper;
@@ -10,13 +12,16 @@ import com.graduation.model.pojo.Peers;
 import com.graduation.mapper.PeersMapper;
 import com.graduation.model.vo.ApiResultVo;
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.service.IndexService;
 import com.graduation.service.PeersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.graduation.utils.Constant;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>
@@ -28,6 +33,10 @@ import java.util.List;
  */
 @Service
 public class PeersServiceImpl extends ServiceImpl<PeersMapper, Peers> implements PeersService {
+
+    @Autowired
+    private IndexService indexService;
+
 
     @Override
     public PageInfoDto<Peers> listPage(int page, int limit) {
@@ -54,6 +63,16 @@ public class PeersServiceImpl extends ServiceImpl<PeersMapper, Peers> implements
             return false;
         }
         return true;
+    }
+
+    @Override
+    public Map<String, Object> getPeersStatus(String serverAddress) {
+        String json = HttpUtil.get(serverAddress + Constant.API_STATUS);
+        JSONObject jsonObject = JSONUtil.parseObj(json);
+        if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
+            return indexService.getStatus(jsonObject.get("data"));
+        }
+        return null;
     }
 
     @Override

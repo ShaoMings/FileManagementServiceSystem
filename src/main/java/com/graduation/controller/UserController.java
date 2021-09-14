@@ -3,6 +3,7 @@ package com.graduation.controller;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -15,7 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/user")
-public class UserController {
+public class UserController extends BaseController{
 
+    @RequestMapping("/username")
+    public String getUsername(){
+        return getUser().getUsername();
+    }
 }
 

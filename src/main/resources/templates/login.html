@@ -94,16 +94,19 @@
 
 
     $('#signup').on('click',function () {
-        console.log("?")
+        let loadIndex = layer.load();
         $.ajax({
             url:"/doSignUp",
             data:$('#signup-form').serialize(),
             method:'post',
             dataType:'json',
             success:function(result){
+                layer.close(loadIndex);
                 if(result.code === 200){
                     layer.msg("注册成功!");
-                    window.location.href = '/login';
+                    setTimeout(function () {
+                        window.location.href = '/login';
+                    },2000);
                 }else{
                     layer.msg(result.msg);
                 }

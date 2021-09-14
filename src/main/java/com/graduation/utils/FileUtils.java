@@ -359,6 +359,12 @@ public class FileUtils {
         if (StrUtil.isNotBlank(dir)) {
             param.put("dir", dir);
         }
+        String username;
+        if (dir.contains("/")){
+            username = dir.substring(0,dir.indexOf("/"));
+        }else {
+            username = dir;
+        }
         String result = HttpUtil.post(serverAddress + Constant.API_LIST_DIR, param);
         JSONObject parseObj = JSONUtil.parseObj(result);
         ArrayList<FileInfoVo> dirs = new ArrayList<>();
@@ -369,12 +375,18 @@ public class FileUtils {
             for (int i = 0; i < array.size(); i++) {
                 FileInfoVo fileInfoVo = new FileInfoVo();
                 JSONObject file = array.getJSONObject(i);
-                // 备份文件在后缀之前有 _big
+                // 大文件断点续传  后缀之前有 _big  _tmp为临时文件
                 if ("_big".equals(file.getStr("name")) || "_tmp".equals(file.getStr("name"))) {
                     continue;
                 }
                 fileInfoVo.setMd5(file.getStr("md5"));
-                fileInfoVo.setPath(file.getStr("path"));
+                String backPath = file.getStr("path");
+                if (backPath.contains(username + "/")){
+                    backPath = backPath.replace(username + "/","");
+                }else {
+                    backPath = backPath.replace(username,"");
+                }
+                fileInfoVo.setPath(backPath);
                 fileInfoVo.setName(file.getStr("name"));
                 fileInfoVo.setIs_dir(file.getBool("is_dir"));
                 fileInfoVo.setPeerAddr(backUrl);
@@ -453,13 +465,13 @@ public class FileUtils {
             filename = StringUtils.replace(filename, "+", "%20");
             String token;
             URL url;
-            System.out.println(path);
+//            System.out.println(path);
             if ("".equals(path)){
                 token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(name));
             }else {
                 token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path + "/" + name));
             }
-            System.out.println(token);
+//            System.out.println(token);
             url = new URL(peerAddress + "/" + path + "/" + filename+"?auth_token="+token);
             in = new BufferedInputStream(url.openStream());
             return in;

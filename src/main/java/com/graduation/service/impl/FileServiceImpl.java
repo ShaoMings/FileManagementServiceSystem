@@ -40,8 +40,8 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     FileMapper fileMapper;
 
     @Override
-    public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress) {
-        return FileUtils.getDirectoryOrFileList(peersGroupName, serverAddress, null);
+    public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress,String userPath) {
+        return FileUtils.getDirectoryOrFileList(peersGroupName, serverAddress, userPath);
     }
 
     @Override
@@ -123,10 +123,15 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             String filename = newPath.substring(newPath.lastIndexOf("/") + 1);
             if (!"".equals(md5)) {
                 String oldFilename = oldPath.substring(oldPath.lastIndexOf("/") + 1);
-                prefix = prefix.replaceFirst("files/", "") + "/" + oldFilename;
-                return fileMapper.updateFilePathString(prefix, oldPath.replace(path + "/", ""), newPath.replace(path + "/", ""), filename) > 0;
+                String tmp = prefix.replaceFirst("files/", "");
+                if (tmp.endsWith("/")){
+                    prefix = tmp +  oldFilename;
+                }else {
+                    prefix = tmp + "/" + oldFilename;
+                }
+                return fileMapper.updateFilePathString(prefix, oldPath.replace(path , ""), newPath.replace(path, ""), filename) > 0;
             } else {
-                return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path + "/", ""), newPath.replace(path + "/", "")) > 0;
+                return fileMapper.updatePathString(prefix.replaceFirst("files/", ""), oldPath.replace(path , ""), newPath.replace(path, "")) > 0;
             }
         }
         return false;

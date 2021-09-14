@@ -12,7 +12,6 @@ import com.graduation.model.vo.FileInfoVo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
-import com.graduation.utils.api.ProgressCallback;
 import okhttp3.*;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -209,13 +208,6 @@ public class FileUtils {
             HttpEntity entity = multipartEntityBuilder.build();
             httpPost.setEntity(entity);
 
-
-            // 实时上传进度
-            ProgressHttpEntityWrapper entityWrapper = new ProgressHttpEntityWrapper(entity, progress -> {
-//                   System.out.println(progress);
-            }, multipartFile.getSize());
-
-            httpPost.setEntity(entityWrapper);
             httpResponse = httpClient.execute(httpPost);
 
             if (httpResponse.getStatusLine().getStatusCode() == Constant.SUCCESS_STATUS_CODE) {

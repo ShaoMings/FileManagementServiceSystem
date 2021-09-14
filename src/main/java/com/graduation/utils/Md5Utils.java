@@ -1,12 +1,6 @@
 package com.graduation.utils;
 
 import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.digest.MD5;
-import com.graduation.utils.download.SiteFileFetch;
-import com.graduation.utils.download.SiteInfoBean;
-import ws.schild.jave.Encoder;
-import ws.schild.jave.EncoderException;
-
 import java.io.FileOutputStream;
 import java.security.MessageDigest;
 
@@ -54,9 +48,6 @@ public class Md5Utils {
             String outputPath = Constant.OUTPUT_TMP_FILE_PATH;
             String filename = "TheWormValley.mp4";
             FileOutputStream fileOutputStream = new FileOutputStream(outputPath + "/test/"+filename);
-            SiteInfoBean bean = new SiteInfoBean(url, outputPath,filename,fileOutputStream, 5);
-            SiteFileFetch fileFetch = new SiteFileFetch(bean);
-            fileFetch.start();
         }catch (Exception e){
             e.printStackTrace();
         }

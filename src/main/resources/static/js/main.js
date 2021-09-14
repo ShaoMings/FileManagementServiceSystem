@@ -4,8 +4,8 @@ $(function () {
         url:'/mail-receive/unread',
         method:'get',
         success:function (res) {
-            if (res.code !== 200){
-                $('.unread').css('display','none');
+            if (res.code === 200){
+                $('.unread').css('display','inline');
             }
         }
     });

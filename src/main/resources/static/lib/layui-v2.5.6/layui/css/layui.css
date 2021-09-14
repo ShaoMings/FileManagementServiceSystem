@@ -951,7 +951,8 @@ a cite {
 .layui-layout-admin .layui-side {
     top: 60px;
     width: 200px;
-    overflow-x: hidden
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 .layui-layout-admin .layui-body {

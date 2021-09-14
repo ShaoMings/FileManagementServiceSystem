@@ -7,7 +7,9 @@ import com.graduation.model.vo.InstallVo;
 import com.graduation.model.vo.UserLoginVo;
 import com.graduation.model.vo.UserSignUpVo;
 import com.graduation.service.PeersService;
+import com.graduation.service.UserRoleService;
 import com.graduation.service.UserService;
+import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.UnknownAccountException;
@@ -18,12 +20,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -35,15 +39,13 @@ import java.util.Map;
  * @since 1.0
  */
 @Controller
-public class SignController {
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
+public class SignController extends BaseController{
     private static final Logger LOGGER = LoggerFactory.getLogger(SignController.class);
 
+    private final UserService userService;
 
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private PeersService peersService;
+    private final PeersService peersService;
 
     /**
      * 登录页视图跳转
@@ -51,7 +53,11 @@ public class SignController {
      * @return 登录界面
      */
     @RequestMapping("/login")
-    public String login() {
+    public String login(Model model) {
+        String msg = (String) model.getAttribute("msg");
+        if (!"".equals(msg)){
+            model.addAttribute("msg","");
+        }
         return "login";
     }
 
@@ -63,8 +69,7 @@ public class SignController {
      * @return 响应对象
      */
     @RequestMapping("/doLogin")
-    @ResponseBody
-    public FileResponseVo doLogin(UserLoginVo user, HttpSession session) {
+    public String doLogin(UserLoginVo user, HttpSession session, Model model) {
         try {
             UsernamePasswordToken token = new UsernamePasswordToken(user.getAccount(), user.getPassword(), false);
             Subject subject = SecurityUtils.getSubject();
@@ -72,18 +77,13 @@ public class SignController {
             LOGGER.info("用户:{} 登录!", user.getAccount());
             // session 存放用户
             session.setAttribute("isLogin", true);
-            session.setAttribute("user", user.getAccount());
+            session.setAttribute("username", user.getAccount());
             session.setMaxInactiveInterval(1800);
-            return FileResponseVo.success();
-        } catch (IncorrectCredentialsException e) {
-            LOGGER.info(user.getAccount() + e.getMessage());
-            return FileResponseVo.fail("密码错误");
-        } catch (UnknownAccountException e) {
-            LOGGER.info(user.getAccount() + e.getMessage());
-            return FileResponseVo.fail("用户不存在");
+            return "redirect:/";
         } catch (Exception e) {
             LOGGER.info(user.getAccount() + e.getMessage());
-            return FileResponseVo.fail("系统异常");
+            model.addAttribute("msg","用户名或密码有误,请检查后再试!");
+            return "redirect:login";
         }
     }
 

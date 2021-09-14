@@ -20,9 +20,10 @@
                 登录
                 <span class="underline"></span>
             </button>
-            <form class="form form-login" id="login-form" onsubmit="return false">
+            <form class="form form-login" action="/doLogin" method="post">
                 <fieldset>
                     <legend>请输入用户名及密码进行登录</legend>
+                    <label style="color: red" th:text="${msg}"></label>
                     <div class="input-block">
                         <label for="login-username">用户名</label>
                         <input id="login-username" name="account" type="text" required>
@@ -32,7 +33,7 @@
                         <input id="login-password" name="password" type="password" required>
                     </div>
                 </fieldset>
-                <button type="button"  class="btn-login" id="login">登录</button>
+                <button type="submit"  class="btn-login" id="login">登录</button>
             </form>
         </div>
         <div class="form-wrapper">
@@ -66,7 +67,7 @@
                         <input id="signup-password-confirm" name="confirm" type="password" required>
                     </div>
                 </fieldset>
-                <button type="button" class="btn-signup" id="signup">注册</button>
+                <button type="submit" class="btn-signup" id="signup">注册</button>
             </form>
         </div>
     </div>
@@ -75,22 +76,6 @@
 <script th:src="@{/static/lib/layui-v2.5.6/layui/layui.all.js}"></script>
 <script th:src="@{/static/js/sign.js}"></script>
 <script>
-
-    $('#login').on('click',function () {
-        $.ajax({
-            url:"/doLogin",
-            data:$('#login-form').serialize(),
-            method:'post',
-            dataType:'json',
-            success:function(result){
-                if(result.code === 200){
-                    window.location.href = '/';
-                }else{
-                    layer.msg(result.msg);
-                }
-            }
-        })
-    });
 
 
     $('#signup').on('click',function () {

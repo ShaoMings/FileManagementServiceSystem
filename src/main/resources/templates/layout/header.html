@@ -2,7 +2,7 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
     <body>
         <div class="layui-header f-header" style="position: relative;" th:fragment="layout_header">
-            <ul class="layui-nav layui-layout-left left-nav f-nav">
+            <ul class="layui-nav layui-bg-cyan layui-layout-left left-nav f-nav">
                 <li class="layui-nav-item" lay-unselect>
                     <a href="javascript:;" title="收缩菜单" class="f-switch-side-btn f-switch-btn-on">
                         <i class="layui-icon layui-icon-shrink-right"></i>
@@ -19,7 +19,7 @@
 
             </ul>
 
-            <ul class="layui-nav layui-layout-right header-right f-nav">
+            <ul class="layui-nav layui-bg-cyan layui-layout-right header-right f-nav">
                 <li class="layui-nav-item" lay-unselect>
                     <a href="javascript:;" class="f-screen-full-btn" title="全屏/退出全屏">
                         <i class="layui-icon layui-icon-screen-full f-screen-full-btn-icon"></i>
@@ -28,7 +28,7 @@
                 </li>
                 <li class="layui-nav-item" lay-unselect>
                     <a href="javascript:;">
-                         <img th:src="@{/static/images/users/{random}(random=${#numbers.formatDecimal(T(java.lang.Math).floor(T(java.lang.Math).random()*10 + 1),1,0)}+'.png')}" class="layui-nav-img">
+                         <img th:src="@{/static/images/users/{gender}(gender=${user.getGender()}+'.png')}" class="layui-nav-img">
                          <span th:text="${user.getUsername()}"></span>
                     </a>
                     <dl class="layui-nav-child">

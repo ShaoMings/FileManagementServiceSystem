@@ -2,7 +2,7 @@
 <html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
     <body>
         <div class="layui-side f-side" th:fragment="layout_sider">
-            <div class="layui-logo f-logo-text">
+            <div class="layui-logo">
                 多源异构文件管理系统
             </div>
             <div class="layui-logo f-logo-img">
@@ -10,56 +10,32 @@
             </div>
             <div class="layui-side-scroll">
                 <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-                <ul class="layui-nav layui-nav-tree f-side-nav" lay-filter="side">
-                    <li class="layui-nav-item f-nav-item">
+                <ul  class="layui-nav layui-nav-tree f-side-nav" lay-filter="side">
+                    <li class="layui-nav-item f-nav-item" th:if="${role} eq '1'">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
                            data-url="/status" id="1" data-icon="fa-cogs" data-name="集群状态">
                             <i class="fa fa-cogs" aria-hidden="true"></i>
                             <span class="f-nav-content">集群状态</span>
                         </a>
                     </li>
+
                     <li class="layui-nav-item f-nav-item">
-                        <a class="" href="javascript:;">
+                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
+                           data-url="/file" id="3" data-icon="fa-file-o" data-name="我的文件">
                             <i class="fa fa-file-o" aria-hidden="true"></i>
-                            <span class="f-nav-content">文件管理</span>
+                            <span class="f-nav-content">我的文件</span>
                         </a>
-                        <dl class="layui-nav-child">
-                            <dd class="f-child-side">
-                                <a href="javascript:;" class="p-menu-item"
-                                   data-url="/file" id="3" data-icon="fa-file-o"
-                                   data-name="文件列表"
-                                   onclick="clickMenu(this);">
-                                    文件列表
-                                </a>
-                            </dd>
-                        </dl>
-                    </li>
-                    <li class="layui-nav-item f-nav-item">
-                        <a class="" href="javascript:;">
-                            <i class="layui-icon layui-icon-template-1"></i>
-                            <span class="f-nav-content">集群管理</span>
-                        </a>
-                        <dl class="layui-nav-child">
-                            <dd class="f-child-side">
-                                <a href="javascript:;" class="p-menu-item"
-                                   data-url="/peers" id="4" data-icon="fa-server"
-                                   data-name="集群列表"
-                                   onclick="clickMenu(this);">
-                                   集群列表
-                                </a>
-                            </dd>
-                        </dl>
                     </li>
 
                     <li class="layui-nav-item f-nav-item">
                         <a class="" href="javascript:;">
                             <i class="fa fa-envelope-o" aria-hidden="true"></i>
-                            <span class="f-nav-content">站内信</span>  <span class="layui-badge-dot unread"></span>
+                            <span class="f-nav-content">我的信息</span>  <span class="layui-badge-dot unread" style="display: none"></span>
                         </a>
                         <dl class="layui-nav-child">
                             <dd class="f-child-side">
                                 <a href="javascript:;" class="p-menu-item"
-                                   data-url="/mail/index" id="5" data-icon="fa-envira"
+                                   data-url="/mail/index" id="4" data-icon="fa-envira"
                                    data-name="写信箱"
                                    onclick="clickMenu(this);">
                                     写信箱
@@ -67,22 +43,30 @@
                             </dd>
                             <dd class="f-child-side">
                                 <a href="javascript:;" class="p-menu-item"
-                                   data-url="/mail/inboxes" id="6" data-icon="fa-envelope-open-o"
+                                   data-url="/mail/inboxes" id="5" data-icon="fa-envelope-open-o"
                                    data-name="收信箱"
                                    onclick="clickMenu(this);">
-                                    收信箱 <span class="layui-badge-dot unread"></span>
+                                    收信箱 <span class="layui-badge-dot unread" style="display: none"></span>
                                 </a>
                             </dd>
 
                             <dd class="f-child-side">
                                 <a href="javascript:;" class="p-menu-item"
-                                   data-url="/mail/sendboxes" id="7" data-icon="fa-history"
+                                   data-url="/mail/sendboxes" id="6" data-icon="fa-history"
                                    data-name="发信箱"
                                    onclick="clickMenu(this);">
                                     发信箱
                                 </a>
                             </dd>
                         </dl>
+                    </li>
+
+                    <li class="layui-nav-item f-nav-item" th:if="${role} eq '1'">
+                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
+                           data-url="/peers" id="7" data-icon="fa-server" data-name="集群管理">
+                            <i class="fa fa-server" aria-hidden="true"></i>
+                            <span class="f-nav-content">集群管理</span>
+                        </a>
                     </li>
 
                     <li class="layui-nav-item f-nav-item">

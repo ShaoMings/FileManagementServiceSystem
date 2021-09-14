@@ -253,7 +253,7 @@ body {
   border-radius: 9px;
 }
 
-.form [type='button'] {
+.form [type='submit'] {
   opacity: 0;
   display: block;
   cursor: pointer;
@@ -266,7 +266,7 @@ body {
   transition: all .3s ease-out;
 }
 
-.form-wrapper.is-active .form [type='button'] {
+.form-wrapper.is-active .form [type='submit'] {
   opacity: 1;
   transform: translateX(0);
   transition: all .4s ease-in;

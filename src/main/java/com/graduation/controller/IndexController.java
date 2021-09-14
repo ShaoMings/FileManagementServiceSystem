@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graduation.model.pojo.User;
+import com.graduation.service.UserRoleService;
 import com.graduation.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,16 +28,21 @@ public class IndexController extends BaseController{
     @Autowired
     UserService userService;
 
+    @Autowired
+    private  UserRoleService userRoleService;
+
     /**
      * 首页视图控制
      * @param model 模型对象
      * @return 首页
      */
-    @GetMapping("/")
+    @GetMapping(value = {"","/","/index"})
     public String index(Model model){
         User user = getUser();
         user.setLastLoginTime(new Date());
         userService.updateById(user);
+        Integer role = userRoleService.getUserRole(user.getId());
+        model.addAttribute("role",role);
         model.addAttribute("user",user);
         return "index";
     }

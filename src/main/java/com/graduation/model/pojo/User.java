@@ -44,6 +44,9 @@ public class User implements Serializable {
     @ApiModelProperty(value = "用户密码")
     private String password;
 
+    @ApiModelProperty(value = "用户性别 0 女 1 男 默认1")
+    private Integer gender;
+
     @ApiModelProperty(value = "用户年龄")
     private Integer age;
 

@@ -38,8 +38,8 @@ public class User implements Serializable {
     @ApiModelProperty(value = "用户名")
     private String username;
 
-    @ApiModelProperty(value = "真实姓名")
-    private String realName;
+    @ApiModelProperty(value = "用户昵称")
+    private String nickName;
 
     @ApiModelProperty(value = "用户密码")
     private String password;

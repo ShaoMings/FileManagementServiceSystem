@@ -13,8 +13,8 @@
                 <ul  class="layui-nav layui-nav-tree f-side-nav" lay-filter="side">
                     <li class="layui-nav-item f-nav-item" th:if="${role} eq '1'">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/status" id="1" data-icon="fa-cogs" data-name="集群状态">
-                            <i class="fa fa-cogs" aria-hidden="true"></i>
+                           data-url="/status" id="1" data-icon="fa-cog" data-name="集群状态">
+                            <i class="fa fa-cog" aria-hidden="true"></i>
                             <span class="f-nav-content">集群状态</span>
                         </a>
                     </li>
@@ -69,9 +69,18 @@
                         </a>
                     </li>
 
+                    <li class="layui-nav-item f-nav-item" th:if="${role} eq '1'">
+                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
+                           data-url="/user/manage" id="8" data-icon="fa-address-card" data-name="用户管理">
+                            <i class="fa fa-address-card" aria-hidden="true"></i>
+                            <span class="f-nav-content">用户管理</span>
+                        </a>
+                    </li>
+
+
                     <li class="layui-nav-item f-nav-item">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/settings/user" id="8" data-icon="fa-sliders" data-name="个人中心">
+                           data-url="/settings/user" id="9" data-icon="fa-sliders" data-name="个人中心">
                             <i class="layui-icon layui-icon-friends"></i>
                             <span class="f-nav-content">个人中心</span>
                         </a>

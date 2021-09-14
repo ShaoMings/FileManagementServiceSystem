@@ -59,7 +59,7 @@ public class InstallVo implements Serializable {
         user.setCredentialsSalt(uuid);
         user.setUsername(this.account);
         user.setEmail(this.email);
-        user.setRealName(this.name);
+        user.setNickName(this.name);
         // 插入时间
         user.setCreateTime(new Date());
         return user;
@@ -77,7 +77,7 @@ public class InstallVo implements Serializable {
         user.setCredentialsSalt(uuid);
         user.setUsername(account);
         user.setEmail(email);
-        user.setRealName(name);
+        user.setNickName(name);
         // 插入时间
         user.setCreateTime(new Date());
         return user;

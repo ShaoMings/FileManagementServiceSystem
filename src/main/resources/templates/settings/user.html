@@ -2,7 +2,7 @@
 <html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
-<title>个人资料</title>
+<title>个人中心</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 <link rel="stylesheet" th:href="@{/static/lib/layui-v2.5.6/layui/css/layui.css}">
 <link th:href="@{/static/lib/font-awesome-4.7.0/css/font-awesome.min.css}" rel="stylesheet"/>
@@ -27,7 +27,7 @@
 	<div class="layui-row">
 		<div class="layui-col-md12" style="padding:5px;">
 			<div class="layui-card">
-				<div class="layui-card-header">个人资料</div>
+				<div class="layui-card-header">个人中心</div>
 				<div class="layui-card-body">
 					<form class="layui-form" action="">
 						<input type="hidden" name="id" th:value="${user.getId()}">
@@ -36,15 +36,26 @@
 							<div class="layui-input-inline">
 								<input type="text" name="account" lay-verify="pass" placeholder="请输入账户" autocomplete="off" class="layui-input" th:value="${user.getUsername()}" readonly>
 							</div>
-							<div class="layui-form-mid layui-word-aux">不可修改。用于登入名</div>
+							<div class="layui-form-mid layui-word-aux">不可修改 用于登录的用户名</div>
 						</div>
 						<div class="layui-form-item">
 							<label class="layui-form-label">昵称:</label>
 							<div class="layui-input-inline">
-								<input type="text" name="name" lay-verify="pass" placeholder="请输入昵称" autocomplete="off" class="layui-input" th:value="${user.getRealName()}">
+								<input type="text" name="name" lay-verify="pass" placeholder="请输入昵称" autocomplete="off" class="layui-input" th:value="${user.getNickName()}">
 							</div>
 							<div class="layui-form-mid layui-word-aux">16位字符以内</div>
 						</div>
+
+						<div class="layui-form-item">
+							<label class="layui-form-label">性别:</label>
+							<div class="layui-input-inline">
+								<select name="gender">
+									<option th:selected="${user.getGender() == 1}" value="1">男</option>
+									<option th:selected="${user.getGender() == 0}" value="0">女</option>
+								</select>
+							</div>
+						</div>
+
 						<div class="layui-form-item">
 							<label class="layui-form-label">邮箱:</label>
 							<div class="layui-input-inline">
@@ -88,7 +99,7 @@
 					layer.msg("修改成功", {icon: 6});
 					setTimeout(function(){
 						$.get({url:"/logout",async:true});
-						window.location.reload();
+						window.location = "/";
 					}, 1000);
 				}else{
 					layer.msg(data.msg);

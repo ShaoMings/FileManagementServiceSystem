@@ -57,41 +57,51 @@
             height: 580
         });
 
+        let time = null;
+        let flag = true;
         form.on('submit(send)',function (data) {
-            $.ajax({
-                url:"/getUser",
-                method:"get",
-                async:false,
-                success:function (obj) {
-                    let user = JSON.parse(obj);
-                    if (user.email === data.field.email){
-                        layer.msg("您不能给自己发信息!");
-                        return ;
-                    }
+            if (flag){
 
-                    let email = {
-                        "title":data.field.title,
-                        "sendOutName":user.username,
-                        "sendEmail":data.field.email,
-                        "content":layedit.getContent(edit)
-                    }
-                    $.ajax({
-                        url:"/mail-send/send",
-                        method: "post",
-                        data:email,
-                        success:function (res) {
-                            if (res.code === 200){
-                                layer.msg("发送成功");
-                            }else {
-                                layer.msg(res.msg);
-                            }
+                $.ajax({
+                    url:"/getUser",
+                    method:"get",
+                    async:false,
+                    success:function (obj) {
+                        let user = JSON.parse(obj);
+                        if (user.email === data.field.email){
+                            layer.msg("您不能给自己发信息!");
+                            return ;
                         }
-                    })
-                }
-            })
-        })
 
-
+                        let email = {
+                            "title":data.field.title,
+                            "sendOutName":user.username,
+                            "sendEmail":data.field.email,
+                            "content":layedit.getContent(edit)
+                        }
+                        $.ajax({
+                            url:"/mail-send/send",
+                            method: "post",
+                            data:email,
+                            success:function (res) {
+                                if (res.code === 200){
+                                    layer.msg("发送成功");
+                                }else {
+                                    layer.msg(res.msg);
+                                }
+                            }
+                        });
+                    }
+                });
+                flag = false;
+                time = setTimeout(function () {
+                    clearInterval(time);
+                    flag = true;
+                },10000);
+            }else {
+                layer.msg("操作过于频繁,请稍后再试!");
+            }
+        });
     });
 </script>
 </body>

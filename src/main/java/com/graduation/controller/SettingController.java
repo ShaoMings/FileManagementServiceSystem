@@ -57,7 +57,8 @@ public class SettingController extends BaseController {
             return FileResponseVo.fail("昵称不能为空且在100字符以内");
         }
         User userResult = userService.getById(user.getId());
-        userResult.setRealName(user.getName());
+        userResult.setNickName(user.getName());
+        userResult.setGender(user.getGender());
         String check = "^([a-z0-9A-Z]+[-|\\.]?)+[a-z0-9A-Z]@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-zA-Z]{2,}$";
         Pattern regex = Pattern.compile(check);
         if (StrUtil.isBlank(user.getEmail()) || !regex.matcher(user.getEmail()).matches()) {

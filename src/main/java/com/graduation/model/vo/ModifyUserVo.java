@@ -14,6 +14,7 @@ public class ModifyUserVo {
     private Integer id;
     private String account;
     private String name;
+    private Integer gender;
     private String email;
     private String newPassword;
     private String oldPassword;

@@ -1,10 +1,10 @@
 package com.graduation.controller;
 
 
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+
 
 /**
  * <p>
@@ -14,13 +14,23 @@ import org.springframework.web.bind.annotation.RestController;
  * @author shaoming
  * @since 2021-08-16
  */
-@RestController
+@Controller
 @RequestMapping("/user")
 public class UserController extends BaseController{
 
     @RequestMapping("/username")
+    @ResponseBody
     public String getUsername(){
         return getUser().getUsername();
     }
+
+
+    @RequestMapping("/manage")
+    public String userManage(){
+        return "manage";
+    }
+
+
+
 }
 

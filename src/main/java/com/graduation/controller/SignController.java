@@ -2,6 +2,7 @@ package com.graduation.controller;
 
 import com.graduation.model.pojo.Peers;
 import com.graduation.model.pojo.User;
+import com.graduation.model.pojo.UserRole;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.InstallVo;
 import com.graduation.model.vo.UserLoginVo;
@@ -46,6 +47,8 @@ public class SignController extends BaseController{
     private final UserService userService;
 
     private final PeersService peersService;
+
+    private final UserRoleService userRoleService;
 
     /**
      * 登录页视图跳转
@@ -105,6 +108,12 @@ public class SignController extends BaseController{
                         voUser.setPeersid(p.getId());
                         voUser.setAge(18);
                         isSign = userService.save(voUser);
+                        // 设置用户角色 默认普通用户
+                        Integer userId = voUser.getId();
+                        boolean isExist = userRoleService.isExistRecordByUserId(userId);
+                        if (!isExist){
+                            userRoleService.save(new UserRole(null,userId,4));
+                        }
                     }
                 }catch (Exception ignored){
 

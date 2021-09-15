@@ -1,6 +1,7 @@
 package com.graduation.controller;
 
 
+import com.graduation.model.pojo.User;
 import com.graduation.model.vo.*;
 import com.graduation.service.FileService;
 import com.graduation.utils.*;
@@ -88,6 +89,14 @@ public class FileController extends BaseController {
     public FileResponseVo getDirFile(String dir) {
         dir = checkUserPath(dir);
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
+    }
+
+    @RequestMapping("/saveBigFileInfo")
+    @ResponseBody
+    public void saveBigFileInfo(String filepath){
+        User user = getUser();
+        filepath = "/"+getPeersGroupName()+"/" + filepath;
+        fileService.saveFilePathByUserId(user.getId(),filepath,user.getPeersid());
     }
 
     /**

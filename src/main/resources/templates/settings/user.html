@@ -32,12 +32,21 @@
 					<form class="layui-form" action="">
 						<input type="hidden" name="id" th:value="${user.getId()}">
 						<div class="layui-form-item">
-							<label class="layui-form-label">账户:</label>
+							<label class="layui-form-label">用户名:</label>
 							<div class="layui-input-inline">
-								<input type="text" name="account" lay-verify="pass" placeholder="请输入账户" autocomplete="off" class="layui-input" th:value="${user.getUsername()}" readonly>
+								<input type="text" name="account" lay-verify="pass" placeholder="请输入用户名" autocomplete="off" class="layui-input" th:value="${user.getUsername()}" readonly>
 							</div>
-							<div class="layui-form-mid layui-word-aux">不可修改 用于登录的用户名</div>
+							<div class="layui-form-mid layui-word-aux">不可修改,用于登录的用户名</div>
 						</div>
+
+						<div class="layui-form-item">
+							<label class="layui-form-label">身份:</label>
+							<div class="layui-input-inline">
+								<input type="text" name="role" lay-verify="pass"  autocomplete="off" class="layui-input" th:value="${role eq '1'?'超级管理员':role eq '2'?'特殊用户': role eq '3'?'一般用户':'普通用户'}" readonly>
+							</div>
+							<div class="layui-form-mid layui-word-aux">如需修改,请联系上级管理员</div>
+						</div>
+
 						<div class="layui-form-item">
 							<label class="layui-form-label">昵称:</label>
 							<div class="layui-input-inline">

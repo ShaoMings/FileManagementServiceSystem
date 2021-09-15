@@ -12,158 +12,243 @@
 <script th:src="@{/static/lib/layui-v2.5.6/layui/layui.all.js}"></script>
 <script type="text/html" id="toolbarOption">
     <div class="layui-btn-container">
-        <button class="layui-btn layui-btn-sm" lay-event="deleteSelected">删除选中信息</button>
+        <button class="layui-btn layui-btn-sm" lay-event="deleteSelected">删除选中用户</button>
     </div>
 </script>
 <script type="text/html" id="barOption">
-    <a class="layui-btn layui-btn-xs" lay-event="read">查看</a>
+    <a class="layui-btn layui-btn-xs" lay-event="modify">确认修改</a>
     <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="delete">删除</a>
 </script>
 <script>
     layui.use('table', function () {
         let table = layui.table;
 
-        $.ajax({
-            url: '/getUser',
-            method: 'get',
-            success: function (obj) {
-                let user = JSON.parse(obj);
-                table.render({
-                    elem: '#users',
-                    url: '/mail-receive/mails?userId=' + user.id,
-                    toolbar: '#toolbarOption',
-                    defaultToolbar: ['filter', 'print', 'exports'],
-                    page: true,
-                    limit: 15,
-                    limits: [15, 30, 45, 60],
-                    cols: [
-                        [
-                            {type: 'checkbox', unresize: true},
-                            {
-                                field: 'status', title: '状态', unresize: true, width: 80, templet: function (o) {
-                                    return o.status === 0 ? '<i class="fa fa-envelope" aria-hidden="true" style="font-size: 18px;margin-top: 5px;margin-left: 8px"></i>  <span class="layui-badge-dot"></span>' :
-                                        '<i class="fa fa-envelope-open-o" aria-hidden="true" style="font-size: 18px;margin-top: 5px;margin-left: 8px"></i>';
-                                }
-                            },
-                            {field: 'id', title: '信件ID', unresize: true, hide: true, width: 200},
-                            {field: 'title', title: '信件标题', unresize: true, width: 300},
-                            {field: 'content', title: '信件内容'},
-                            {field: 'receivedDate', title: '接收时间', unresize: true, width: 250},
-                            {fixed: 'right', title: '操作', toolbar: '#barOption', unresize: true, width: 150}
-                        ]
-                    ],
-                    initSort: {
-                        field: 'receivedDate',
-                        type: 'desc'
-                    },
-                    parseData: function (res) {
-                        let result;
-                        if (this.page.curr) {
-                            result = res.data.slice(this.limit * (this.page.curr - 1), this.limit * this.page.curr);
-                        } else {
-                            result = res.data.slice(0, this.limit);
+        table.render({
+            elem: '#users',
+            url: '/user/manageUserList',
+            toolbar: '#toolbarOption',
+            defaultToolbar: ['filter', 'print', 'exports'],
+            page: true,
+            limit: 15,
+            limits: [15, 30, 45, 60],
+            cols: [
+                [
+                    {type: 'checkbox', unresize: true},
+                    {field: 'id', title: '用户ID', unresize: true, hide: true},
+                    {field: 'userName', title: '用户名', unresize: true},
+                    {field: 'nickName', title: '用户昵称', unresize: true, edit: 'text'},
+                    {field: 'password', title: '用户密码', unresize: true, edit: 'text'},
+                    {
+                        field: 'gender', title: '性别', edit: 'text', templet: function (o) {
+                            return o.gender === 1 ? '男' : '女';
                         }
-                        return {
-                            "code": res.code,
-                            "msg": res.msg,
-                            "count": res.count,
-                            "data": result
-                        };
-                    }
-                });
-                //工具栏事件
-                table.on('toolbar(table-users)', function (obj) {
-                    let checkStatus = table.checkStatus(obj.config.id);
-                    switch (obj.event) {
-                        case 'deleteSelected':
-                            let data = checkStatus.data;
-                            layer.confirm('确定要删除这' + data.length + '封信件吗?', {
-                                btn: ['确定', '取消']
-                            }, function () {
-                                let mail_ids = [];
-                                for (let i = 0; i < data.length; i++) {
-                                    mail_ids.push(data[i].receiveMailId)
+                    },
+                    {field: 'age', title: '年龄', unresize: true, edit: 'text'},
+                    {field: 'email', title: '邮箱', unresize: true, edit: 'text'},
+                    {field: 'peersId', title: '所属集群', unresize: true, edit: 'text'},
+                    {
+                        field: 'roleId', title: '角色', unresize: true, edit: 'text', templet: function (o) {
+                            return getRoleName(o.roleId);
+                        }
+                    },
+                    {fixed: 'right', title: '操作', toolbar: '#barOption', unresize: true}
+                ]
+            ],
+            initSort: {
+                field: 'id',
+                type: 'asc'
+            },
+            parseData: function (res) {
+                let result;
+                if (this.page.curr) {
+                    result = res.data.slice(this.limit * (this.page.curr - 1), this.limit * this.page.curr);
+                } else {
+                    result = res.data.slice(0, this.limit);
+                }
+                return {
+                    "code": res.code,
+                    "msg": res.msg,
+                    "count": res.count,
+                    "data": result
+                };
+            }
+        });
+        //工具栏事件
+        table.on('toolbar(table-users)', function (obj) {
+            let checkStatus = table.checkStatus(obj.config.id);
+            switch (obj.event) {
+                case 'deleteSelected':
+                    let data = checkStatus.data;
+                    layer.confirm('确定要删除这' + data.length + '个用户吗?', {
+                        btn: ['确定', '取消']
+                    }, function () {
+                        let ids = [];
+                        for (let i = 0; i < data.length; i++) {
+                            ids.push(data[i].id)
+                        }
+                        $.ajax({
+                            url: '/user/deleteSelected',
+                            method: 'post',
+                            dataType: 'json',
+                            data: {'ids': ids},
+                            success: function (res) {
+                                if (res.code === 200) {
+                                    layer.msg("删除成功!");
+                                    table.reload('users', {});
+                                } else {
+                                    layer.msg(res.msg);
                                 }
-                                $.ajax({
-                                    url: '/mail-receive/deleteSelected',
-                                    method: 'post',
-                                    dataType: 'json',
-                                    data: {'ids': mail_ids},
-                                    success: function (res) {
-                                        if (res.code === 200) {
-                                            layer.msg("删除成功!");
-                                            table.reload('mails', {});
-                                        } else {
-                                            layer.msg(res.msg);
-                                        }
-                                    }
-                                });
-                            });
-                            break;
-                    }
-                });
-
-                //监听行工具事件
-                table.on('tool(table-users)', function (obj) {
-                    let data = obj.data;
-                    if (obj.event === 'delete') {
-                        layer.confirm('真的要删除这条信息吗?', function (index) {
-                            $.ajax({
-                                url: '/mail-receive/delete',
-                                method: 'post',
-                                data: {'mailId': data.receiveMailId},
-                                success: function (res) {
-                                    if (res.code === 200) {
-                                        layer.msg("删除成功!");
-                                        obj.del();
-                                        layer.close(index);
-                                    } else {
-                                        layer.msg(res.msg);
-                                        layer.close(index);
-                                    }
-                                }
-                            })
-
-                        });
-                    } else if (obj.event === 'read') {
-                        layer.open({
-                            type:2,
-                            title:data.title,
-                            skin: 'layui-layer-rim',
-                            shade: 0.3,
-                            area: ['90%', '90vh'],
-                            content:'/mail/read',
-                            success: function (obj, index) {
-                                let user;
-                                $.ajax({
-                                    url: '/getUser',
-                                    method: 'get',
-                                    async:false,
-                                    success: function (obj) {
-                                        user = JSON.parse(obj);
-                                    }
-                                });
-                                let body = layer.getChildFrame('body', index);
-                                // 获取上传页面的元素进行初始化渲染
-                                body.contents().find("#title").text("信标题 : "+data.title);
-                                body.contents().find("#send").text("发信人 : "+data.sender);
-                                body.contents().find("#time").text("信时间 : "+data.receivedDate);
-                                body.contents().find("#receive").text("收信人 : "+user.username);
-                                body.contents().find("#content").append(data.content);
-                                $.ajax({
-                                    url:'/mail-receive/read?id='+data.receiveMailId,
-                                    method:'get'
-                                })
-                            },
-                            cancel:function () {
-                                table.reload('mails', {});
                             }
                         });
+                    });
+                    break;
+            }
+        });
+
+
+        table.on('edit(table-users)', function (obj) {
+            let selector = obj.tr.find('[data-field=' + obj.field + ']');
+            let oldText = $(selector).text();
+            if (obj.field === 'gender') {
+                let reg = /^\d+$/g;
+                if (!reg.test(obj.value)) {
+                    layer.msg('只能输入数字!');
+                    obj.tr.find('td[data-field=gender] input').val(oldText === '男' ? 1 : 0);
+                    obj.update({gender: oldText === '男' ? 1 : 0});
+                } else {
+                    if (obj.value.length > 1) {
+                        layer.msg('长度不得超过1');
+                        obj.tr.find('td[data-field=gender] input').val(oldText === '男' ? 1 : 0);
+                        obj.update({gender: oldText === '男' ? 1 : 0});
                     }
+                    if (obj.value !== '1' && obj.value !== '0') {
+                        layer.msg('只能输入0(女) 1(男)');
+                        obj.tr.find('td[data-field=gender] input').val(oldText === '男' ? 1 : 0);
+                        obj.update({gender: oldText === '男' ? 1 : 0});
+                    }
+                }
+            } else if (obj.field === 'age') {
+                let reg = /^\d+$/g;
+                if (!reg.test(obj.value)) {
+                    layer.msg('只能输入数字!');
+                    obj.tr.find('td[data-field=age] input').val(oldText);
+                    obj.update({age: oldText});
+                } else {
+                    if (obj.value < 0 || obj.value > 150) {
+                        layer.msg('请输入范围 1 - 150');
+                        obj.tr.find('td[data-field=age] input').val(oldText);
+                        obj.update({age: oldText});
+                    }
+                }
+            } else if (obj.field === 'peersId') {
+                let reg = /^\d+$/g;
+                if (!reg.test(obj.value)) {
+                    layer.msg('只能输入数字!');
+                    obj.tr.find('td[data-field=peersId] input').val(oldText);
+                    obj.update({peersId: oldText});
+                }
+            } else if (obj.field === 'password') {
+                if (obj.value.length > 18) {
+                    layer.msg('密码长度在18位之内!');
+                    obj.tr.find('td[data-field=password] input').val(oldText);
+                    obj.update({password: oldText});
+                }
+            } else if (obj.field === 'email') {
+                let reg = /^([a-zA-Z]|[0-9])(\w|\-)+@[a-zA-Z0-9]+\.([a-zA-Z]{2,4})$/;
+                if (!reg.test(obj.value)) {
+                    layer.msg('邮箱格式不正确!');
+                    obj.tr.find('td[data-field=email] input').val(oldText);
+                    obj.update({email: oldText});
+                }
+            } else if (obj.field === 'roleId') {
+                let reg = /^\d+$/g;
+                if (!reg.test(obj.value)) {
+                    layer.msg('只能输入数字!');
+                    obj.tr.find('td[data-field=roleId] input').val(getRoleIdByName(oldText));
+                    obj.update({roleId: getRoleIdByName(oldText)});
+                } else {
+                    if (obj.value !== '1' && obj.value !== '2' && obj.value !== '3' && obj.value !== '4') {
+                        layer.msg('请输入 1(超级管理员) 2 (特殊用户) 3(一般用户) 4(普通用户)');
+                        obj.tr.find('td[data-field=roleId] input').val(getRoleIdByName(oldText));
+                        obj.update({roleId: getRoleIdByName(oldText)});
+                    }
+                }
+            }
+        });
+
+
+        //监听行工具事件
+        table.on('tool(table-users)', function (obj) {
+            let data = obj.data;
+            if (obj.event === 'delete') {
+                layer.confirm('真的要删除这个用户吗?', function (index) {
+                    $.ajax({
+                        url: '/user/delete',
+                        method: 'post',
+                        data: {'id': data.id},
+                        success: function (res) {
+                            if (res.code === 200) {
+                                layer.msg("删除成功!");
+                                obj.del();
+                                layer.close(index);
+                            } else {
+                                layer.msg(res.msg);
+                                layer.close(index);
+                            }
+                        }
+                    })
+                });
+            } else if (obj.event === 'modify') {
+                layer.confirm('真的要修改这个用户的信息吗?', function (index) {
+                    $.ajax({
+                        url: "/user/modify",
+                        method: "post",
+                        data: data,
+                        success: function (res) {
+                            if (res.code === 200) {
+                                layer.msg("修改成功!");
+                                table.reload('users', {});
+                                layer.close(index);
+                            } else {
+                                layer.msg(res.msg);
+                                layer.close(index);
+                            }
+                        }
+                    });
                 });
             }
-        })
-    })
+        });
+    });
+
+    function getRoleName(roleId) {
+        switch (roleId) {
+            case 1:
+                return "超级管理员";
+            case 2:
+                return "特殊用户";
+            case 3:
+                return "一般用户";
+            case 4:
+                return "普通用户";
+            default:
+                break;
+        }
+    }
+
+    function getRoleIdByName(name) {
+        switch (name) {
+            case "超级管理员":
+                return 1;
+            case "特殊用户":
+                return 2;
+            case "一般用户":
+                return 3;
+            case "普通用户":
+                return 4;
+            default:
+                break;
+        }
+    }
 
 
 </script>

@@ -83,6 +83,18 @@ public class InstallVo implements Serializable {
         return user;
     }
 
+    public User getUserForEncryptPassword(String password){
+        User user = new User();
+        // uuid作为盐
+        String uuid = IdUtil.simpleUUID();
+        // 密码加密
+        Md5Hash md5Hash = new Md5Hash(password, uuid);
+        user.setPassword(md5Hash.toString());
+        // 保存盐值
+        user.setCredentialsSalt(uuid);
+        return user;
+    }
+
     public Peers getPeers(){
         Peers peers = new Peers();
         peers.setGroupName(this.groupName);

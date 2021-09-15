@@ -1,10 +1,11 @@
 package com.graduation.controller;
 
 
-import com.graduation.model.pojo.Mail;
+
 import com.graduation.model.vo.EmailReceiveVo;
 import com.graduation.model.vo.FileResponseVo;
-import com.graduation.model.vo.ReceiveResponseVo;
+
+import com.graduation.model.vo.TableResponseVo;
 import com.graduation.service.MailReceiveService;
 import com.graduation.service.MailService;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -14,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * <p>
@@ -36,7 +35,7 @@ public class MailReceiveController extends BaseController{
     MailReceiveService receiveService;
 
     @RequestMapping("/mails")
-    public ReceiveResponseVo getMailList(Integer userId){
+    public TableResponseVo<EmailReceiveVo> getMailList(Integer userId){
         return mailService.getMailsByUserId(userId);
     }
 

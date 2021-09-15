@@ -29,26 +29,43 @@ $("#bigFile").on("click", function () {
             '    <div id="drag-drop-area"></div>\n' +
             '</div>',
         success: function (obj, index) {
+            let user;
+            $.ajax({
+                url:"/getUser",
+                method:"get",
+                async:false,
+                success:function (obj) {
+                    user = JSON.parse(obj);
+                }
+            })
             let upload = Uppy.Core().use(Uppy.Dashboard, {
                 inline: true,
                 target: '#drag-drop-area',
                 showProgressDetails:true,
                 fileManagerSelectionType: 'both'
             }).use(Uppy.Tus, {
-                endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
+                // endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
+                endpoint: 'http://10.60.1.79:8080/group1/big/upload/'
                 // endpoint: 'http://1.15.221.117:8080/group1/big/upload/'
             })
             upload.on('complete', (result) => {
-                // console.log(result) console.log('上传成功!')
+                let obj = result.successful[0];
+                let filepath = obj.meta.path + "/"+obj.meta.name;
+                $.ajax({
+                    url:"/file/saveBigFileInfo",
+                    method: "post",
+                    data:{"filepath":filepath}
+                })
             })
             upload.setMeta({
                 auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',
-                path: $("#path").val()
+                path: user.username+$("#path").val()
             })
 
         }
     });
 })
+
 
 
 // 文件夹压缩

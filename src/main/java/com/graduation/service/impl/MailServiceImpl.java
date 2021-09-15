@@ -4,7 +4,7 @@ import com.graduation.model.pojo.Mail;
 import com.graduation.mapper.MailMapper;
 import com.graduation.model.pojo.MailReceive;
 import com.graduation.model.vo.EmailReceiveVo;
-import com.graduation.model.vo.ReceiveResponseVo;
+import com.graduation.model.vo.TableResponseVo;
 import com.graduation.service.MailReceiveService;
 import com.graduation.service.MailService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -29,11 +29,11 @@ public class MailServiceImpl extends ServiceImpl<MailMapper, Mail> implements Ma
     private MailReceiveService receiveService;
 
     @Override
-    public ReceiveResponseVo getMailsByUserId(Integer userId) {
+    public TableResponseVo<EmailReceiveVo> getMailsByUserId(Integer userId) {
         List<EmailReceiveVo> list = new ArrayList<>();
         List<MailReceive> receiveList = receiveService.getMailReceivesByUserId(userId);
         receiveList.forEach(e-> list.add(new EmailReceiveVo(this.getById(e.getMailId()),e.getId(),e.getReceiveTime(),e.getState(),e.getSenderName())));
-        return new ReceiveResponseVo(0,"",list.size(),list);
+        return new TableResponseVo<>(0, "", list.size(), list);
     }
 
     @Override

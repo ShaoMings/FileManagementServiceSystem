@@ -69,7 +69,7 @@
                         </a>
                     </li>
 
-                    <li class="layui-nav-item f-nav-item" th:if="${role} eq '1'">
+                    <li class="layui-nav-item f-nav-item" th:if="${role} eq '1' or ${role} eq '2' or ${role} eq '3'">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
                            data-url="/user/manage" id="8" data-icon="fa-address-card" data-name="用户管理">
                             <i class="fa fa-address-card" aria-hidden="true"></i>

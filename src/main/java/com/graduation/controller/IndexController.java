@@ -39,8 +39,10 @@ public class IndexController extends BaseController{
     @GetMapping(value = {"","/","/index"})
     public String index(Model model){
         User user = getUser();
-        user.setLastLoginTime(new Date());
-        userService.updateById(user);
+        User tmp = new User();
+        tmp.setId(user.getId());
+        tmp.setLastLoginTime(new Date());
+        userService.updateById(tmp);
         Integer role = userRoleService.getUserRole(user.getId());
         model.addAttribute("role",role);
         model.addAttribute("user",user);

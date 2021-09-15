@@ -29,7 +29,7 @@
                 <li class="layui-nav-item" lay-unselect>
                     <a href="javascript:;">
                          <img th:src="@{/static/images/users/{gender}(gender=${user.getGender()}+'.png')}" class="layui-nav-img">
-                         <span th:text="${user.getUsername()}"></span>
+                         <span th:text="${user.getNickName()}"></span>
                     </a>
                     <dl class="layui-nav-child">
                         <dd lay-unselect>

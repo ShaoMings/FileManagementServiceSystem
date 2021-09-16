@@ -314,8 +314,14 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     public Integer getOpenStatusByFilePath(String filePath) {
         QueryWrapper<File> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("file_path",filePath);
-        File file = this.list(queryWrapper).get(0);
-        return file.getOpen();
+        List<File> list = this.list(queryWrapper);
+        if(list.size()<1){
+            return 0;
+        }else {
+            File file = list.get(0);
+            return file.getOpen();
+        }
+
     }
 
 }

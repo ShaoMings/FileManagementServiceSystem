@@ -4,6 +4,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.graduation.model.pojo.File;
 import com.graduation.mapper.FileMapper;
 import com.graduation.model.pojo.UserFile;
@@ -39,14 +40,17 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     @Autowired
     FileMapper fileMapper;
 
+    @Autowired
+    GetFileList getFileList;
+
     @Override
     public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress,String userPath) {
-        return FileUtils.getDirectoryOrFileList(peersGroupName, serverAddress, userPath);
+        return getFileList.getDirectoryOrFileList(peersGroupName, serverAddress, userPath);
     }
 
     @Override
     public List<FileInfoVo> getDirFile(String backUrl, String serverAddress, String dir) {
-        return FileUtils.getDirectoryOrFileList(backUrl, serverAddress, dir);
+        return getFileList.getDirectoryOrFileList(backUrl, serverAddress, dir);
     }
 
     @Override
@@ -165,7 +169,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         fileQueryWrapper.eq("file_path",filePath);
         fileQueryWrapper.eq("peer_id",peerId);
         if (this.list(fileQueryWrapper).size()<=0) {
-            File file = new File(id, filename, filePath,peerId);
+            File file = new File(id, filename, filePath,peerId,null);
             boolean flag1 = this.save(file);
             Integer fileId = file.getId();
             boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
@@ -189,6 +193,14 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             fileInfoVos.addAll(fileList);
         });
         return fileInfoVos;
+    }
+
+    @Override
+    public Integer getFileIdByFilePath(String filePath) {
+        QueryWrapper<File> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("file_path",filePath);
+        List<File> list = this.list(queryWrapper);
+        return list.get(0).getId();
     }
 
     @Override
@@ -288,6 +300,22 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         String oldFileName = fileInfo.getFilename();
         String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.DOCUMENT_TYPE_PDF;
         return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+    }
+
+    @Override
+    public boolean changeOpenStatusById(Integer id, Integer open) {
+        UpdateWrapper<File> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",id);
+        updateWrapper.set("open",open);
+        return this.update(updateWrapper);
+    }
+
+    @Override
+    public Integer getOpenStatusByFilePath(String filePath) {
+        QueryWrapper<File> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("file_path",filePath);
+        File file = this.list(queryWrapper).get(0);
+        return file.getOpen();
     }
 
 }

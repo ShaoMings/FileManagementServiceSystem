@@ -109,6 +109,13 @@ public interface FileService extends IService<File> {
     List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress,String keyword);
 
     /**
+     * 通过文件存放路径获取文件id
+     * @param filePath 文件存放路径 : 组名/用户名/真实存放路径
+     * @return 文件id
+     */
+    Integer getFileIdByFilePath(String filePath);
+
+    /**
      * 通过存储在数据库的文件路径获取文件的集群id
      * @param filePath 文件路径
      * @return 文件所属集群id
@@ -147,5 +154,19 @@ public interface FileService extends IService<File> {
      */
     boolean convertDocumentFile(ConvertVo fileInfo);
 
+    /**
+     *  通过id改变文件公开状态
+     * @param id 文件id
+     * @param open 公开状态
+     * @return 是否修改成功
+     */
+    boolean changeOpenStatusById(Integer id,Integer open);
+
+    /**
+     * 通过id获取文件公开状态
+     * @param filePath FilePath
+     * @return 公开状态
+     */
+    Integer getOpenStatusByFilePath(String filePath);
 
 }

@@ -51,10 +51,10 @@ public class ShareFileController extends BaseController {
         if (check.equals(checkCode)) {
             String path = AesUtils.decrypt(code);
             String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
-            boolean isNoOverdue = redisUtils.hasKey("token-" + groupFilePath);
+            String username = path.substring(0, path.indexOf("/"));
+            boolean isNoOverdue = redisUtils.hasKey("token-" +username + groupFilePath);
             if (isNoOverdue) {
                 String untilToTime = path.substring(path.lastIndexOf("@") + 1);
-                String username = path.substring(0, path.indexOf("/"));
                 String token = AesUtils.getTokenByCode(code);
                 if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
                     peerAddress = getPeersUrl();

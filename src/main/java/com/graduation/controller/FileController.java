@@ -350,7 +350,7 @@ public class FileController extends BaseController {
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         String token = AesUtils.getTokenByCode(code);
         long expires = DateConverter.getSecondsByDays(shareFileVo.getDays());
-        redisUtils.set("token-"+filePath,token,expires);
+        redisUtils.set("token-"+getUser().getUsername()+filePath,token,expires);
         return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/check/code?code=" + code, check, untilToTime));
     }
 

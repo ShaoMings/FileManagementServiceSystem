@@ -11,7 +11,7 @@
  Target Server Version : 50732
  File Encoding         : 65001
 
- Date: 14/09/2021 18:24:17
+ Date: 16/09/2021 18:07:11
 */
 
 SET NAMES utf8mb4;
@@ -22,28 +22,30 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `file`;
 CREATE TABLE `file` (
-                        `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '文件id',
-                        `file_name` varchar(255) DEFAULT NULL COMMENT '文件名',
-                        `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
-                        `peer_id` int(11) DEFAULT NULL COMMENT '所属集群id',
-                        PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=679 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '文件id',
+  `file_name` varchar(255) DEFAULT NULL COMMENT '文件名',
+  `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
+  `peer_id` int(11) DEFAULT NULL COMMENT '所属集群id',
+  `open` int(1) DEFAULT '0' COMMENT '是否公开 0私有 1公开',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=680 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of file
 -- ----------------------------
 BEGIN;
-INSERT INTO `file` VALUES (647, '蛇梯棋游戏的设计与发开.md', '/group1/zhangsan/test/蛇梯棋游戏的设计与发开.md', 17);
-INSERT INTO `file` VALUES (648, '鲸鱼骑士4k壁纸 by_Artur Sadlos_彼岸图网.jpg', '/group1/zhangsan/鲸鱼骑士4k壁纸 by_Artur Sadlos_彼岸图网.jpg', 17);
-INSERT INTO `file` VALUES (649, '和服美女 花 黑色背景 4k壁纸_彼岸图网.jpg', '/group1/zhangsan/test/和服美女 花 黑色背景 4k壁纸_彼岸图网.jpg', 17);
-INSERT INTO `file` VALUES (671, '蛇梯棋.md', '/group1/lisi/测试/中文/中文测试文件夹/蛇梯棋.md', 17);
-INSERT INTO `file` VALUES (672, '蛇梯棋.md', '/group1/lisi/蛇梯棋.md', 17);
-INSERT INTO `file` VALUES (673, '(完整版)网络工程试题 - 百度文库.pdf', '/group1/lisi/(完整版)网络工程试题 - 百度文库.pdf', 17);
-INSERT INTO `file` VALUES (674, '[ENG SUB]《云南虫谷 The Worm Valley》第01集——铁三角远赴云南寻找雮尘珠 得孔雀相告获悉遮龙山水洞.mp4', '/group1/lisi/测试/中文/中文测试文件夹/[ENG SUB]《云南虫谷 The Worm Valley》第01集——铁三角远赴云南寻找雮尘珠 得孔雀相告获悉遮龙山水洞.mp4', 17);
-INSERT INTO `file` VALUES (675, '稻香 - 周杰伦.mp3', '/group1/lisi/测试/中文/中文测试文件夹/稻香 - 周杰伦.mp3', 17);
-INSERT INTO `file` VALUES (676, '粉红色的回忆 - 韩宝仪.mp3', '/group1/lisi/测试/中文/中文测试文件夹/粉红色的回忆 - 韩宝仪.mp3', 17);
-INSERT INTO `file` VALUES (677, '曾经的你 - 许巍.mp3', '/group1/lisi/测试/中文/中文测试文件夹/曾经的你 - 许巍.mp3', 17);
-INSERT INTO `file` VALUES (678, '独家记忆 - 陈小春.mp3', '/group1/lisi/测试/中文/中文测试文件夹/独家记忆 - 陈小春.mp3', 17);
+INSERT INTO `file` VALUES (647, '蛇梯棋游戏的设计与发开.md', '/group1/zhangsan/test/蛇梯棋游戏的设计与发开.md', 17, 0);
+INSERT INTO `file` VALUES (648, '鲸鱼骑士4k壁纸 by_Artur Sadlos_彼岸图网.jpg', '/group1/zhangsan/鲸鱼骑士4k壁纸 by_Artur Sadlos_彼岸图网.jpg', 17, 0);
+INSERT INTO `file` VALUES (649, '和服美女 花 黑色背景 4k壁纸_彼岸图网.jpg', '/group1/zhangsan/test/和服美女 花 黑色背景 4k壁纸_彼岸图网.jpg', 17, 0);
+INSERT INTO `file` VALUES (671, '蛇梯棋.md', '/group1/lisi/测试/中文/中文测试文件夹/蛇梯棋.md', 17, 0);
+INSERT INTO `file` VALUES (672, '蛇梯棋.md', '/group1/lisi/蛇梯棋.md', 17, 0);
+INSERT INTO `file` VALUES (673, '(完整版)网络工程试题 - 百度文库.pdf', '/group1/lisi/(完整版)网络工程试题 - 百度文库.pdf', 17, 0);
+INSERT INTO `file` VALUES (674, '[ENG SUB]《云南虫谷 The Worm Valley》第01集——铁三角远赴云南寻找雮尘珠 得孔雀相告获悉遮龙山水洞.mp4', '/group1/lisi/测试/中文/中文测试文件夹/[ENG SUB]《云南虫谷 The Worm Valley》第01集——铁三角远赴云南寻找雮尘珠 得孔雀相告获悉遮龙山水洞.mp4', 17, 0);
+INSERT INTO `file` VALUES (675, '稻香 - 周杰伦.mp3', '/group1/lisi/测试/中文/中文测试文件夹/稻香 - 周杰伦.mp3', 17, 0);
+INSERT INTO `file` VALUES (676, '粉红色的回忆 - 韩宝仪.mp3', '/group1/lisi/测试/中文/中文测试文件夹/粉红色的回忆 - 韩宝仪.mp3', 17, 0);
+INSERT INTO `file` VALUES (677, '曾经的你 - 许巍.mp3', '/group1/lisi/测试/中文/中文测试文件夹/曾经的你 - 许巍.mp3', 17, 0);
+INSERT INTO `file` VALUES (678, '独家记忆 - 陈小春.mp3', '/group1/lisi/测试/中文/中文测试文件夹/独家记忆 - 陈小春.mp3', 17, 0);
+INSERT INTO `file` VALUES (679, 'Java设计模式.md', '/group1/zhangsan/test/Java设计模式.md', 17, 0);
 COMMIT;
 
 -- ----------------------------
@@ -51,11 +53,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `mail`;
 CREATE TABLE `mail` (
-                        `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '信件id',
-                        `mail_title` longtext COMMENT '标题',
-                        `mail_content` longtext COMMENT '内容',
-                        PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '信件id',
+  `mail_title` longtext COMMENT '标题',
+  `mail_content` longtext COMMENT '内容',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mail
@@ -67,6 +69,8 @@ INSERT INTO `mail` VALUES (15, '你好吗？', '<p><p style=\"text-align: center
 INSERT INTO `mail` VALUES (16, '测试', '<p><img src=\"http://10.60.2.0:8081/static/lib/layui-v2.5.6/layui/images/face/45.gif\" alt=\"[怒骂]\"></p><p>你还有吗？</p>');
 INSERT INTO `mail` VALUES (17, '你睡觉', '萨达发<img src=\"http://10.60.2.0:8081/static/lib/layui-v2.5.6/layui/images/face/28.gif\" alt=\"[馋嘴]\">');
 INSERT INTO `mail` VALUES (18, '测试', '<p><img src=\"http://10.60.2.0:8081/static/lib/layui-v2.5.6/layui/images/face/42.gif\" alt=\"[抓狂]\"></p><p>不要烦恼!</p>');
+INSERT INTO `mail` VALUES (19, '通知', '测试');
+INSERT INTO `mail` VALUES (20, '通知', '对用户进行管理统计!');
 COMMIT;
 
 -- ----------------------------
@@ -74,14 +78,14 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `mail_receive`;
 CREATE TABLE `mail_receive` (
-                                `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
-                                `mail_id` int(11) DEFAULT NULL COMMENT '邮件id',
-                                `sender_name` varchar(255) DEFAULT NULL COMMENT '发信人姓名 ',
-                                `receive_id` int(11) DEFAULT NULL COMMENT '接收人id',
-                                `receive_time` datetime DEFAULT NULL COMMENT '接收时间',
-                                `state` int(1) DEFAULT NULL COMMENT '状态 0未读 1已读',
-                                PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=100 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `mail_id` int(11) DEFAULT NULL COMMENT '邮件id',
+  `sender_name` varchar(255) DEFAULT NULL COMMENT '发信人姓名 ',
+  `receive_id` int(11) DEFAULT NULL COMMENT '接收人id',
+  `receive_time` datetime DEFAULT NULL COMMENT '接收时间',
+  `state` int(1) DEFAULT NULL COMMENT '状态 0未读 1已读',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mail_receive
@@ -96,6 +100,7 @@ INSERT INTO `mail_receive` VALUES (94, 15, 'lisi', 9, '2021-09-13 12:23:23', 1);
 INSERT INTO `mail_receive` VALUES (95, 15, 'lisi', 9, '2021-09-13 12:23:23', 1);
 INSERT INTO `mail_receive` VALUES (98, 16, 'zhangsan', 10, '2021-09-13 14:11:23', 1);
 INSERT INTO `mail_receive` VALUES (99, 18, 'zhangsan', 10, '2021-09-14 15:16:16', 1);
+INSERT INTO `mail_receive` VALUES (100, 20, 'shaoming', 10, '2021-09-16 09:42:29', 1);
 COMMIT;
 
 -- ----------------------------
@@ -103,54 +108,24 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `mail_send`;
 CREATE TABLE `mail_send` (
-                             `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认主键',
-                             `receive_user_email` varchar(255) DEFAULT NULL COMMENT '接收人email',
-                             `send_out_name` varchar(255) DEFAULT NULL COMMENT '发送人姓名',
-                             `send_time` datetime DEFAULT NULL COMMENT '发送时间',
-                             `mail_id` int(11) DEFAULT NULL COMMENT '邮件id',
-                             `send_state` int(1) DEFAULT NULL COMMENT '发送状态 0已发送 1已删除',
-                             `receive_state` int(1) DEFAULT NULL COMMENT '接收状态 0 未接收 1 已接收',
-                             PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=101 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认主键',
+  `receive_user_email` varchar(255) DEFAULT NULL COMMENT '接收人email',
+  `send_out_name` varchar(255) DEFAULT NULL COMMENT '发送人姓名',
+  `send_time` datetime DEFAULT NULL COMMENT '发送时间',
+  `mail_id` int(11) DEFAULT NULL COMMENT '邮件id',
+  `send_state` int(1) DEFAULT NULL COMMENT '发送状态 0已发送 1已删除',
+  `receive_state` int(1) DEFAULT NULL COMMENT '接收状态 0 未接收 1 已接收',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of mail_send
 -- ----------------------------
 BEGIN;
-INSERT INTO `mail_send` VALUES (67, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:17', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (68, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:18', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (69, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:19', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (70, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:19', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (71, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:20', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (72, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:20', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (73, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:21', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (74, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:21', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (75, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:22', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (76, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:22', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (77, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:22', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (78, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:23', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (79, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:23', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (80, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:24', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (81, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:24', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (82, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (83, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (84, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (85, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (86, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (87, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (88, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:25', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (89, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:26', 13, 0, 0);
-INSERT INTO `mail_send` VALUES (90, '1650666954@qq.com', 'lisi', '2021-09-13 11:11:26', 13, 0, 0);
 INSERT INTO `mail_send` VALUES (91, '1650666955@qq.com', 'zhangsan', '2021-09-13 11:34:38', 14, 0, 0);
-INSERT INTO `mail_send` VALUES (92, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:21', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (93, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:23', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (94, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:23', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (95, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:23', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (96, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:23', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (97, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:23', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (98, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:24', 15, 0, 1);
-INSERT INTO `mail_send` VALUES (99, '1650666954@qq.com', 'lisi', '2021-09-13 12:23:24', 15, 0, 1);
 INSERT INTO `mail_send` VALUES (100, '1650666955@qq.com', 'zhangsan', '2021-09-14 15:16:16', 18, 0, 1);
+INSERT INTO `mail_send` VALUES (101, '1650666955@qq.co', 'shaoming', '2021-09-16 09:42:03', 19, 0, 1);
+INSERT INTO `mail_send` VALUES (102, '1650666955@qq.com', 'shaoming', '2021-09-16 09:42:29', 20, 0, 1);
 COMMIT;
 
 -- ----------------------------
@@ -158,14 +133,14 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `peers`;
 CREATE TABLE `peers` (
-                         `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '集群id',
-                         `name` longtext NOT NULL COMMENT '集群名称',
-                         `group_name` longtext COMMENT '组名',
-                         `server_address` longtext NOT NULL COMMENT '集群服务地址',
-                         `show_address` longtext COMMENT '访问域名',
-                         `create_time` datetime NOT NULL COMMENT '创建时间',
-                         `update_time` datetime DEFAULT NULL COMMENT '更新时间',
-                         PRIMARY KEY (`id`)
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '集群id',
+  `name` longtext NOT NULL COMMENT '集群名称',
+  `group_name` longtext COMMENT '组名',
+  `server_address` longtext NOT NULL COMMENT '集群服务地址',
+  `show_address` longtext COMMENT '访问域名',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -182,11 +157,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `permission`;
 CREATE TABLE `permission` (
-                              `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '权限id',
-                              `permission_tag` varchar(255) DEFAULT NULL COMMENT '权限标签',
-                              `permission_desc` varchar(255) DEFAULT NULL COMMENT '权限描述',
-                              `permission_url` varchar(255) DEFAULT NULL COMMENT '权限资源路径',
-                              PRIMARY KEY (`id`)
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '权限id',
+  `permission_tag` varchar(255) DEFAULT NULL COMMENT '权限标签',
+  `permission_desc` varchar(255) DEFAULT NULL COMMENT '权限描述',
+  `permission_url` varchar(255) DEFAULT NULL COMMENT '权限资源路径',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -200,10 +175,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `role`;
 CREATE TABLE `role` (
-                        `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '角色id',
-                        `role_name` varchar(20) DEFAULT NULL COMMENT '角色名称',
-                        `role_desc` varchar(255) DEFAULT NULL COMMENT '角色描述',
-                        PRIMARY KEY (`id`) USING BTREE
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '角色id',
+  `role_name` varchar(20) DEFAULT NULL COMMENT '角色名称',
+  `role_desc` varchar(255) DEFAULT NULL COMMENT '角色描述',
+  PRIMARY KEY (`id`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -221,10 +196,10 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `role_permission`;
 CREATE TABLE `role_permission` (
-                                   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认id',
-                                   `role_id` int(11) NOT NULL COMMENT '角色id',
-                                   `permission_id` int(11) NOT NULL COMMENT '权限id',
-                                   PRIMARY KEY (`id`)
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认id',
+  `role_id` int(11) NOT NULL COMMENT '角色id',
+  `permission_id` int(11) NOT NULL COMMENT '权限id',
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -234,24 +209,43 @@ BEGIN;
 COMMIT;
 
 -- ----------------------------
+-- Table structure for share
+-- ----------------------------
+DROP TABLE IF EXISTS `share`;
+CREATE TABLE `share` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认主键',
+  `file_id` int(11) DEFAULT NULL COMMENT '文件id',
+  `share_time` datetime DEFAULT NULL COMMENT '分享时间',
+  `download_count` int(11) DEFAULT '0' COMMENT '下载次数',
+  `read_count` int(11) DEFAULT '0' COMMENT '浏览次数',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records of share
+-- ----------------------------
+BEGIN;
+COMMIT;
+
+-- ----------------------------
 -- Table structure for user
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
 CREATE TABLE `user` (
-                        `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户id',
-                        `username` varchar(15) NOT NULL COMMENT '用户名',
-                        `real_name` varchar(255) NOT NULL COMMENT '真实姓名',
-                        `password` longtext NOT NULL COMMENT '用户密码',
-                        `gender` int(1) DEFAULT '1' COMMENT '性别 0 女 1 男',
-                        `age` int(3) NOT NULL COMMENT '用户年龄',
-                        `email` varchar(50) NOT NULL COMMENT '用户邮箱',
-                        `peersId` int(11) NOT NULL COMMENT '所属集群id',
-                        `credentials_salt` longtext NOT NULL COMMENT '证书盐值',
-                        `create_time` datetime NOT NULL COMMENT '注册时间',
-                        `update_time` datetime DEFAULT NULL COMMENT '信息更新时间',
-                        `last_login_time` datetime DEFAULT NULL COMMENT '上次登录时间',
-                        `deleted` int(1) DEFAULT '0' COMMENT '逻辑删除',
-                        PRIMARY KEY (`id`,`username`,`email`) USING BTREE
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '用户id',
+  `username` varchar(15) NOT NULL COMMENT '用户名',
+  `nick_name` varchar(255) NOT NULL COMMENT '用户昵称',
+  `password` longtext NOT NULL COMMENT '用户密码',
+  `gender` int(1) DEFAULT '1' COMMENT '性别 0 女 1 男',
+  `age` int(3) NOT NULL COMMENT '用户年龄',
+  `email` varchar(50) NOT NULL COMMENT '用户邮箱',
+  `peersId` int(11) NOT NULL COMMENT '所属集群id',
+  `credentials_salt` longtext NOT NULL COMMENT '证书盐值',
+  `create_time` datetime NOT NULL COMMENT '注册时间',
+  `update_time` datetime DEFAULT NULL COMMENT '信息更新时间',
+  `last_login_time` datetime DEFAULT NULL COMMENT '上次登录时间',
+  `deleted` int(1) DEFAULT '0' COMMENT '逻辑删除',
+  PRIMARY KEY (`id`,`username`,`email`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
@@ -260,11 +254,11 @@ CREATE TABLE `user` (
 BEGIN;
 INSERT INTO `user` VALUES (5, 'tencent', 'tencent-cloud', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019943@gmail.com', 15, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-02 20:48:14', '2021-09-05 16:35:33', 0);
 INSERT INTO `user` VALUES (6, 'company', 'company', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019944@gmail.com', 16, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-10 21:35:51', '2021-09-13 00:11:01', 0);
-INSERT INTO `user` VALUES (7, 'home', 'company', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019945@gmail.com', 16, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-12 11:00:33', '2021-09-13 00:22:34', 0);
-INSERT INTO `user` VALUES (8, 'shaoming', 'shaoming', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666953@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-12 17:40:45', '2021-09-12 17:40:47', 0);
-INSERT INTO `user` VALUES (9, 'zhangsan', 'zhangsan', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666954@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-12 17:40:45', '2021-09-14 18:03:28', 0);
-INSERT INTO `user` VALUES (10, 'lisi', 'shaoming', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666955@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-12 17:40:45', '2021-09-14 18:03:34', 0);
-INSERT INTO `user` VALUES (11, 'wangwu', 'test', 'b26bb24391c0f8cc327fd1400f94b8e1', 1, 18, '1650666999@qq.com', 17, '4dd1619966bb4107a4b93a646188c959', '2021-09-13 18:08:39', NULL, '2021-09-14 18:20:58', 0);
+INSERT INTO `user` VALUES (7, 'home', 'company', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019945@gmail.com', 16, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-15 12:40:33', '2021-09-13 00:22:34', 0);
+INSERT INTO `user` VALUES (8, 'shaoming', '邵明', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666953@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-12 17:40:45', '2021-09-16 13:49:30', 0);
+INSERT INTO `user` VALUES (9, 'zhangsan', '张三', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666954@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-15 15:01:22', '2021-09-15 15:01:42', 0);
+INSERT INTO `user` VALUES (10, 'lisi', '李四', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666955@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-16 09:39:37', '2021-09-16 18:05:49', 0);
+INSERT INTO `user` VALUES (11, 'wangwu', 'test', 'b26bb24391c0f8cc327fd1400f94b8e1', 1, 18, '1650666999@qq.com', 17, '4dd1619966bb4107a4b93a646188c959', '2021-09-13 18:08:39', NULL, '2021-09-15 12:42:07', 0);
 INSERT INTO `user` VALUES (12, '123', '123', '00c7a78f4a86199fb86e6da34c5414be', 1, 18, '123@qq.com', 17, 'c2ee7c22bd7a4eed9ee0ed41c82be233', '2021-09-14 09:38:59', NULL, NULL, 0);
 COMMIT;
 
@@ -273,11 +267,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `user_file`;
 CREATE TABLE `user_file` (
-                             `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认id',
-                             `user_id` int(11) NOT NULL COMMENT '用户id',
-                             `file_id` int(11) NOT NULL COMMENT '文件id',
-                             PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1540 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认id',
+  `user_id` int(11) NOT NULL COMMENT '用户id',
+  `file_id` int(11) NOT NULL COMMENT '文件id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1541 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_file
@@ -294,6 +288,7 @@ INSERT INTO `user_file` VALUES (1536, 10, 675);
 INSERT INTO `user_file` VALUES (1537, 10, 676);
 INSERT INTO `user_file` VALUES (1538, 10, 677);
 INSERT INTO `user_file` VALUES (1539, 10, 678);
+INSERT INTO `user_file` VALUES (1540, 9, 679);
 COMMIT;
 
 -- ----------------------------
@@ -301,11 +296,11 @@ COMMIT;
 -- ----------------------------
 DROP TABLE IF EXISTS `user_role`;
 CREATE TABLE `user_role` (
-                             `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认id',
-                             `user_id` int(11) NOT NULL COMMENT '用户id',
-                             `role_id` int(11) NOT NULL COMMENT '角色id',
-                             PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认id',
+  `user_id` int(11) NOT NULL COMMENT '用户id',
+  `role_id` int(11) NOT NULL COMMENT '角色id',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_role
@@ -315,8 +310,8 @@ INSERT INTO `user_role` VALUES (1, 8, 1);
 INSERT INTO `user_role` VALUES (2, 5, 4);
 INSERT INTO `user_role` VALUES (3, 6, 4);
 INSERT INTO `user_role` VALUES (4, 7, 4);
-INSERT INTO `user_role` VALUES (5, 9, 4);
-INSERT INTO `user_role` VALUES (6, 10, 4);
+INSERT INTO `user_role` VALUES (5, 9, 3);
+INSERT INTO `user_role` VALUES (6, 10, 3);
 INSERT INTO `user_role` VALUES (7, 11, 1);
 INSERT INTO `user_role` VALUES (8, 12, 4);
 COMMIT;

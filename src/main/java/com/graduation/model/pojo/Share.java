@@ -1,7 +1,7 @@
 package com.graduation.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.Version;
+import java.util.Date;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
 import io.swagger.annotations.ApiModel;
@@ -17,33 +17,32 @@ import lombok.NoArgsConstructor;
  * </p>
  *
  * @author shaoming
- * @since 2021-08-16
+ * @since 2021-09-16
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="File对象", description="")
-public class File implements Serializable {
+@ApiModel(value="Share对象", description="")
+public class Share implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @ApiModelProperty(value = "文件id")
+    @ApiModelProperty(value = "默认主键")
       @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @ApiModelProperty(value = "文件名")
-    private String fileName;
+    @ApiModelProperty(value = "文件id")
+    private Integer fileId;
 
-    @ApiModelProperty(value = "文件路径")
-    private String filePath;
+    @ApiModelProperty(value = "分享时间")
+    private Date shareTime;
 
+    @ApiModelProperty(value = "下载次数")
+    private Integer downloadCount;
 
-    @ApiModelProperty(value = "所属集群id")
-    private Integer peerId;
-
-    @ApiModelProperty(value = "是否公开 0私有 1公开")
-    private Integer open;
+    @ApiModelProperty(value = "浏览次数")
+    private Integer readCount;
 
 
 }

@@ -19,4 +19,5 @@ public class FileInfoVo {
     private String path;
     private String size;
     private String peerAddr;
+    private Integer open;
 }

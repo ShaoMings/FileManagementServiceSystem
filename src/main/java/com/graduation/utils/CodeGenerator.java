@@ -72,7 +72,7 @@ public class CodeGenerator {
         strategy.setNaming(NamingStrategy.underline_to_camel);
         strategy.setColumnNaming(NamingStrategy.underline_to_camel);
         // 设置映射的表名  生成其他表只需修改这里即可
-        strategy.setInclude("mail","mail_send","mail_receive");
+        strategy.setInclude("share");
 
         // lombok 支持
         strategy.setEntityLombokModel(true);

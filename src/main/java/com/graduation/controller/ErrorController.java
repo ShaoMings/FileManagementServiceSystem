@@ -14,4 +14,14 @@ public class ErrorController {
     public String overdue(){
         return "/error/overdue";
     }
+
+    @RequestMapping("/checkError")
+    public String checkError(){
+        return "/error/checkError";
+    }
+
+    @RequestMapping("/outmoded")
+    public String outmoded(){
+        return "/error/outmoded";
+    }
 }

@@ -193,7 +193,7 @@ $('#file-result').on('click', '.share-btn', function () {
                             let html = '<div class="file-details-box">' +
                                 '<ul>' +
                                 '<li><span>有效期至:&nbsp;</span>' + res.data.until + '</li>' +
-                                '<li><span>访问链接:</span></br><a href=' + res.data.link + "&check=" + res.data.check + '>' + res.data.link + "&check=" + res.data.check + '</a></li>' +
+                                '<li><span>访问链接:</span></br><a target="_blank" href=' + res.data.link  + '>' + res.data.link + '</a></li>' +
                                 '<li><span>提取码:&nbsp;</span>' + res.data.check + '</li>' +
                                 '<li><span>二维码:</span></br><div id="qrcode" style="width:150px; height:150px; margin:0 auto;"></div></li>' +
                                 '</ul>';
@@ -213,7 +213,7 @@ $('#file-result').on('click', '.share-btn', function () {
                                         height: 150
                                     });
                                     layer.close(loadIndex);
-                                    qrcode.makeCode(res.data.link + "&check=" + res.data.check);
+                                    qrcode.makeCode(res.data.link);
                                 }
                             })
                         }

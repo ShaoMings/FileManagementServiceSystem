@@ -160,6 +160,14 @@ public class AesUtils {
         return f1 || f2 || f3;
     }
 
+
+    public static String getTokenByCode(String code) throws Exception {
+        String path = decrypt(code);
+        String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
+        String username = path.substring(0, path.indexOf("/"));
+        return TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr("/" + username + groupFilePath.substring(1)));
+    }
+
     public static void main(String[] args) throws Exception {
         String content = "/admin/test/doc/Chapter_2.pdf@" + DateConverter.getFormatDate(new Date(), "yyyy-MM-dd HH:mm:ss");
 

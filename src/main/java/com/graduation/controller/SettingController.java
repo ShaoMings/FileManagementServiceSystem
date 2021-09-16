@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.graduation.model.pojo.User;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.ModifyUserVo;
+import com.graduation.service.UserRoleService;
 import com.graduation.service.UserService;
 import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,10 @@ public class SettingController extends BaseController {
     private static final Integer MAX_NAME_LENGTH = 100;
 
     @Autowired
-    UserService userService;
+    private UserService userService;
+
+    @Autowired
+    private UserRoleService userRoleService;
 
     /**
      * 个人信息页面
@@ -40,6 +44,8 @@ public class SettingController extends BaseController {
     @RequestMapping("/user")
     public String user(Model model) {
         model.addAttribute("user", userService.getById(getUser().getId()));
+        Integer role = userRoleService.getUserRole(getUser().getId());
+        model.addAttribute("role",role);
         return "settings/user";
     }
 

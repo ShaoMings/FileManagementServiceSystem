@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -36,6 +35,9 @@ public class FileController extends BaseController {
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
 
     private String checkUserPath(String dir){
@@ -55,7 +57,6 @@ public class FileController extends BaseController {
         }
         return dir;
     }
-
 
     /**
      * 文件列表页面
@@ -335,6 +336,7 @@ public class FileController extends BaseController {
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
         String content;
+        String filePath = shareFileVo.getPath()+"/"+shareFileVo.getFilename();
         shareFileVo.setPath(getUser().getUsername()+shareFileVo.getPath());
         if ("".equals(shareFileVo.getPath())) {
             content =  getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
@@ -346,7 +348,10 @@ public class FileController extends BaseController {
         String code = AesUtils.encrypt(content);
         String check = AesUtils.getCheckCodeByEncryptStr(code);
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
-        return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/s/download?code=" + code, check, untilToTime));
+        String token = AesUtils.getTokenByCode(code);
+        long expires = DateConverter.getSecondsByDays(shareFileVo.getDays());
+        redisUtils.set("token-"+filePath,token,expires);
+        return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/check/code?code=" + code, check, untilToTime));
     }
 
     /**

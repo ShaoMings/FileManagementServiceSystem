@@ -21,15 +21,15 @@ public class FileDownloadInterceptor implements HandlerInterceptor {
         if (StringUtils.isBlank(code)){
             return false;
         }
-        String check = request.getParameter("check");
-        if (StringUtils.isBlank(check)){
-            return false;
-        }
-        code = code.replaceAll(" ", "+");
-        String checkCode = AesUtils.getCheckCodeByEncryptStr(code);
-        if (check.equals(checkCode)){
-            return true;
-        }
-        return false;
+//        String check = request.getParameter("check");
+//        if (StringUtils.isBlank(check)){
+//            return false;
+//        }
+//        code = code.replaceAll(" ", "+");
+//        String checkCode = AesUtils.getCheckCodeByEncryptStr(code);
+//        if (check.equals(checkCode)){
+//            return true;
+//        }
+        return true;
     }
 }

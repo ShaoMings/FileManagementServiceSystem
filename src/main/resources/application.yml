@@ -44,6 +44,18 @@ spring:
     #    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
     username: root
     password: adminadmin
+  #redis 配置
+  redis:
+    database: 0
+    host: localhost
+    port: 6379
+    jedis:
+      pool:
+        max-active: 200
+        max-wait: -1
+        max-idle: 10
+        min-idle: 0
+    timeout: 1000
 
 
 mybatis-plus:

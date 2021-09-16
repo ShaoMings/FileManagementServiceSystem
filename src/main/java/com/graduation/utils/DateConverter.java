@@ -258,5 +258,14 @@ public class DateConverter {
         return sdf.format(date);
     }
 
+    /**
+     * 通过给定天数 返回该天数的总秒数
+     * @param days 天数
+     * @return 秒数
+     */
+    public static long getSecondsByDays(int days){
+        return 24L *60*60*days;
+    }
+
 
 }

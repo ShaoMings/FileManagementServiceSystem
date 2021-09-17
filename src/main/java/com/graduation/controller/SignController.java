@@ -102,7 +102,6 @@ public class SignController extends BaseController{
                     if (peersService.checkPeersAddressIsUseful(p.getServerAddress() + "/" + p.getGroupName())) {
                         Map<String, Object> peersStatus = peersService.getPeersStatus(p.getServerAddress() + "/" + p.getGroupName());
                         String diskFreeSize = (String) peersStatus.get("diskFreeSize");
-                        System.out.println("diskFreeSize = " + diskFreeSize);
                         InstallVo installVo = new InstallVo();
                         User voUser = installVo.getUser(user.getPassword(), user.getAccount(), user.getEmail(), user.getName());
                         voUser.setPeersid(p.getId());

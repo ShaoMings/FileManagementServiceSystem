@@ -511,7 +511,6 @@ function openDir(dir) {
     $.post('/file/getDirFile', {"dir": dir}, function (result) {
         if (result.code === 200) {
             let data = result;
-            console.log(data)
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {
@@ -690,7 +689,8 @@ $("#file-result").on("click", ".resultFile", function () {
     let path = $(this).data("path");
     let username;
     let token;
-    let address;
+    let address = "http://1.15.221.117:8080/group1";
+    // 部署时使用上面的 下面注释
     $.ajax({
         url: "/peers/address",
         async: false,
@@ -698,6 +698,8 @@ $("#file-result").on("click", ".resultFile", function () {
             address = res;
         }
     });
+
+
     $.ajax({
         url: "/user/username",
         async: false,

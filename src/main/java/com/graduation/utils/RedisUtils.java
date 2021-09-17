@@ -1,6 +1,5 @@
 package com.graduation.utils;
 
-import com.sun.istack.internal.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -49,7 +48,7 @@ public class RedisUtils {
      * @param key 键 不能为null
      * @return 时间(秒) 返回0代表为永久有效
      */
-    public Long getExpireTime(@NotNull String key){
+    public Long getExpireTime(String key){
         return redisTemplate.getExpire(key, TimeUnit.SECONDS);
     }
 

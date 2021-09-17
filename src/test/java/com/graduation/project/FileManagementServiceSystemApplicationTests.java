@@ -28,8 +28,6 @@ class FileManagementServiceSystemApplicationTests {
 
     @Test
     void contextLoads() {
-        List<FileInfoVo> list = fileService.getFileInfoListByFileKeyword("http://10.211.55.102:8080/group1", "彼岸");
-        list.forEach(System.out::println);
     }
 
     @Test
@@ -39,6 +37,5 @@ class FileManagementServiceSystemApplicationTests {
 
     @Test
     void testUpdatePath() {
-        System.out.println(userRoleService.updateUserRoleByUserId(7, 3));
     }
 }

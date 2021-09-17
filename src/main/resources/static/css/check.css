@@ -1,0 +1,102 @@
+body {
+    margin: 0;
+    overflow: hidden;
+}
+
+#doc {
+    background-color: #eef2f6;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+.header {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -240px 0 0 -230px;
+    z-index: 1;
+}
+
+.cloud-bg {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 400px;
+}
+
+.bg-cloud {
+    position: absolute;
+    width: 100%;
+    height: 400px;
+    background: url('../images/cloud.png') repeat-x 0 bottom;
+    bottom: 0;
+}
+
+.verify-form, .clearfix {
+    margin: 0 auto;
+    width: 460px;
+    height: 257px;
+    text-align: left;
+    font-size: 14px;
+    position: relative;
+    background: #fff;
+    border-radius: 7px;
+}
+
+.form-header {
+    background: url('../images/blue.png') no-repeat;
+    background-size: 100% 100%;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    height: 80px;
+}
+
+.verify-input {
+    padding: 20px 30px 48px;
+    float: left;
+    width: 400px;
+    height: 177px;
+}
+
+.file-name {
+    font-size: 18px;
+    text-align: center;
+    padding: 30px;
+    color: aliceblue;
+}
+
+.input-tips {
+    padding: 0 0 5px;
+    margin: 20px 0 10px;
+    color: #666;
+}
+
+.input-check {
+    width: 280px;
+    border: 1px solid #f2f2f2;
+    padding: 8px 10px;
+    height: 20px;
+    line-height: 19px;
+    border-radius: 4px;
+    outline: none;
+}
+
+.submit-btn {
+    position: relative;
+    display: inline-block;
+    font-size: 14px;
+    border: 1px solid #09AAFF;
+    background: #09AAFF;
+    color: aliceblue;
+    padding-left: 13px;
+    text-decoration: none;
+    vertical-align: top;
+    white-space: nowrap;
+    outline: 0;
+    border-radius: 4px;
+    margin-left: 14px;
+    height: 36px;
+    cursor: pointer;
+}

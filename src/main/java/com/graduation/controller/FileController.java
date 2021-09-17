@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletRequest;
@@ -280,7 +281,7 @@ public class FileController extends BaseController {
      */
     @RequestMapping("/downloadFile")
     @ResponseBody
-    public void downloadFile(String path, String name, HttpServletResponse response) {
+    public void downloadFile(String path, String name, @RequestParam(name = "username",required = false)String username, HttpServletResponse response) {
         BufferedInputStream in = null;
         try {
             path = checkUserPath(path);
@@ -291,6 +292,23 @@ public class FileController extends BaseController {
             response.setContentType("application/octet-stream");
             URL url;
             String token;
+            if (username != null && username.length()>0){
+                String originName;
+                boolean hasPrefix = false;
+                if (path.contains("/")){
+                    hasPrefix = true;
+                    originName= path.substring(0,path.indexOf("/"));
+                }else {
+                    originName= path;
+                }
+                if (!username.equals(originName)){
+                    if (hasPrefix){
+                        path = username + path.substring(path.indexOf("/"));
+                    }else {
+                        path = username;
+                    }
+                }
+            }
             if ("".equals(path)) {
                 token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(name));
             } else {

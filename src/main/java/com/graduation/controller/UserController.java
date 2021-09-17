@@ -5,7 +5,7 @@ import com.graduation.model.pojo.User;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.InstallVo;
 import com.graduation.model.vo.ManageUserVo;
-import com.graduation.model.vo.TableResponseVo;
+import com.graduation.model.vo.ListDataResponseVo;
 import com.graduation.service.UserRoleService;
 import com.graduation.service.UserService;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -52,7 +52,7 @@ public class UserController extends BaseController {
 
     @RequestMapping("/manageUserList")
     @ResponseBody
-    public TableResponseVo<ManageUserVo> getManageUserList() {
+    public ListDataResponseVo<ManageUserVo> getManageUserList() {
         Integer userId = getUser().getId();
         Integer userRoleId = userRoleService.getUserRole(userId);
         List<User> userList = userRoleService.getLowerLevelUserByRoleId(userRoleId);
@@ -63,7 +63,7 @@ public class UserController extends BaseController {
             user.add(new ManageUserVo(id, u.getUsername(), u.getNickName(), u.getPassword(),
                     u.getGender(), u.getAge(), u.getEmail(), u.getPeersid(), roleId));
         });
-        return new TableResponseVo<>(0, "", user.size(), user);
+        return new ListDataResponseVo<>(0, "", user.size(), user);
     }
 
 

@@ -156,12 +156,13 @@ $('#file-result').on('click','.open-btn',function () {
     let obj = $(this);
     let path = $(this).data('path');
     let filename = $(this).data('name');
+    let filesize = $(this).data('size');
     let open = $(this).data('open');
     if (open === 0){
         $.ajax({
             url:"/share/open",
             method: "post",
-            data:{"filename":filename,"path":path},
+            data:{"filename":filename,"path":path,"size":filesize},
             success:function (res) {
                 if (res.code === 200){
                     layer.msg("公开成功!");
@@ -460,7 +461,6 @@ function getParentFile() {
     let index = layer.load();
     $.post('/file/getParentFile', function (result) {
         if (result.code === 200) {
-            console.log(result);
             let data = result;
             template.helper('iconHandler', function (name, isDir) {
                 let icon;

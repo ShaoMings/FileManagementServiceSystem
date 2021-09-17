@@ -32,19 +32,19 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     private FileService fileService;
 
     @Override
-    public void downloadCountPlusById(Integer shareId,Integer newCount) {
+    public boolean downloadCountPlusById(Integer shareId,Integer newCount) {
         UpdateWrapper<Share> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",shareId);
         updateWrapper.set("download_count",newCount);
-        this.update(updateWrapper);
+        return this.update(updateWrapper);
     }
 
     @Override
-    public void readCountPlusById(Integer shareId, Integer newCount) {
+    public boolean readCountPlusById(Integer shareId, Integer newCount) {
         UpdateWrapper<Share> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",shareId);
         updateWrapper.set("read_count",newCount);
-        this.update(updateWrapper);
+        return this.update(updateWrapper);
     }
 
     @Override
@@ -55,6 +55,13 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
         List<File> fileList = new ArrayList<>();
         shareList.forEach(s -> fileList.add(fileService.getById(s.getFileId())));
         return fileList;
+    }
+
+    @Override
+    public List<Share> getSevenDayShareFilesRecord(Date startTime, Date endTime) {
+        LambdaQueryWrapper<Share> lq = Wrappers.lambdaQuery();
+        lq.between(Share::getShareTime,startTime,endTime);
+        return this.list(lq);
     }
 
     @Override

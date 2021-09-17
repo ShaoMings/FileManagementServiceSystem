@@ -2,7 +2,7 @@ package com.graduation.service;
 
 import com.graduation.model.pojo.Mail;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.graduation.model.vo.TableResponseVo;
+import com.graduation.model.vo.ListDataResponseVo;
 
 
 
@@ -21,7 +21,7 @@ public interface MailService extends IService<Mail> {
      * @param userId 用户id
      * @return 邮件信息
      */
-    TableResponseVo getMailsByUserId(Integer userId);
+    ListDataResponseVo getMailsByUserId(Integer userId);
 
     /**
      * 通过邮件id获取邮件内容

@@ -35,6 +35,21 @@ public class Share implements Serializable {
     @ApiModelProperty(value = "文件id")
     private Integer fileId;
 
+    @ApiModelProperty(value = "文件名")
+    private String fileName;
+
+    @ApiModelProperty(value = "文件路径")
+    private String filePath;
+
+    @ApiModelProperty(value = "文件大小")
+    private String fileSize;
+
+    @ApiModelProperty(value = "分享人用户名")
+    private String sharerUsername;
+
+    @ApiModelProperty(value = "分享人")
+    private String sharer;
+
     @ApiModelProperty(value = "分享时间")
     private Date shareTime;
 

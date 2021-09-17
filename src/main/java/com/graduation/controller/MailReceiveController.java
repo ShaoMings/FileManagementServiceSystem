@@ -5,7 +5,7 @@ package com.graduation.controller;
 import com.graduation.model.vo.EmailReceiveVo;
 import com.graduation.model.vo.FileResponseVo;
 
-import com.graduation.model.vo.TableResponseVo;
+import com.graduation.model.vo.ListDataResponseVo;
 import com.graduation.service.MailReceiveService;
 import com.graduation.service.MailService;
 import org.apache.commons.beanutils.ConvertUtils;
@@ -35,7 +35,7 @@ public class MailReceiveController extends BaseController{
     MailReceiveService receiveService;
 
     @RequestMapping("/mails")
-    public TableResponseVo<EmailReceiveVo> getMailList(Integer userId){
+    public ListDataResponseVo<EmailReceiveVo> getMailList(Integer userId){
         return mailService.getMailsByUserId(userId);
     }
 

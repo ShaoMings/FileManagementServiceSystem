@@ -20,7 +20,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class TableResponseVo<T> {
+public class ListDataResponseVo<T> {
     private Integer code;
     private String msg;
     private Integer count;

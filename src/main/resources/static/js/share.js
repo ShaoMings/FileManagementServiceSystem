@@ -1,6 +1,30 @@
 getShareRecord();
 
 
+let icons = {
+    "song":'<i class="fa fa-music" aria-hidden="true"></i>',
+    "image":'<i class="fa fa-picture-o" aria-hidden="true"></i>',
+    "zip":'<i class="fa fa-file-zip-o" aria-hidden="true"></i>',
+    "txt":'<i class="fa fa-file-text-o" aria-hidden="true"></i>',
+    "ppt":'<i class="fa fa-file-powerpoint-o" aria-hidden="true"></i>',
+    "word":'<i class="fa fa-file-word-o" aria-hidden="true"></i>',
+    "excel":'<i class="fa fa-file-excel-o" aria-hidden="true"></i>',
+    "video":'<i class="fa fa-video-camera" aria-hidden="true"></i>',
+    "md":'<i class="fa fa-file-text-o" aria-hidden="true"></i>',
+    "pdf":'<i class="fa fa-file-pdf-o" aria-hidden="true"></i>',
+    "code":'<i class="fa fa-file-code-o" aria-hidden="true"></i>',
+    "other":'<i class="fa fa-question-circle" aria-hidden="true"></i>'
+}
+
+
+function getFileTypeIcon(name) {
+    let index = name.lastIndexOf(".");
+    let length = name.length;
+    let suffix = name.substring(index + 1, length).toLowerCase();
+    let type = kit.getFileType(suffix);
+    return icons[type];
+}
+
 
 function getShareRecord() {
     let loadIndex = layer.load();
@@ -8,28 +32,35 @@ function getShareRecord() {
         if (res.code === 200){
             let data = res.data;
             let container = $('#share-container');
-            $.each(data,function (index, value) {
-                let html = '<div class="share-file-item">\n' +
-                    '            <div class="file-title" data-username="'+value.sharerUsername+'" data-id="'+value.shareId+'" data-read="'+value.read+'"  data-name="'+value.fileName+'" data-path="'+value.filePath+'">文件名: '+value.fileName+'</div>\n' +
-                    '            <div class="file-sharer">分享人&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'+value.sharer+'</div>\n' +
-                    '            <div class="file-size">文件大小&nbsp;: '+value.size+'</div>\n' +
-                    '            <div class="file-share-time">分享时间&nbsp;: '+value.time+'</div>\n' +
-                    '            <div class="file-data" style="margin-bottom: 28px;">\n' +
-                    '                <span class="file-download">\n' +
-                    '                    <i class="fa fa-arrow-down" aria-hidden="true"></i>\n' +
-                    '                    <span class="file-download-count">&nbsp;&nbsp;'+value.download+'</span>\n' +
-                    '                </span>\n' +
-                    '                <span class="file-read">\n' +
-                    '                    <i class="fa fa-eye" aria-hidden="true"></i>\n' +
-                    '                    <span class="file-read-count">&nbsp;&nbsp;'+value.read+'</span>\n' +
-                    '                </span>\n' +
-                    '            </div>\n' +
-                    '            <div class="download">\n' +
-                    '                <button class="download-btn" data-username="'+value.sharerUsername+'" data-id="'+value.shareId+'" data-download="'+value.download+'" data-name="'+value.fileName+'" data-path="'+value.filePath+'">文件下载</button>\n' +
-                    '            </div>\n' +
-                    '        </div>'
+            if (data.length>0){
+                $.each(data,function (index, value) {
+                    let html = '<div class="share-file-item">\n' +
+                        '            <div class="file-title" data-username="'+value.sharerUsername+'" data-id="'+value.shareId+'" data-read="'+value.read+'"  ' +
+                        'data-name="'+value.fileName+'" data-path="'+value.filePath+'">'+ getFileTypeIcon(value.fileName)+'&nbsp;'+value.fileName+'</div>\n' +
+                        '            <div class="file-sharer">分享人&nbsp;&nbsp;&nbsp;&nbsp;:&nbsp;'+value.sharer+'</div>\n' +
+                        '            <div class="file-size">文件大小&nbsp;: '+value.size+'</div>\n' +
+                        '            <div class="file-share-time">分享时间&nbsp;: '+value.time+'</div>\n' +
+                        '            <div class="file-data" style="margin-bottom: 28px;">\n' +
+                        '                <span class="file-download">\n' +
+                        '                    <i class="fa fa-arrow-down" aria-hidden="true"></i>\n' +
+                        '                    <span class="file-download-count">&nbsp;&nbsp;'+value.download+'</span>\n' +
+                        '                </span>\n' +
+                        '                <span class="file-read">\n' +
+                        '                    <i class="fa fa-eye" aria-hidden="true"></i>\n' +
+                        '                    <span class="file-read-count">&nbsp;&nbsp;'+value.read+'</span>\n' +
+                        '                </span>\n' +
+                        '            </div>\n' +
+                        '            <div class="download">\n' +
+                        '                <button class="download-btn" data-username="'+value.sharerUsername+'" data-id="'+value.shareId+'" data-download="'+value.download+'" data-name="'+value.fileName+'" data-path="'+value.filePath+'">文件下载</button>\n' +
+                        '            </div>\n' +
+                        '        </div>'
+                    container.append(html);
+                });
+            }else {
+                let html = '<div style="margin: 0 auto;text-align: center;font-size: 22px;font-weight: 500;color: rgba(0, 0, 0, .85);">还没有人文件分享,快来分享你的文件吧!</div>';
                 container.append(html);
-            });
+            }
+
             layer.close(loadIndex);
         }
     })

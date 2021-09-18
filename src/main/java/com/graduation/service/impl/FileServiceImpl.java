@@ -14,6 +14,7 @@ import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.ConvertVo;
 import com.graduation.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.graduation.service.ShareService;
 import com.graduation.service.UserFileService;
 import com.graduation.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +36,16 @@ import java.util.*;
 public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements FileService {
 
     @Autowired
-    UserFileService userFileService;
+    private UserFileService userFileService;
 
     @Autowired
-    FileMapper fileMapper;
+    private FileMapper fileMapper;
 
     @Autowired
-    GetFileList getFileList;
+    private GetFileList getFileList;
+
+    @Autowired
+    private ShareService shareService;
 
     @Override
     public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress,String userPath) {
@@ -69,6 +73,9 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             File file = this.getOne(fileQueryWrapper);
             if (file != null) {
                 Integer fileId = file.getId();
+                if (file.getOpen() == 1) {
+                    shareService.privateFileToRemoveRecordByFileId(fileId);
+                }
                 QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
                 userFileQueryWrapper.eq("file_id", fileId);
                 boolean removeFile = this.removeById(fileId);
@@ -106,9 +113,18 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
         fileQueryWrapper.likeRight("file_path", pathPrefix);
         List<File> deleteFileList = this.list(fileQueryWrapper);
+        List<Integer> openFilesIdList = new ArrayList<>();
         List<Integer> fileIds = new ArrayList<>();
         QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
-        deleteFileList.forEach(e -> fileIds.add(e.getId()));
+        deleteFileList.forEach(e -> {
+            fileIds.add(e.getId());
+            if (e.getOpen() == 1){
+                openFilesIdList.add(e.getId());
+            }
+        });
+        if (openFilesIdList.size()>0){
+            shareService.privateFilesToRemoveRecordsByFileIdList(openFilesIdList);
+        }
         userFileQueryWrapper.in("file_id", fileIds);
         boolean isDeleteFiles = this.removeByIds(fileIds);
         boolean isDeleteUserFiles = userFileService.remove(userFileQueryWrapper);
@@ -162,14 +178,14 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean saveFilePathByUserId(Integer id, String filePath,Integer peerId) {
+    public boolean saveFilePathByUserId(Integer id, String filePath,Integer peerId,String md5) {
         String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
         QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
         fileQueryWrapper.eq("file_name",filename);
         fileQueryWrapper.eq("file_path",filePath);
         fileQueryWrapper.eq("peer_id",peerId);
         if (this.list(fileQueryWrapper).size()<=0) {
-            File file = new File(id, filename, filePath,peerId,null);
+            File file = new File(id, filename,md5, filePath,new Date(),peerId,null);
             boolean flag1 = this.save(file);
             Integer fileId = file.getId();
             boolean flag2 = userFileService.save(new UserFile(null, id, fileId));

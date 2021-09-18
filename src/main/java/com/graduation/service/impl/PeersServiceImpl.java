@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.graduation.model.dto.PageInfoDto;
@@ -41,12 +42,11 @@ public class PeersServiceImpl extends ServiceImpl<PeersMapper, Peers> implements
     @Override
     public PageInfoDto<Peers> listPage(int page, int limit) {
         PageInfoDto<Peers> result = new PageInfoDto<>();
-        PageHelper.startPage(page, limit);
-        List<Peers> allPeers = this.list();
-        PageInfo<Peers> pageInfo = new PageInfo<>(allPeers);
-        result.setTotal(pageInfo.getTotal());
+        Page<Peers> peersPage = new Page<>(page,limit);
+        this.page(peersPage);
+        result.setTotal(peersPage.getTotal());
         result.setState(200);
-        result.setData(pageInfo.getList());
+        result.setData(peersPage.getRecords());
         return result;
     }
 

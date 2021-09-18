@@ -55,4 +55,11 @@ public interface ShareService extends IService<Share> {
      */
     boolean privateFileToRemoveRecordByFileId(Integer fileId);
 
+    /**
+     * 通过公开文件id集合 批量移除公开记录
+     * @param fileIds 公开文件id集合
+     * @return 是否删除成功
+     */
+    boolean privateFilesToRemoveRecordsByFileIdList(List<Integer> fileIds);
+
 }

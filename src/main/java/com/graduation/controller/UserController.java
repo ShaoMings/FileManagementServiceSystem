@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -52,10 +53,10 @@ public class UserController extends BaseController {
 
     @RequestMapping("/manageUserList")
     @ResponseBody
-    public ListDataResponseVo<ManageUserVo> getManageUserList() {
+    public ListDataResponseVo<ManageUserVo> getManageUserList(Integer page,Integer limit) {
         Integer userId = getUser().getId();
         Integer userRoleId = userRoleService.getUserRole(userId);
-        List<User> userList = userRoleService.getLowerLevelUserByRoleId(userRoleId);
+        List<User> userList = userRoleService.getLowerLevelUserByRoleId(userRoleId,page,limit);
         List<ManageUserVo> user = new ArrayList<>();
         userList.forEach(u -> {
             Integer id = u.getId();
@@ -63,7 +64,7 @@ public class UserController extends BaseController {
             user.add(new ManageUserVo(id, u.getUsername(), u.getNickName(), u.getPassword(),
                     u.getGender(), u.getAge(), u.getEmail(), u.getPeersid(), roleId));
         });
-        return new ListDataResponseVo<>(0, "", user.size(), user);
+        return new ListDataResponseVo<>(0, "", userRoleService.getLowerLevelUserCountByRoleId(userRoleId), user);
     }
 
 
@@ -71,7 +72,8 @@ public class UserController extends BaseController {
     @ResponseBody
     public FileResponseVo deleteSelected(@RequestParam("ids[]") String[] ids) {
         Integer[] userIds = (Integer[]) ConvertUtils.convert(ids, Integer.class);
-        boolean isDelAll = userService.removeById(userIds);
+        boolean isDelAll = userService.removeByIds(Arrays.asList(userIds));
+        userService.removeUsersDirByUserIds(getPeersUrl(),userIds);
         if (isDelAll) {
             return FileResponseVo.success();
         } else {
@@ -84,6 +86,8 @@ public class UserController extends BaseController {
     @ResponseBody
     public FileResponseVo delete(Integer id) {
         boolean isDel = userService.removeById(id);
+        Integer[] userIds = {id};
+        userService.removeUsersDirByUserIds(getPeersUrl(),userIds);
         if (isDel) {
             return FileResponseVo.success();
         } else {

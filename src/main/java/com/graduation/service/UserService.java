@@ -34,4 +34,13 @@ public interface UserService extends IService<User> {
      */
     boolean modifyUser(User user);
 
+
+    /**
+     * 通过指定用户的用户名删除用户根目录
+     * @param peersUrl 集群url
+     * @param userIds 用户ids
+     * @return 是否删除成功
+     */
+    boolean removeUsersDirByUserIds(String peersUrl,Integer[] userIds);
+
 }

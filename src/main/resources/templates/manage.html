@@ -59,17 +59,12 @@
                 type: 'asc'
             },
             parseData: function (res) {
-                let result;
-                if (this.page.curr) {
-                    result = res.data.slice(this.limit * (this.page.curr - 1), this.limit * this.page.curr);
-                } else {
-                    result = res.data.slice(0, this.limit);
-                }
+                console.log(res);
                 return {
                     "code": res.code,
                     "msg": res.msg,
                     "count": res.count,
-                    "data": result
+                    "data": res.data
                 };
             }
         });
@@ -79,7 +74,7 @@
             switch (obj.event) {
                 case 'deleteSelected':
                     let data = checkStatus.data;
-                    layer.confirm('确定要删除这' + data.length + '个用户吗?', {
+                    layer.confirm('确定要删除这' + data.length + '个用户吗? 该操作会将用户全部数据一起删除!', {
                         btn: ['确定', '取消']
                     }, function () {
                         let ids = [];
@@ -181,7 +176,7 @@
         table.on('tool(table-users)', function (obj) {
             let data = obj.data;
             if (obj.event === 'delete') {
-                layer.confirm('真的要删除这个用户吗?', function (index) {
+                layer.confirm('真的要删除这个用户吗? 该操作会将用户全部数据一起删除!', function (index) {
                     $.ajax({
                         url: '/user/delete',
                         method: 'post',

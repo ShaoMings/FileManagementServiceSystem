@@ -58,10 +58,8 @@ public class MybatisPlusConfig {
         //分页插件
         PaginationInnerInterceptor paginationInnerInterceptor = new PaginationInnerInterceptor();
         paginationInnerInterceptor.setOverflow(true);
-        paginationInnerInterceptor.setMaxLimit(10L);
+        paginationInnerInterceptor.setMaxLimit(60L);
         mybatisPlusInterceptor.addInnerInterceptor(paginationInnerInterceptor);
-
-
         return mybatisPlusInterceptor;
     }
 

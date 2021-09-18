@@ -95,9 +95,10 @@ public interface FileService extends IService<File> {
      * @param id 用户id 唯一
      * @param filePath 组名+服务器存放文件路径
      * @param peerId 所属集群id
+     * @param md5 文件md5
      * @return 是否保存成功
      */
-    boolean saveFilePathByUserId(Integer id,String filePath,Integer peerId);
+    boolean saveFilePathByUserId(Integer id,String filePath,Integer peerId,String md5);
 
 
     /**

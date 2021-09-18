@@ -3,9 +3,14 @@ package com.graduation.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.graduation.model.pojo.User;
 import com.graduation.mapper.UserMapper;
+import com.graduation.service.FileService;
 import com.graduation.service.UserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * <p>
@@ -17,6 +22,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    @Autowired
+    private FileService fileService;
 
     @Override
     public User getUserByUserName(String username) {
@@ -36,4 +44,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean modifyUser(User user) {
         return updateById(user);
     }
+
+    @Override
+    public boolean removeUsersDirByUserIds(String peersUrl, Integer[] userIds) {
+        List<String> userNames = new ArrayList<>();
+        for (Integer id : userIds) {
+            userNames.add(this.baseMapper.getUserName(id));
+        }
+        for (String name : userNames) {
+             fileService.deleteDir(peersUrl,name);
+        }
+        return true;
+    }
+
+
 }

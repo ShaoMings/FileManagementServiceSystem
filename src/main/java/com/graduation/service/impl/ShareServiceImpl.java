@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -61,13 +62,22 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     public List<Share> getSevenDayShareFilesRecord(Date startTime, Date endTime) {
         LambdaQueryWrapper<Share> lq = Wrappers.lambdaQuery();
         lq.between(Share::getShareTime,startTime,endTime);
-        return this.list(lq);
+        List<Share> list = this.list(lq);
+        Collections.reverse(list);
+        return list;
     }
 
     @Override
     public boolean privateFileToRemoveRecordByFileId(Integer fileId) {
         QueryWrapper<Share> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("file_id",fileId);
+        return this.remove(queryWrapper);
+    }
+
+    @Override
+    public boolean privateFilesToRemoveRecordsByFileIdList(List<Integer> fileIds) {
+        QueryWrapper<Share> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("file_id",fileIds);
         return this.remove(queryWrapper);
     }
 }

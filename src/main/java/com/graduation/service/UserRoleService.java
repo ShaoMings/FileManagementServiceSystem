@@ -34,9 +34,18 @@ public interface UserRoleService extends IService<UserRole> {
     /**
      * 通过角色id获取 该用户管理的所有下级用户
      * @param roleId 角色id  只接受 1 或 2 或 3 因为 4为普通用户 不具备管理用户的权限
+     * @param page 当前页
+     * @param  limit 返回条数
      * @return  用户列表
      */
-    List<User> getLowerLevelUserByRoleId(Integer roleId);
+    List<User> getLowerLevelUserByRoleId(Integer roleId,Integer page,Integer limit);
+
+    /**
+     * 通过角色id获取 该用户管理的所有下级用户总数
+     * @param roleId 角色id  只接受 1 或 2 或 3 因为 4为普通用户 不具备管理用户的权限
+     * @return  用户列表
+     */
+    Integer getLowerLevelUserCountByRoleId(Integer roleId);
 
     /**
      *  通过用户id更新用户角色id

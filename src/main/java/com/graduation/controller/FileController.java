@@ -95,19 +95,19 @@ public class FileController extends BaseController {
 
     @RequestMapping("/saveBigFileInfo")
     @ResponseBody
-    public void saveBigFileInfo(String filepath){
+    public void saveBigFileInfo(String filepath,String md5){
         User user = getUser();
         filepath = "/"+getPeersGroupName()+"/" + filepath;
-        fileService.saveFilePathByUserId(user.getId(),filepath,user.getPeersid());
+        fileService.saveFilePathByUserId(user.getId(),filepath,user.getPeersid(),md5);
     }
 
     /**
      * 重命名文件或文件夹
      *
-     * @param path
-     * @param oldName
-     * @param newName
-     * @return
+     * @param path 文件夹或文件路径
+     * @param oldName  旧名称
+     * @param newName 新名称
+     * @return 响应对象
      */
     @RequestMapping("rename")
     @ResponseBody
@@ -393,7 +393,7 @@ public class FileController extends BaseController {
                 list.forEach(e -> {
                     UploadResultVo resultVo = (UploadResultVo) e.getData();
                     String filePath = resultVo.getPath();
-                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId());
+                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId(), resultVo.getMd5());
                 });
                 String deletePath = Constant.OUTPUT_TMP_FILE_PATH + link.substring(link.lastIndexOf("/") + 1, link.lastIndexOf("."));
                 File tmpPath = new File(deletePath);
@@ -413,7 +413,7 @@ public class FileController extends BaseController {
                             getPeersUrl() + Constant.API_UPLOAD, getBackUrl());
                     UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
                     String filePath = resultVo.getPath();
-                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId());
+                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId(), resultVo.getMd5());
                     return responseVo;
                 } catch (IOException e) {
                     e.printStackTrace();

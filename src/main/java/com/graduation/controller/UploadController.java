@@ -87,7 +87,7 @@ public class UploadController extends BaseController{
             list.forEach(e ->{
                 UploadResultVo resultVo = (UploadResultVo) e.getData();
                 String filePath = resultVo.getPath();
-                fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
+                fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId(), resultVo.getMd5());
             });
             return FileResponseVo.success("上传文件夹成功!");
         }else {
@@ -97,7 +97,7 @@ public class UploadController extends BaseController{
             assert responseVo != null;
             UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
             String filePath = resultVo.getPath();
-            fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId());
+            fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId(), resultVo.getMd5());
             return responseVo;
         }
     }

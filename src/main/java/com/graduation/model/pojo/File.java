@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.Version;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+import java.util.Date;
+
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -35,9 +37,14 @@ public class File implements Serializable {
     @ApiModelProperty(value = "文件名")
     private String fileName;
 
+    @ApiModelProperty(value = "文件md5")
+    private String fileMd5;
+
     @ApiModelProperty(value = "文件路径")
     private String filePath;
 
+    @ApiModelProperty(value = "文件上传时间")
+    private Date fileUploadTime;
 
     @ApiModelProperty(value = "所属集群id")
     private Integer peerId;

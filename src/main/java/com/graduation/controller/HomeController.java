@@ -14,9 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/home")
 public class HomeController {
 
-    @RequestMapping("/index")
-    public String home() {
+    @RequestMapping("/share")
+    public String share() {
         return "share";
+    }
+
+    @RequestMapping("/space")
+    public String space(){
+        return "space";
     }
 
 }

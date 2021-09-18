@@ -11,7 +11,7 @@
  Target Server Version : 50732
  File Encoding         : 65001
 
- Date: 16/09/2021 18:07:11
+ Date: 18/09/2021 20:46:20
 */
 
 SET NAMES utf8mb4;
@@ -24,28 +24,27 @@ DROP TABLE IF EXISTS `file`;
 CREATE TABLE `file` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '文件id',
   `file_name` varchar(255) DEFAULT NULL COMMENT '文件名',
+  `file_md5` varchar(255) DEFAULT NULL COMMENT '文件md5',
   `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
+  `file_upload_time` datetime DEFAULT NULL COMMENT '文件上传时间',
   `peer_id` int(11) DEFAULT NULL COMMENT '所属集群id',
   `open` int(1) DEFAULT '0' COMMENT '是否公开 0私有 1公开',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=680 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=753 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of file
 -- ----------------------------
 BEGIN;
-INSERT INTO `file` VALUES (647, '蛇梯棋游戏的设计与发开.md', '/group1/zhangsan/test/蛇梯棋游戏的设计与发开.md', 17, 0);
-INSERT INTO `file` VALUES (648, '鲸鱼骑士4k壁纸 by_Artur Sadlos_彼岸图网.jpg', '/group1/zhangsan/鲸鱼骑士4k壁纸 by_Artur Sadlos_彼岸图网.jpg', 17, 0);
-INSERT INTO `file` VALUES (649, '和服美女 花 黑色背景 4k壁纸_彼岸图网.jpg', '/group1/zhangsan/test/和服美女 花 黑色背景 4k壁纸_彼岸图网.jpg', 17, 0);
-INSERT INTO `file` VALUES (671, '蛇梯棋.md', '/group1/lisi/测试/中文/中文测试文件夹/蛇梯棋.md', 17, 0);
-INSERT INTO `file` VALUES (672, '蛇梯棋.md', '/group1/lisi/蛇梯棋.md', 17, 0);
-INSERT INTO `file` VALUES (673, '(完整版)网络工程试题 - 百度文库.pdf', '/group1/lisi/(完整版)网络工程试题 - 百度文库.pdf', 17, 0);
-INSERT INTO `file` VALUES (674, '[ENG SUB]《云南虫谷 The Worm Valley》第01集——铁三角远赴云南寻找雮尘珠 得孔雀相告获悉遮龙山水洞.mp4', '/group1/lisi/测试/中文/中文测试文件夹/[ENG SUB]《云南虫谷 The Worm Valley》第01集——铁三角远赴云南寻找雮尘珠 得孔雀相告获悉遮龙山水洞.mp4', 17, 0);
-INSERT INTO `file` VALUES (675, '稻香 - 周杰伦.mp3', '/group1/lisi/测试/中文/中文测试文件夹/稻香 - 周杰伦.mp3', 17, 0);
-INSERT INTO `file` VALUES (676, '粉红色的回忆 - 韩宝仪.mp3', '/group1/lisi/测试/中文/中文测试文件夹/粉红色的回忆 - 韩宝仪.mp3', 17, 0);
-INSERT INTO `file` VALUES (677, '曾经的你 - 许巍.mp3', '/group1/lisi/测试/中文/中文测试文件夹/曾经的你 - 许巍.mp3', 17, 0);
-INSERT INTO `file` VALUES (678, '独家记忆 - 陈小春.mp3', '/group1/lisi/测试/中文/中文测试文件夹/独家记忆 - 陈小春.mp3', 17, 0);
-INSERT INTO `file` VALUES (679, 'Java设计模式.md', '/group1/zhangsan/test/Java设计模式.md', 17, 0);
+INSERT INTO `file` VALUES (740, '断了的弦 - 周杰伦.mp3', NULL, '/group1/shaoming/断了的弦 - 周杰伦.mp3', NULL, 17, 1);
+INSERT INTO `file` VALUES (741, '稻香 - 周杰伦.mp3', NULL, '/group1/shaoming/稻香 - 周杰伦.mp3', NULL, 17, 1);
+INSERT INTO `file` VALUES (742, '带你去旅行 - 校长（张驰）.mp3', NULL, '/group1/shaoming/带你去旅行 - 校长（张驰）.mp3', NULL, 17, 1);
+INSERT INTO `file` VALUES (743, '曾经的你 - 许巍.mp3', NULL, '/group1/shaoming/曾经的你 - 许巍.mp3', NULL, 17, 1);
+INSERT INTO `file` VALUES (744, '丑八怪 - 薛之谦.mp3', NULL, '/group1/shaoming/丑八怪 - 薛之谦.mp3', NULL, 17, 1);
+INSERT INTO `file` VALUES (745, '安和桥 - 宋冬野.mp3', NULL, '/group1/shaoming/安和桥 - 宋冬野.mp3', NULL, 17, 1);
+INSERT INTO `file` VALUES (746, '畫江湖之不良人第4季EP11.mp4', NULL, '/group1/cs-05/畫江湖之不良人第4季EP11.mp4', NULL, 17, 1);
+INSERT INTO `file` VALUES (751, 'derby.log', NULL, '/group1/cs-05/derby.log', '2021-09-18 17:29:45', 17, 0);
+INSERT INTO `file` VALUES (752, 'JavaWeb-Servlet.md', NULL, '/group1/cs-05/JavaWeb-Servlet.md', '2021-09-18 18:01:12', 17, 0);
 COMMIT;
 
 -- ----------------------------
@@ -138,6 +137,8 @@ CREATE TABLE `peers` (
   `group_name` longtext COMMENT '组名',
   `server_address` longtext NOT NULL COMMENT '集群服务地址',
   `show_address` longtext COMMENT '访问域名',
+  `disk_total_size` varchar(255) DEFAULT NULL COMMENT '磁盘空间总大小',
+  `disk_left_size` varchar(255) DEFAULT NULL COMMENT '磁盘剩余可用空间大小',
   `create_time` datetime NOT NULL COMMENT '创建时间',
   `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`)
@@ -147,9 +148,7 @@ CREATE TABLE `peers` (
 -- Records of peers
 -- ----------------------------
 BEGIN;
-INSERT INTO `peers` VALUES (15, 'tencent-cloud', 'group1', 'http://1.15.221.117:8080', NULL, '2021-08-26 07:31:01', NULL);
-INSERT INTO `peers` VALUES (16, 'home', 'group1', 'http://192.168.0.118:8080', '', '2021-09-04 21:10:53', NULL);
-INSERT INTO `peers` VALUES (17, 'linux-company', 'group1', 'http://10.60.1.79:8080', NULL, '2021-08-26 07:31:01', NULL);
+INSERT INTO `peers` VALUES (17, 'linux-company', 'group1', 'http://10.60.1.79:8080', NULL, NULL, NULL, '2021-08-26 07:31:01', NULL);
 COMMIT;
 
 -- ----------------------------
@@ -215,16 +214,28 @@ DROP TABLE IF EXISTS `share`;
 CREATE TABLE `share` (
   `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '默认主键',
   `file_id` int(11) DEFAULT NULL COMMENT '文件id',
+  `file_name` varchar(255) DEFAULT NULL COMMENT '文件名',
+  `file_path` varchar(255) DEFAULT NULL COMMENT '文件路径',
+  `file_size` varchar(255) DEFAULT NULL COMMENT '文件大小',
+  `sharer_username` varchar(255) DEFAULT NULL COMMENT '分享人用户名',
+  `sharer` varchar(255) DEFAULT NULL COMMENT '分享人',
   `share_time` datetime DEFAULT NULL COMMENT '分享时间',
   `download_count` int(11) DEFAULT '0' COMMENT '下载次数',
   `read_count` int(11) DEFAULT '0' COMMENT '浏览次数',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of share
 -- ----------------------------
 BEGIN;
+INSERT INTO `share` VALUES (40, 744, '丑八怪 - 薛之谦.mp3', '', '3.82MB', 'shaoming', '邵明', '2021-09-18 14:37:39', 0, 0);
+INSERT INTO `share` VALUES (41, 745, '安和桥 - 宋冬野.mp3', '', '3.84MB', 'shaoming', '邵明', '2021-09-18 14:37:40', 0, 0);
+INSERT INTO `share` VALUES (42, 742, '带你去旅行 - 校长（张驰）.mp3', '', '3.48MB', 'shaoming', '邵明', '2021-09-18 14:37:41', 0, 0);
+INSERT INTO `share` VALUES (43, 740, '断了的弦 - 周杰伦.mp3', '', '4.58MB', 'shaoming', '邵明', '2021-09-18 14:37:42', 0, 0);
+INSERT INTO `share` VALUES (44, 743, '曾经的你 - 许巍.mp3', '', '4.00MB', 'shaoming', '邵明', '2021-09-18 14:37:43', 0, 1);
+INSERT INTO `share` VALUES (45, 741, '稻香 - 周杰伦.mp3', '', '3.46MB', 'shaoming', '邵明', '2021-09-18 14:37:43', 0, 1);
+INSERT INTO `share` VALUES (46, 746, '畫江湖之不良人第4季EP11.mp4', '', '411.82MB', 'cs-05', 'cs-05', '2021-09-18 16:23:44', 0, 1);
 COMMIT;
 
 -- ----------------------------
@@ -246,20 +257,29 @@ CREATE TABLE `user` (
   `last_login_time` datetime DEFAULT NULL COMMENT '上次登录时间',
   `deleted` int(1) DEFAULT '0' COMMENT '逻辑删除',
   PRIMARY KEY (`id`,`username`,`email`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
 BEGIN;
-INSERT INTO `user` VALUES (5, 'tencent', 'tencent-cloud', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019943@gmail.com', 15, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-02 20:48:14', '2021-09-05 16:35:33', 0);
-INSERT INTO `user` VALUES (6, 'company', 'company', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019944@gmail.com', 16, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-10 21:35:51', '2021-09-13 00:11:01', 0);
-INSERT INTO `user` VALUES (7, 'home', 'company', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 18, 'a18477019945@gmail.com', 16, 'b962363fe6ce4c9385e73adfe55790bc', '2021-08-26 07:31:01', '2021-09-15 12:40:33', '2021-09-13 00:22:34', 0);
-INSERT INTO `user` VALUES (8, 'shaoming', '邵明', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666953@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-12 17:40:45', '2021-09-16 13:49:30', 0);
-INSERT INTO `user` VALUES (9, 'zhangsan', '张三', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666954@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-15 15:01:22', '2021-09-15 15:01:42', 0);
-INSERT INTO `user` VALUES (10, 'lisi', '李四', 'e07ebd8650ec8dba920e9c0c8a4e4257', 1, 20, '1650666955@qq.com', 17, 'b962363fe6ce4c9385e73adfe55790bc', '2021-09-12 17:40:43', '2021-09-16 09:39:37', '2021-09-16 18:05:49', 0);
-INSERT INTO `user` VALUES (11, 'wangwu', 'test', 'b26bb24391c0f8cc327fd1400f94b8e1', 1, 18, '1650666999@qq.com', 17, '4dd1619966bb4107a4b93a646188c959', '2021-09-13 18:08:39', NULL, '2021-09-15 12:42:07', 0);
-INSERT INTO `user` VALUES (12, '123', '123', '00c7a78f4a86199fb86e6da34c5414be', 1, 18, '123@qq.com', 17, 'c2ee7c22bd7a4eed9ee0ed41c82be233', '2021-09-14 09:38:59', NULL, NULL, 0);
+INSERT INTO `user` VALUES (13, 'shaoming', '邵明', '2744f4aa45ec70fc0c85c52a479dfcad', 1, 18, '1650666953@qq.com', 17, '58328a13af2d4fad9892808897eda7a0', '2021-09-17 13:48:25', NULL, '2021-09-18 15:35:17', 0);
+INSERT INTO `user` VALUES (14, 'cs-01', 'cs-01', 'b4b8d1bf6e571823894f291aa74d1c73', 1, 18, '01@cs.com', 17, '96fdd19a9c104635b667e2ee2776c9a7', '2021-09-18 10:20:44', NULL, '2021-09-18 13:30:40', 1);
+INSERT INTO `user` VALUES (15, 'cs-02', 'cs-02', '2a9837c75c445cf2a71dd00079765041', 1, 18, '02@cs.com', 17, '492b86826d2b442dae86908658291483', '2021-09-18 10:21:16', NULL, '2021-09-18 13:57:26', 1);
+INSERT INTO `user` VALUES (16, 'cs-03', 'cs-03', '4e7bc869bc5b606fb367a76c372f258e', 1, 18, '03@cs.com', 17, 'b9b458e7914448f897af531ad615086f', '2021-09-18 10:21:45', NULL, '2021-09-18 14:06:53', 1);
+INSERT INTO `user` VALUES (17, 'cs-04', 'cs-04', '62fb7f6cc806d652e7a417e562263628', 1, 18, '04@cs.com', 17, 'eff6b1269da248779c7d68c66aba8f68', '2021-09-18 10:22:15', NULL, '2021-09-18 14:07:04', 1);
+INSERT INTO `user` VALUES (18, 'cs-05', 'cs-05', '23456de57b3a61405b259bcbd71a81a0', 1, 18, '05@cs.com', 17, '4c088eabf9ec4dedb0d397d49c938259', '2021-09-18 10:22:46', NULL, '2021-09-18 18:00:25', 0);
+INSERT INTO `user` VALUES (19, 'cs-06', 'cs-06', 'f7a9495d6c04ee5b44ade32637aa6c7a', 1, 18, '06@cs.com', 17, '6b8f5e603f9c4b4eb7315001dfbf6215', '2021-09-18 10:23:18', NULL, NULL, 0);
+INSERT INTO `user` VALUES (20, 'cs-07', 'cs-07', 'bd4f4463b6ca3b1cd7a298bf64f62c56', 1, 18, '07@cs.com', 17, 'af95aa17ada74953807596f422e7c1ef', '2021-09-18 10:23:46', NULL, NULL, 0);
+INSERT INTO `user` VALUES (21, 'cs-08', 'cs-08', 'b1a86803ca997ac8fa81639d270141ba', 1, 18, '08@cs.com', 17, 'fd1c362b7ef04c00af3272905337ae4f', '2021-09-18 10:24:08', NULL, NULL, 0);
+INSERT INTO `user` VALUES (22, 'cs-09', 'cs-09', '779fb3ecc42769ce1a4d7bd8c7fe34f8', 1, 18, '09@cs.com', 17, 'fbec821b0c464ad2ad88297d2c278a61', '2021-09-18 10:24:36', NULL, NULL, 0);
+INSERT INTO `user` VALUES (23, 'cs-10', 'cs-10', 'ef8d8af38228572ba34928a09ca5bc22', 1, 18, '10@cs.com', 17, '8bbc8092de3049db8a382f6cce6d0502', '2021-09-18 10:24:57', NULL, NULL, 0);
+INSERT INTO `user` VALUES (24, 'cs-11', 'cs-11', '02357f7b13cbedf1473d47631bd8e1f5', 1, 18, '11@cs.com', 17, '81b266b8ead34840b56c6bb778c70ff3', '2021-09-18 10:25:19', NULL, NULL, 0);
+INSERT INTO `user` VALUES (25, 'cs-12', 'cs-12', '7603f88c27ce66a6534179a65ce7ac0c', 1, 18, '12@cs.com', 17, 'ffd222e441d945f785afa099e114ce95', '2021-09-18 10:25:40', NULL, NULL, 0);
+INSERT INTO `user` VALUES (26, 'cs-13', 'cs-13', '64f3b0be30119091c01d8772a06ea6ec', 1, 18, '13@cs.com', 17, '84508bdc865f4ffeb6d445573a665823', '2021-09-18 10:26:02', NULL, NULL, 0);
+INSERT INTO `user` VALUES (27, 'cs-14', 'cs-14', '9488275c47fdcc098986ea0691e68cb2', 1, 18, '14@cs.com', 17, 'd324ed94e6e04e9b9ec8997d0c147715', '2021-09-18 10:26:22', NULL, NULL, 0);
+INSERT INTO `user` VALUES (28, 'cs-15', 'cs-15', '1d40b7a5ff3e03dcbb41d55bd62b0b5c', 1, 18, '15@cs.com', 17, '0ce026a91a3b4979bfb573d94ebae450', '2021-09-18 10:26:46', NULL, NULL, 0);
+INSERT INTO `user` VALUES (29, 'cs-16', 'cs-16', '2af6b9d538f4f8fecc19bd101a399128', 1, 18, '16@cs.com', 17, '3be7665e6c4b4b1b843739334f6968f2', '2021-09-18 10:30:32', NULL, NULL, 1);
 COMMIT;
 
 -- ----------------------------
@@ -271,24 +291,21 @@ CREATE TABLE `user_file` (
   `user_id` int(11) NOT NULL COMMENT '用户id',
   `file_id` int(11) NOT NULL COMMENT '文件id',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1541 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1614 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_file
 -- ----------------------------
 BEGIN;
-INSERT INTO `user_file` VALUES (1508, 9, 647);
-INSERT INTO `user_file` VALUES (1509, 9, 648);
-INSERT INTO `user_file` VALUES (1510, 9, 649);
-INSERT INTO `user_file` VALUES (1532, 10, 671);
-INSERT INTO `user_file` VALUES (1533, 10, 672);
-INSERT INTO `user_file` VALUES (1534, 10, 673);
-INSERT INTO `user_file` VALUES (1535, 10, 674);
-INSERT INTO `user_file` VALUES (1536, 10, 675);
-INSERT INTO `user_file` VALUES (1537, 10, 676);
-INSERT INTO `user_file` VALUES (1538, 10, 677);
-INSERT INTO `user_file` VALUES (1539, 10, 678);
-INSERT INTO `user_file` VALUES (1540, 9, 679);
+INSERT INTO `user_file` VALUES (1601, 13, 740);
+INSERT INTO `user_file` VALUES (1602, 13, 741);
+INSERT INTO `user_file` VALUES (1603, 13, 742);
+INSERT INTO `user_file` VALUES (1604, 13, 743);
+INSERT INTO `user_file` VALUES (1605, 13, 744);
+INSERT INTO `user_file` VALUES (1606, 13, 745);
+INSERT INTO `user_file` VALUES (1607, 18, 746);
+INSERT INTO `user_file` VALUES (1612, 18, 751);
+INSERT INTO `user_file` VALUES (1613, 18, 752);
 COMMIT;
 
 -- ----------------------------
@@ -300,20 +317,29 @@ CREATE TABLE `user_role` (
   `user_id` int(11) NOT NULL COMMENT '用户id',
   `role_id` int(11) NOT NULL COMMENT '角色id',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records of user_role
 -- ----------------------------
 BEGIN;
-INSERT INTO `user_role` VALUES (1, 8, 1);
-INSERT INTO `user_role` VALUES (2, 5, 4);
-INSERT INTO `user_role` VALUES (3, 6, 4);
-INSERT INTO `user_role` VALUES (4, 7, 4);
-INSERT INTO `user_role` VALUES (5, 9, 3);
-INSERT INTO `user_role` VALUES (6, 10, 3);
-INSERT INTO `user_role` VALUES (7, 11, 1);
-INSERT INTO `user_role` VALUES (8, 12, 4);
+INSERT INTO `user_role` VALUES (9, 13, 1);
+INSERT INTO `user_role` VALUES (10, 14, 4);
+INSERT INTO `user_role` VALUES (11, 15, 4);
+INSERT INTO `user_role` VALUES (12, 16, 4);
+INSERT INTO `user_role` VALUES (13, 17, 4);
+INSERT INTO `user_role` VALUES (14, 18, 4);
+INSERT INTO `user_role` VALUES (15, 19, 4);
+INSERT INTO `user_role` VALUES (16, 20, 4);
+INSERT INTO `user_role` VALUES (17, 21, 4);
+INSERT INTO `user_role` VALUES (18, 22, 4);
+INSERT INTO `user_role` VALUES (19, 23, 4);
+INSERT INTO `user_role` VALUES (20, 24, 4);
+INSERT INTO `user_role` VALUES (21, 25, 4);
+INSERT INTO `user_role` VALUES (22, 26, 4);
+INSERT INTO `user_role` VALUES (23, 27, 4);
+INSERT INTO `user_role` VALUES (24, 28, 4);
+INSERT INTO `user_role` VALUES (25, 29, 4);
 COMMIT;
 
 SET FOREIGN_KEY_CHECKS = 1;

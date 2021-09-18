@@ -54,7 +54,7 @@ $("#bigFile").on("click", function () {
                 $.ajax({
                     url:"/file/saveBigFileInfo",
                     method: "post",
-                    data:{"filepath":filepath}
+                    data:{"filepath":filepath,"md5":obj.meta.md5}
                 })
             })
             upload.setMeta({

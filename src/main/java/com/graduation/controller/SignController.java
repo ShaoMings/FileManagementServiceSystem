@@ -10,6 +10,7 @@ import com.graduation.model.vo.UserSignUpVo;
 import com.graduation.service.PeersService;
 import com.graduation.service.UserRoleService;
 import com.graduation.service.UserService;
+import com.graduation.utils.FileSizeConverter;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.IncorrectCredentialsException;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.net.SocketTimeoutException;
 import java.util.Date;
 import java.util.List;
@@ -41,7 +43,7 @@ import java.util.Map;
  */
 @Controller
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class SignController extends BaseController{
+public class SignController extends BaseController {
     private static final Logger LOGGER = LoggerFactory.getLogger(SignController.class);
 
     private final UserService userService;
@@ -49,6 +51,20 @@ public class SignController extends BaseController{
     private final PeersService peersService;
 
     private final UserRoleService userRoleService;
+
+
+    /**
+     * 比较两个double类型的数值
+     *
+     * @param a 数值1
+     * @param b 数值2
+     * @return 返回 > 0 表示第一个值大 返回0表示等于   < 0 表示第二个值大
+     */
+    private int compareDouble(double a, double b) {
+        BigDecimal b1 = new BigDecimal(a);
+        BigDecimal b2 = new BigDecimal(b);
+        return b1.compareTo(b2);
+    }
 
     /**
      * 登录页视图跳转
@@ -58,8 +74,8 @@ public class SignController extends BaseController{
     @RequestMapping("/login")
     public String login(Model model) {
         String msg = (String) model.getAttribute("msg");
-        if (!"".equals(msg)){
-            model.addAttribute("msg","");
+        if (!"".equals(msg)) {
+            model.addAttribute("msg", "");
         }
         return "login";
     }
@@ -85,7 +101,7 @@ public class SignController extends BaseController{
             return "redirect:/";
         } catch (Exception e) {
             LOGGER.info(user.getAccount() + e.getMessage());
-            model.addAttribute("msg","用户名或密码有误,请检查后再试!");
+            model.addAttribute("msg", "用户名或密码有误,请检查后再试!");
             return "redirect:login";
         }
     }
@@ -100,24 +116,28 @@ public class SignController extends BaseController{
             for (Peers p : peers) {
                 try {
                     if (peersService.checkPeersAddressIsUseful(p.getServerAddress() + "/" + p.getGroupName())) {
-                        Map<String, Object> peersStatus = peersService.getPeersStatus(p.getServerAddress() + "/" + p.getGroupName());
-                        String diskFreeSize = (String) peersStatus.get("diskFreeSize");
-                        InstallVo installVo = new InstallVo();
-                        User voUser = installVo.getUser(user.getPassword(), user.getAccount(), user.getEmail(), user.getName());
-                        voUser.setPeersid(p.getId());
-                        voUser.setAge(18);
-                        isSign = userService.save(voUser);
-                        // 设置用户角色 默认普通用户
-                        Integer userId = voUser.getId();
-                        boolean isExist = userRoleService.isExistRecordByUserId(userId);
-                        if (!isExist){
-                            userRoleService.save(new UserRole(null,userId,4));
+                        Double peersLeftSpace = peersService.getPeersLeftSpace(p.getId());
+                        // 默认新用户5GB存储空间
+                        Double initSpace = FileSizeConverter.getLengthAutoCalToByte("5GB");
+                        if (compareDouble(peersLeftSpace, initSpace) > 0) {
+                            peersLeftSpace -= initSpace;
+                            peersService.updatePeersLeftSpace(p.getId(), peersLeftSpace);
+                            InstallVo installVo = new InstallVo();
+                            User voUser = installVo.getUser(user.getPassword(), user.getAccount(), user.getEmail(), user.getName());
+                            voUser.setPeersid(p.getId());
+                            voUser.setAge(18);
+                            voUser.setTotalDiskSpace(initSpace);
+                            voUser.setLeftDiskSpace(initSpace);
+                            isSign = userService.save(voUser);
+                            // 设置用户角色 默认普通用户
+                            Integer userId = voUser.getId();
+                            boolean isExist = userRoleService.isExistRecordByUserId(userId);
+                            if (!isExist) {
+                                userRoleService.save(new UserRole(null, userId, 4));
+                            }
                         }
                     }
-                }catch (Exception ignored){
-
-                }
-
+                } catch (Exception ignored) {}
             }
             if (isSign) {
                 return FileResponseVo.success();

@@ -16,6 +16,7 @@ import com.graduation.service.FileService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.graduation.service.ShareService;
 import com.graduation.service.UserFileService;
+import com.graduation.service.UserService;
 import com.graduation.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -46,6 +47,9 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
 
     @Autowired
     private ShareService shareService;
+
+    @Autowired
+    private UserService userService;
 
     @Override
     public List<FileInfoVo> getParentFile(String peersGroupName, String serverAddress,String userPath) {
@@ -113,22 +117,27 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
         fileQueryWrapper.likeRight("file_path", pathPrefix);
         List<File> deleteFileList = this.list(fileQueryWrapper);
-        List<Integer> openFilesIdList = new ArrayList<>();
-        List<Integer> fileIds = new ArrayList<>();
-        QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
-        deleteFileList.forEach(e -> {
-            fileIds.add(e.getId());
-            if (e.getOpen() == 1){
-                openFilesIdList.add(e.getId());
+        if (deleteFileList.size()>0){
+            List<Integer> openFilesIdList = new ArrayList<>();
+            List<Integer> fileIds = new ArrayList<>();
+            QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
+            deleteFileList.forEach(e -> {
+                fileIds.add(e.getId());
+                if (e.getOpen() == 1){
+                    openFilesIdList.add(e.getId());
+                }
+            });
+            if (openFilesIdList.size()>0){
+                shareService.privateFilesToRemoveRecordsByFileIdList(openFilesIdList);
             }
-        });
-        if (openFilesIdList.size()>0){
-            shareService.privateFilesToRemoveRecordsByFileIdList(openFilesIdList);
+            userFileQueryWrapper.in("file_id", fileIds);
+            boolean isDeleteFiles = this.removeByIds(fileIds);
+            boolean isDeleteUserFiles = userFileService.remove(userFileQueryWrapper);
+            return isDeleteFiles && isDeleteUserFiles;
+        }else {
+            // 空文件夹
+            return true;
         }
-        userFileQueryWrapper.in("file_id", fileIds);
-        boolean isDeleteFiles = this.removeByIds(fileIds);
-        boolean isDeleteUserFiles = userFileService.remove(userFileQueryWrapper);
-        return isDeleteFiles && isDeleteUserFiles;
     }
 
     @Override
@@ -194,6 +203,31 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         return true;
     }
 
+    @Override
+    public boolean saveBigFileMd5ByFilePath(String md5, String filePath) {
+        UpdateWrapper<File> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("file_path",filePath);
+        updateWrapper.set("file_md5",md5);
+        return this.update(updateWrapper);
+    }
+
+    @Override
+    public String getFileMd5ByFilePath(String filePath) {
+        QueryWrapper<File> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("file_path",filePath);
+        List<File> fileList = this.list(queryWrapper);
+        if (fileList.size()>0){
+            File file = fileList.get(0);
+            return file.getFileMd5();
+        }
+        return null;
+    }
+
+    @Override
+    public String getFileMd5ByFileId(Integer fileId) {
+        return this.getById(fileId).getFileMd5();
+    }
+
 
     @Override
     public List<FileInfoVo> getFileInfoListByFileKeyword(String serverAddress, String keyword) {
@@ -247,33 +281,46 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     }
 
     @Override
-    public boolean convertPictureFile(ConvertVo fileInfo) {
+    public boolean convertPictureFile(ConvertVo fileInfo,String peersUrl,Integer userId,String username) {
         // 通过下载获取文件的输入流
         InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
         // 是否jpg转png
         if (Constant.PICTURE_TYPE_JPG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_PNG.equals(fileInfo.getDestSuffix())) {
             // 格式转换为bytes
             byte[] bytes = PictureConverter.jpgToPngBytes(inputStream);
-            InputStream stream = new ByteArrayInputStream(bytes);
-            String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
-            String oldFileName = fileInfo.getFilename();
-            String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_PNG;
-            // 将转换后的文件进行重新上传
-            return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+            Long fileSize = (long) bytes.length;
+            // 转换后剩余空间是否足够
+            if (userService.userUploadFileToUpdateDiskSpace(peersUrl,userId,username,fileSize)) {
+                InputStream stream = new ByteArrayInputStream(bytes);
+                String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+                String oldFileName = fileInfo.getFilename();
+                String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_PNG;
+                // 将转换后的文件进行重新上传
+                return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+            }else {
+                return false;
+            }
             // 是否png转jpg
         } else if (Constant.PICTURE_TYPE_PNG.equals(fileInfo.getSrcSuffix()) && Constant.PICTURE_TYPE_JPG.equals(fileInfo.getDestSuffix())) {
             byte[] bytes = PictureConverter.pngToJpgBytes(inputStream);
-            InputStream stream = new ByteArrayInputStream(bytes);
-            String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
-            String oldFileName = fileInfo.getFilename();
-            String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_JPG;
-            return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+            Long fileSize = (long) bytes.length;
+            // 转换后剩余空间是否足够
+            if (userService.userUploadFileToUpdateDiskSpace(peersUrl,userId,username,fileSize)) {
+                InputStream stream = new ByteArrayInputStream(bytes);
+                String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+                String oldFileName = fileInfo.getFilename();
+                String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.PICTURE_TYPE_JPG;
+                return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+            }else {
+                return false;
+            }
+
         }
         return false;
     }
 
     @Override
-    public boolean convertAudioFile(ConvertVo fileInfo) {
+    public boolean convertAudioFile(ConvertVo fileInfo,String peersUrl,Integer userId,String username) {
 
         // 通过下载获取文件的输入流
         InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
@@ -293,15 +340,21 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             bytes = AudioConverter.wavToMp3Bytes(file);
         }
         assert bytes != null;
-        InputStream stream = new ByteArrayInputStream(bytes);
-        String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
-        String oldFileName = fileInfo.getFilename();
-        String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.AUDIO_TYPE_MP3;
-        return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+        Long fileSize = (long) bytes.length;
+        // 转换后剩余空间是否足够
+        if (userService.userUploadFileToUpdateDiskSpace(peersUrl,userId,username,fileSize)) {
+            InputStream stream = new ByteArrayInputStream(bytes);
+            String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+            String oldFileName = fileInfo.getFilename();
+            String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.AUDIO_TYPE_MP3;
+            return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+        }else {
+            return false;
+        }
     }
 
     @Override
-    public boolean convertDocumentFile(ConvertVo fileInfo) {
+    public boolean convertDocumentFile(ConvertVo fileInfo,String peersUrl,Integer userId,String username) {
         // 通过下载获取文件的输入流
         InputStream inputStream = FileUtils.getFileDownloadStream(fileInfo.getPath(), fileInfo.getFilename(), fileInfo.getPeerAddress());
         java.io.File file;
@@ -311,11 +364,18 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         file = FileUtils.inputStreamToFile(inputStream,outputPath);
         bytes = DocumentConverter.autoConvertByFileType(file,fileInfo.getSrcSuffix());
         assert bytes != null;
-        InputStream stream = new ByteArrayInputStream(bytes);
-        String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
-        String oldFileName = fileInfo.getFilename();
-        String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.DOCUMENT_TYPE_PDF;
-        return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+        Long fileSize = (long) bytes.length;
+        // 转换后剩余空间是否足够
+        if (userService.userUploadFileToUpdateDiskSpace(peersUrl,userId,username,fileSize)) {
+            InputStream stream = new ByteArrayInputStream(bytes);
+            String uploadApiUrl = fileInfo.getPeerAddress() + Constant.API_UPLOAD;
+            String oldFileName = fileInfo.getFilename();
+            String newFileName = oldFileName.substring(0, oldFileName.lastIndexOf(".") + 1) + Constant.DOCUMENT_TYPE_PDF;
+            return updateConvertRecord(fileInfo, stream, newFileName, oldFileName, uploadApiUrl);
+        }else {
+            return false;
+        }
+
     }
 
     @Override

@@ -65,6 +65,9 @@ public class Constant {
     /**  状态API */
     public static final String API_STATUS = "/status";
 
+    /**  用户状态API */
+    public static final String API_USER_STATUS = "/userStatus";
+
     /**  转换单位大小 */
     public static final Long SIZE_K = 1024L;
 

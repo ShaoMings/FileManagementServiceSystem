@@ -43,4 +43,45 @@ public interface UserService extends IService<User> {
      */
     boolean removeUsersDirByUserIds(String peersUrl,Integer[] userIds);
 
+    /**
+     * 获取用户剩余存储空间
+     * @param userId 用户id
+     * @return 剩余存储空间
+     */
+    Double getUserLeftDiskSpace(Integer userId);
+
+    /**
+     * 获取用户总存储空间
+     * @param userId 用户id
+     * @return 总存储空间
+     */
+    Double getUserTotalDiskSpace(Integer userId);
+
+
+    /**
+     * 更新用户剩余存储空间
+     * @param userId 用户id
+     * @param leftSpace 剩余空间
+     * @return 是否更新成功
+     */
+    boolean updateUserLeftDiskSpace(Integer userId,Double leftSpace);
+
+    /**
+     * 用户上传之前检查剩余存储空间是否足够
+     * @param peersUrl 集群url
+     * @param userId 用户id
+     * @param username 用户名
+     * @param fileSize 上传的文件总大小
+     * @return 是否更新成功
+     */
+    boolean userUploadFileToUpdateDiskSpace(String peersUrl,Integer userId,String username,Long fileSize);
+
+    /**
+     * 用户删除之后更新剩余存储空间
+     * @param peersUrl 集群url
+     * @param userId 用户id
+     * @param username 用户名
+     * @return 是否更新成功
+     */
+    boolean userDeleteFileToUpdateDiskSpace(String peersUrl,Integer userId,String username);
 }

@@ -107,6 +107,7 @@ $("#share-container").on("click", ".file-title", function () {
     let username = $(this).data("username");
     let token;
     let address;
+    let canReadFlag = true;
     $.ajax({
         url: "/peers/address",
         async: false,
@@ -212,25 +213,30 @@ $("#share-container").on("click", ".file-title", function () {
             skin: 'layui-layer-rim', //加上边框
             area: ['90%', '90vh'], //宽高
             content: viewer_url
-        })
+        });
     } else {
         if (doc_types.indexOf(kit.getFileType(suffix)) !== -1) {
             layer.msg("该文档格式需下载预览!");
             return;
         }
         layer.msg("该文件格式暂不支持预览");
+        canReadFlag = false;
     }
-    $.ajax({
-        url:"/share/read",
-        method: "post",
-        data:{"shareId":shareId,"newCount":readCount+1},
-        success:function (res) {
-            if (res.code === 200){
-                obj.data("read",readCount+1);
-                read.html('&nbsp;&nbsp;'+(readCount+1));
-            }else {
-                layer.msg(res.msg);
+    if (canReadFlag){
+        $.ajax({
+            url:"/share/read",
+            method: "post",
+            data:{"shareId":shareId,"newCount":readCount+1},
+            success:function (res) {
+                if (res.code === 200){
+                    obj.data("read",readCount+1);
+                    read.html('&nbsp;&nbsp;'+(readCount+1));
+                }else {
+                    layer.msg(res.msg);
+                }
             }
-        }
-    });
-})
+        });
+    }else {
+        canReadFlag = true;
+    }
+});

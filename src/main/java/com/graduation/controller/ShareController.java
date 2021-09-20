@@ -5,6 +5,7 @@ import com.graduation.model.pojo.File;
 import com.graduation.model.pojo.Share;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.OpenFileInfoVo;
+import com.graduation.model.vo.UserOpenFileInfoVo;
 import com.graduation.service.FileService;
 import com.graduation.service.ShareService;
 import com.graduation.utils.DateConverter;
@@ -85,6 +86,22 @@ public class ShareController extends BaseController {
                 r.getFileSize(),DateConverter.getFormatDate(r.getShareTime()),r.getDownloadCount(),r.getReadCount())));
         return FileResponseVo.success(list);
     }
+
+
+    @RequestMapping("/userRecord")
+    public FileResponseVo getUserOpenRecord() {
+        LocalDateTime startDate = LocalDateTime.now().plusDays(-7);
+        Date start = Date.from( startDate.atZone( ZoneId.systemDefault()).toInstant());
+        List<Share> records = shareService.getSevenDayShareFilesRecordByUserName(start, new Date(),getUser().getUsername());
+        List<UserOpenFileInfoVo> list = new ArrayList<>();
+        records.forEach(r->{
+            String md5 = fileService.getFileMd5ByFileId(r.getFileId());
+            list.add(new UserOpenFileInfoVo(r.getId(),r.getFileName(),r.getFilePath(),md5,r.getSharerUsername(),r.getSharer(),
+                    r.getFileSize(),DateConverter.getFormatDate(r.getShareTime()),r.getDownloadCount(),r.getReadCount()));
+        });
+        return FileResponseVo.success(list);
+    }
+
 
     @RequestMapping("/download")
     public FileResponseVo downloadCountAdd(String shareId,String newCount){

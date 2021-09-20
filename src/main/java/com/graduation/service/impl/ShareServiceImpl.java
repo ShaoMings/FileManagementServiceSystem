@@ -68,6 +68,16 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     }
 
     @Override
+    public List<Share> getSevenDayShareFilesRecordByUserName(Date startTime, Date endTime, String username) {
+        LambdaQueryWrapper<Share> lq = Wrappers.lambdaQuery();
+        lq.eq(Share::getSharerUsername,username);
+        lq.between(Share::getShareTime,startTime,endTime);
+        List<Share> list = this.list(lq);
+        Collections.reverse(list);
+        return list;
+    }
+
+    @Override
     public boolean privateFileToRemoveRecordByFileId(Integer fileId) {
         QueryWrapper<Share> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("file_id",fileId);

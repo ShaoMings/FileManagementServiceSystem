@@ -6,92 +6,27 @@
     <link rel="Shortcut Icon" th:href="@{/static/images/favicon.ico}" type="image/x-icon"/>
     <link rel="stylesheet" th:href="@{/static/lib/layui-v2.5.6/layui/css/layui.css}">
     <link th:href="@{/static/lib/font-awesome-4.7.0/css/font-awesome.min.css}" rel="stylesheet"/>
-    <link th:href="@{/static/css/status.css}" rel="stylesheet"/>
-    <style>
-        .layui-card {
-            border-radius: 10px;
-        }
-
-        .layui-row {
-            margin: 8px 8px;
-        }
-
-        .recently-share {
-            height: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: left;
-            align-items: center;
-        }
-
-        .file-item {
-            background: #ffffff;
-            width: 25%;
-            padding: 32px;
-            margin: 20px 25px;
-            border-radius: 16px;
-            border: 1px solid #eaeaea;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 6px 20px 0 rgb(0 0 0 / 10%);
-        }
-
-        .file-item-blank {
-            width: 25%;
-            height: 150px;
-            padding: 32px;
-            margin: 20px 25px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .file-title, .file-title-blank {
-            font-size: 20px;
-            font-weight: 500;
-            color: rgba(0, 0, 0, .85);
-            line-height: 28px;
-            margin-bottom: 18px;
-            cursor: pointer;
-        }
-
-        .file-size, .file-md5, .file-size-blank, .file-md5-blank {
-            height: 20px;
-            font-size: 14px;
-            font-weight: bolder;
-            color: rgba(0, 0, 0, .5);
-            line-height: 20px;
-            margin-bottom: 18px;
-        }
-
-        .file-time, .file-time-blank {
-            height: 20px;
-            font-size: 14px;
-            font-weight: bolder;
-            color: rgba(0, 0, 0, .45);
-            line-height: 20px;
-            margin-bottom: 18px;
-        }
-    </style>
+    <link th:href="@{/static/css/space.css}" rel="stylesheet"/>
 </head>
 <body>
 <div class="layui-row">
     <div class="layui-col-md6" style="padding:5px;">
         <div class="layui-card">
-            <div class="layui-card-header">文件总数<i class="fa fa-calculator"
-                                                  style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i>
+            <div class="layui-card-header">文件总数
+                <i class="fa fa-calculator" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i>
             </div>
             <div class="layui-card-body">
-                <p class="page-view-totla" id="totalFileCount"></p>
+                <p class="page-view-totla" id="userFileCount"></p>
             </div>
         </div>
     </div>
     <div class="layui-col-md6" style="padding:5px;">
         <div class="layui-card">
-            <div class="layui-card-header">文件总大小<i class="fa fa-file-archive-o"
-                                                   style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i>
+            <div class="layui-card-header">文件总大小
+                <i class="fa fa-file-archive-o" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i>
             </div>
             <div class="layui-card-body">
-                <p class="page-view-totla" id="totalFileSize"></p>
+                <p class="page-view-totla" id="userFileSize"></p>
             </div>
         </div>
     </div>
@@ -103,7 +38,7 @@
                                                    style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i>
             </div>
             <div class="layui-card-body">
-                <p class="page-view-totla" id="diskTotalSize"></p>
+                <p class="page-view-totla" id="userDiskTotalSpace"></p>
             </div>
         </div>
     </div>
@@ -113,7 +48,7 @@
                                                     style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i>
             </div>
             <div class="layui-card-body">
-                <p class="page-view-totla" id="diskFreeSize"></p>
+                <p class="page-view-totla" id="userDiskLeftSpace"></p>
             </div>
         </div>
     </div>
@@ -122,92 +57,13 @@
     <div class="layui-card-header">最近分享<i class="fa fa-file-o"
                                           style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
     <div class="layui-card-body">
-        <div class="recently-share">
-
-
-            <!--            <div class="file-item-blank">-->
-            <!--                <div class="file-title-blank"></div>-->
-            <!--                <div class="file-size-blank"></div>-->
-            <!--                <div class="file-time-blank"></div>-->
-            <!--                <div class="file-md5-blank"></div>-->
-            <!--            </div>-->
-
-            <!--            <div class="file-item-blank">-->
-            <!--                <div class="file-title-blank"></div>-->
-            <!--                <div class="file-size-blank"></div>-->
-            <!--                <div class="file-time-blank"></div>-->
-            <!--                <div class="file-md5-blank"></div>-->
-            <!--            </div>-->
-
-            <!--            <div class="file-item-blank">-->
-            <!--                <div class="file-title-blank"></div>-->
-            <!--                <div class="file-size-blank"></div>-->
-            <!--                <div class="file-time-blank"></div>-->
-            <!--                <div class="file-md5-blank"></div>-->
-            <!--            </div>-->
-
-            <!--            <div class="file-item-blank">-->
-            <!--                <div class="file-title-blank"></div>-->
-            <!--                <div class="file-size-blank"></div>-->
-            <!--                <div class="file-time-blank"></div>-->
-            <!--                <div class="file-md5-blank"></div>-->
-            <!--            </div>-->
-
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
-            <div class="file-item">
-                <div class="file-title"><i class="fa fa-music" aria-hidden="true"></i>&nbsp;消愁-毛不易.mp3</div>
-                <div class="file-size">文件大小&nbsp;: 3.6MB</div>
-                <div class="file-time">上传时间&nbsp;: 2021-09-18 21:23:44</div>
-                <div class="file-md5">文件md5&nbsp;: 76821n12z1g5s4d31vhb2n3m4vg1gv9</div>
-            </div>
-
+        <div class="recently-share" id="recently">
         </div>
     </div>
 </div>
 <script th:src="@{/static/lib/jquery/jquery-3.5.1.min.js}"></script>
+<script th:src="@{/static/js/kit.js}"></script>
 <script th:src="@{/static/lib/layui-v2.5.6/layui/layui.all.js}"></script>
-<script th:src="@{/static/js/status.js}"></script>
+<script th:src="@{/static/js/space.js}"></script>
 </body>
 </html>

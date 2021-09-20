@@ -4,6 +4,9 @@ let element;
 layui.use(['element'], function () {
     element = layui.element;
 });
+
+
+
 /*监听创建文件夹按钮点击*/
 $('#mkdir').click(function () {
     let dir_path = $('#dir-path').data('path');
@@ -151,13 +154,14 @@ $('#search').on('input', function (e) {
     }
 });
 
-
+ //公开文件监听
 $('#file-result').on('click','.open-btn',function () {
     let obj = $(this);
     let path = $(this).data('path');
     let filename = $(this).data('name');
     let filesize = $(this).data('size');
     let open = $(this).data('open');
+
     if (open === 0){
         $.ajax({
             url:"/share/open",
@@ -614,9 +618,29 @@ $("#upload").click(function () {
 /*监听详情按钮*/
 $("#file-result").on("click", ".details-btn", function () {
     let md5 = $(this).data("md5");
+    let path = $(this).data("path");
+    let name = $(this).data("name");
     $.post('/file/details', {"md5": md5}, function (result) {
         if (undefined === result.data.name) {
-            console.log("name = null");
+            let filePath;
+            if (path === ""){
+                filePath = name;
+            }else {
+                filePath = path+"/"+name;
+            }
+            $.ajax({
+                url:"/file/getBigFileInfo",
+                method:"post",
+                data:{"filePath":filePath},
+                async:false,
+                success:function (res) {
+                    if (res.code === 200){
+                        result = res;
+                    }else {
+                        layer.msg(res.msg);
+                    }
+                }
+            });
         }
         let html = '<div class="file-details-box">' +
             '<ul>' +

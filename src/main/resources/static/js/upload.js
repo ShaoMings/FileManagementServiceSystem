@@ -44,8 +44,8 @@ $("#bigFile").on("click", function () {
                 showProgressDetails:true,
                 fileManagerSelectionType: 'both'
             }).use(Uppy.Tus, {
-                // endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
-                endpoint: 'http://10.60.1.79:8080/group1/big/upload/'
+                endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
+                // endpoint: 'http://10.60.1.79:8080/group1/big/upload/'
                 // endpoint: 'http://1.15.221.117:8080/group1/big/upload/'
             })
             upload.on('complete', (result) => {
@@ -54,14 +54,14 @@ $("#bigFile").on("click", function () {
                 $.ajax({
                     url:"/file/saveBigFileInfo",
                     method: "post",
-                    data:{"filepath":filepath,"md5":obj.meta.md5}
-                })
-            })
+                    data:{"filepath":filepath}
+                });
+            });
             upload.setMeta({
                 auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',
-                path: user.username+$("#path").val()
-            })
-
+                path: user.username+$("#path").val(),
+                callback_url:'http://192.168.0.106:8081/callback/bigFileInfo'
+            });
         }
     });
 })
@@ -118,6 +118,14 @@ layui.use(['upload', 'element'], function () {
         let zipFileList = [ran()+'-dir',await generateZipFile(zipFileName, folder)];
         tmp.saveObj.setFile(zipFileList[0],zipFileList[1]);
         choose(zipFileList);
+    });
+    $.get('/status/getUserStatus', function (res) {
+        let data = res.data;
+        if (res.code === 200) {
+            layer.msg("当前剩余存储空间: "+data.left+",请注意上传文件大小!");
+        } else {
+            layer.msg(data.msg);
+        }
     });
     //多文件上传
     let demoListView = $('#moreFileList'), uploadListIns = upload.render({
@@ -223,15 +231,15 @@ layui.use(['upload', 'element'], function () {
                 return delete this.files[index] && delete uploadFileList[index];
             } else {
                 let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
-                tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+                tds.eq(2).html('<span style="color: #FF5722;"> '+res.msg +' </span>');
                 //显示重传
                 tds.eq(4).find('.more-file-reload').removeClass('layui-hide');
             }
-            this.error(index, upload);
+            this.error(res,index, upload);
         },
-        error: function (index, upload) {
+        error: function (res,index, upload) {
             let tr = demoListView.find('tr#upload-' + index), tds = tr.children();
-            tds.eq(2).html('<span style="color: #FF5722;">上传失败</span>');
+            tds.eq(2).html('<span style="color: #FF5722;">'+res.msg +'</span>');
             //显示重传
             tds.eq(4).find('.more-file-reload').removeClass('layui-hide');
         }

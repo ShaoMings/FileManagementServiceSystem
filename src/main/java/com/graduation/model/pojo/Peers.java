@@ -42,10 +42,10 @@ public class Peers implements Serializable {
     private String showAddress;
 
     @ApiModelProperty(value = "磁盘空间总大小")
-    private String diskTotalSize;
+    private Double diskTotalSize;
 
     @ApiModelProperty(value = "磁盘剩余可用空间大小")
-    private String diskLeftSize;
+    private Double diskLeftSize;
 
     @ApiModelProperty(value = "创建时间")
     private Date createTime;

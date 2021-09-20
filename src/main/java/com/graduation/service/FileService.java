@@ -100,6 +100,30 @@ public interface FileService extends IService<File> {
      */
     boolean saveFilePathByUserId(Integer id,String filePath,Integer peerId,String md5);
 
+    /**
+     * 通过数据库保存的文件路径格式保存大文件上传的md5
+     * @param md5 文件md5
+     * @param filePath 数据库保存的文件路径
+     * @return 是否保存成功
+     */
+    boolean saveBigFileMd5ByFilePath(String md5,String filePath);
+
+
+    /**
+     * 通过数据库保存的文件路径格式获取文件的md5值
+     * @param filePath 文件路径
+     * @return 文件md5
+     */
+    String getFileMd5ByFilePath(String filePath);
+
+
+    /**
+     * 通过数据库保存的文件路径格式获取文件的md5值
+     * @param fileId 文件id
+     * @return 文件md5
+     */
+    String getFileMd5ByFileId(Integer fileId);
+
 
     /**
      *  通过文件名关键字获取相关文件
@@ -137,23 +161,32 @@ public interface FileService extends IService<File> {
     /**
      * 转换图片格式 目前支持png和jpg互转
      * @param fileInfo 文件信息封装类
+     * @param peersUrl 集群url
+     * @param userId 用户id
+     * @param username 用户名
      * @return 是否转换成功
      */
-    boolean convertPictureFile(ConvertVo fileInfo);
+    boolean convertPictureFile(ConvertVo fileInfo,String peersUrl,Integer userId,String username);
 
     /**
      * 转换音频格式 目前支持m4a wav 转 mp3
      * @param fileInfo 文件信息封装类
+     * @param peersUrl 集群url
+     * @param userId 用户id
+     * @param username 用户名
      * @return 是否转换成功
      */
-    boolean convertAudioFile(ConvertVo fileInfo);
+    boolean convertAudioFile(ConvertVo fileInfo,String peersUrl,Integer userId,String username);
 
     /**
      * 转换文档格式 目前支持txt ppt pptx docx xlsx 转pdf
      * @param fileInfo 文件信息封装类
+     * @param peersUrl 集群url
+     * @param userId 用户id
+     * @param username 用户名
      * @return 是否转换成功
      */
-    boolean convertDocumentFile(ConvertVo fileInfo);
+    boolean convertDocumentFile(ConvertVo fileInfo,String peersUrl,Integer userId,String username);
 
     /**
      *  通过id改变文件公开状态

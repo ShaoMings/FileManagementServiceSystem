@@ -4,6 +4,7 @@ package com.graduation.controller;
 import com.graduation.model.pojo.User;
 import com.graduation.model.vo.*;
 import com.graduation.service.FileService;
+import com.graduation.service.UserService;
 import com.graduation.utils.*;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,22 +39,25 @@ public class FileController extends BaseController {
     private FileService fileService;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private RedisUtils redisUtils;
 
 
-    private String checkUserPath(String dir){
+    private String checkUserPath(String dir) {
         String username = getUser().getUsername();
-        if ("".equals(dir)){
+        if ("".equals(dir)) {
             dir = getUser().getUsername();
         }
-        if (dir.startsWith("files/")){
-            dir = dir.replace("files/","");
+        if (dir.startsWith("files/")) {
+            dir = dir.replace("files/", "");
         }
-        if (!dir.startsWith(username)){
+        if (!dir.startsWith(username)) {
             if (dir.startsWith("/")) {
-                dir =  username + dir;
-            }else {
-                dir =  username + "/" + dir ;
+                dir = username + dir;
+            } else {
+                dir = username + "/" + dir;
             }
         }
         return dir;
@@ -77,7 +81,7 @@ public class FileController extends BaseController {
     @RequestMapping("/getParentFile")
     @ResponseBody
     public FileResponseVo getParentFile() {
-        return FileResponseVo.success(fileService.getParentFile(getPeersGroupName(), getPeersUrl(),getUser().getUsername()));
+        return FileResponseVo.success(fileService.getParentFile(getPeersGroupName(), getPeersUrl(), getUser().getUsername()));
     }
 
     /**
@@ -93,19 +97,39 @@ public class FileController extends BaseController {
         return FileResponseVo.success(fileService.getDirFile(getBackUrl(), getPeersUrl(), dir));
     }
 
+    /**
+     * 保存大文件上传后的基本信息 此时无法保存文件md5  需要通过callback返回的信息进行保存
+     *
+     * @param filepath 上传的文件路径
+     */
     @RequestMapping("/saveBigFileInfo")
     @ResponseBody
-    public void saveBigFileInfo(String filepath,String md5){
+    public void saveBigFileInfo(String filepath) {
         User user = getUser();
-        filepath = "/"+getPeersGroupName()+"/" + filepath;
-        fileService.saveFilePathByUserId(user.getId(),filepath,user.getPeersid(),md5);
+        filepath = "/" + getPeersGroupName() + "/" + filepath;
+        fileService.saveFilePathByUserId(user.getId(), filepath, user.getPeersid(), "");
     }
+
+
+    @RequestMapping("/getBigFileInfo")
+    @ResponseBody
+    public FileResponseVo getBigFileInfo(String filePath) {
+        String peersGroupName = getPeersGroupName();
+        String username = getUser().getUsername();
+        filePath = "/" + peersGroupName + "/" + username + "/" + filePath;
+        String fileMd5 = fileService.getFileMd5ByFilePath(filePath);
+        if (fileMd5 != null) {
+            return fileService.getFileDetails(getPeersUrl(), fileMd5);
+        }
+        return FileResponseVo.fail("获取文件信息失败!");
+    }
+
 
     /**
      * 重命名文件或文件夹
      *
-     * @param path 文件夹或文件路径
-     * @param oldName  旧名称
+     * @param path    文件夹或文件路径
+     * @param oldName 旧名称
      * @param newName 新名称
      * @return 响应对象
      */
@@ -115,12 +139,12 @@ public class FileController extends BaseController {
         String oldPath;
         String newPath;
         path = "files/" + checkUserPath(path);
-        if (path.endsWith("/")){
-            oldPath = path +  oldName;
-            newPath =  path + newName;
-        }else {
-            oldPath = path + "/" +  oldName;
-            newPath =  path + "/" +  newName;
+        if (path.endsWith("/")) {
+            oldPath = path + oldName;
+            newPath = path + newName;
+        } else {
+            oldPath = path + "/" + oldName;
+            newPath = path + "/" + newName;
         }
 
         if (fileService.renameFileOrFolder(getPeersUrl(), oldPath, newPath, path, getPeersGroupName(), md5)) {
@@ -152,9 +176,12 @@ public class FileController extends BaseController {
     @RequestMapping("/deleteFile")
     @ResponseBody
     public FileResponseVo deleteFile(String path) {
+        User user = getUser();
         path = checkUserPath(path);
-        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(),  path, false)) {
-            return FileResponseVo.success();
+        if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path, false)) {
+            if (userService.userDeleteFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername())) {
+                return FileResponseVo.success();
+            }
         }
         return FileResponseVo.fail("删除文件失败");
     }
@@ -168,9 +195,12 @@ public class FileController extends BaseController {
     @RequestMapping("/deleteDir")
     @ResponseBody
     public FileResponseVo deleteDir(String path) {
-        path =  checkUserPath(path);
+        User user = getUser();
+        path = checkUserPath(path);
         if (fileService.deleteDir(getPeersUrl(), path)) {
-            return FileResponseVo.success();
+            if (userService.userDeleteFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername())) {
+                return FileResponseVo.success();
+            }
         }
         return FileResponseVo.fail("删除文件夹失败");
     }
@@ -217,10 +247,11 @@ public class FileController extends BaseController {
     @RequestMapping("/picConverter")
     @ResponseBody
     public FileResponseVo convertPicture(String path, String filename, String srcSuffix, String destSuffix) {
+        User user = getUser();
         path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        boolean isSuccess = fileService.convertPictureFile(convertVo);
+        boolean isSuccess = fileService.convertPictureFile(convertVo,getPeersUrl(),user.getId(),user.getUsername());
         if (isSuccess) {
             return FileResponseVo.success();
         }
@@ -239,10 +270,11 @@ public class FileController extends BaseController {
     @RequestMapping("/audioConverter")
     @ResponseBody
     public FileResponseVo convertAudio(String path, String filename, String srcSuffix, String destSuffix) {
+        User user = getUser();
         path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        boolean isSuccess = fileService.convertAudioFile(convertVo);
+        boolean isSuccess = fileService.convertAudioFile(convertVo,getPeersUrl(),user.getId(),user.getUsername());
         if (isSuccess) {
             return FileResponseVo.success();
         }
@@ -261,10 +293,11 @@ public class FileController extends BaseController {
     @RequestMapping("/documentConverter")
     @ResponseBody
     public FileResponseVo convertDocument(String path, String filename, String srcSuffix, String destSuffix) {
+        User user = getUser();
         path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        boolean isSuccess = fileService.convertDocumentFile(convertVo);
+        boolean isSuccess = fileService.convertDocumentFile(convertVo,getPeersUrl(),user.getId(),user.getUsername());
         if (isSuccess) {
             return FileResponseVo.success();
         }
@@ -281,7 +314,7 @@ public class FileController extends BaseController {
      */
     @RequestMapping("/downloadFile")
     @ResponseBody
-    public void downloadFile(String path, String name, @RequestParam(name = "username",required = false)String username, HttpServletResponse response) {
+    public void downloadFile(String path, String name, @RequestParam(name = "username", required = false) String username, HttpServletResponse response) {
         BufferedInputStream in = null;
         try {
             path = checkUserPath(path);
@@ -292,19 +325,19 @@ public class FileController extends BaseController {
             response.setContentType("application/octet-stream");
             URL url;
             String token;
-            if (username != null && username.length()>0){
+            if (username != null && username.length() > 0) {
                 String originName;
                 boolean hasPrefix = false;
-                if (path.contains("/")){
+                if (path.contains("/")) {
                     hasPrefix = true;
-                    originName= path.substring(0,path.indexOf("/"));
-                }else {
-                    originName= path;
+                    originName = path.substring(0, path.indexOf("/"));
+                } else {
+                    originName = path;
                 }
-                if (!username.equals(originName)){
-                    if (hasPrefix){
+                if (!username.equals(originName)) {
+                    if (hasPrefix) {
                         path = username + path.substring(path.indexOf("/"));
-                    }else {
+                    } else {
                         path = username;
                     }
                 }
@@ -354,13 +387,13 @@ public class FileController extends BaseController {
     public FileResponseVo createShareFileLink(ShareFileVo shareFileVo, HttpServletRequest request) throws Exception {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
         String content;
-        String filePath = shareFileVo.getPath()+"/"+shareFileVo.getFilename();
-        shareFileVo.setPath(getUser().getUsername()+shareFileVo.getPath());
+        String filePath = shareFileVo.getPath() + "/" + shareFileVo.getFilename();
+        shareFileVo.setPath(getUser().getUsername() + shareFileVo.getPath());
         if ("".equals(shareFileVo.getPath())) {
-            content =  getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
+            content = getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
                     + untilToTime;
         } else {
-            content =  getUser().getUsername()+ "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
+            content = getUser().getUsername() + "/" + shareFileVo.getPath() + "/" + shareFileVo.getFilename() + "@"
                     + untilToTime;
         }
         String code = AesUtils.encrypt(content);
@@ -368,7 +401,7 @@ public class FileController extends BaseController {
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         String token = AesUtils.getTokenByCode(code);
         long expires = DateConverter.getSecondsByDays(shareFileVo.getDays());
-        redisUtils.set("token-"+getUser().getUsername()+filePath,token,expires);
+        redisUtils.set("token-" + getUser().getUsername() + filePath, token, expires);
         return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/check/code?code=" + code, check, untilToTime));
     }
 
@@ -382,21 +415,25 @@ public class FileController extends BaseController {
     @RequestMapping("/import")
     @ResponseBody
     public FileResponseVo downloadFromLink(String path, String link) {
+        User user = getUser();
         path = checkUserPath(path);
         if (StringUtils.isNotBlank(link)) {
             if (link.endsWith(".git")) {
                 List<String> filesPath = GitUtils.pullFilesFromGit(link);
-                List<FileResponseVo> list = FileUtils.uploadDir("git", path, getPeersUrl() + Constant.API_UPLOAD, getBackUrl(), filesPath);
-                if (list == null) {
-                    return FileResponseVo.fail("链接需要身份认证，请输入开源的git仓库链接!");
-                }
-                list.forEach(e -> {
-                    UploadResultVo resultVo = (UploadResultVo) e.getData();
-                    String filePath = resultVo.getPath();
-                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId(), resultVo.getMd5());
-                });
                 String deletePath = Constant.OUTPUT_TMP_FILE_PATH + link.substring(link.lastIndexOf("/") + 1, link.lastIndexOf("."));
                 File tmpPath = new File(deletePath);
+                long fileSize = tmpPath.length();
+                if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername(),fileSize)){
+                    List<FileResponseVo> list = FileUtils.uploadDir("git", path, getPeersUrl() + Constant.API_UPLOAD, getBackUrl(), filesPath);
+                    if (list == null) {
+                        return FileResponseVo.fail("链接需要身份认证，请输入开源的git仓库链接!");
+                    }
+                    list.forEach(e -> {
+                        UploadResultVo resultVo = (UploadResultVo) e.getData();
+                        String filePath = resultVo.getPath();
+                        fileService.saveFilePathByUserId(user.getId(), filePath, getPeers().getId(), resultVo.getMd5());
+                    });
+                }
                 if (tmpPath.exists()) {
                     GitUtils.deleteDir(tmpPath);
                 }
@@ -407,14 +444,19 @@ public class FileController extends BaseController {
                     url = new URL(link);
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     InputStream inputStream = conn.getInputStream();
-                    String contentDisposition = new String(conn.getHeaderField("Content-Disposition").getBytes("utf-8"), "utf-8");
-                    String filename = URLDecoder.decode(contentDisposition.substring(contentDisposition.indexOf("=") + 1).trim(), "UTF-8");
-                    FileResponseVo responseVo = FileUtils.upload(inputStream, filename, path, "link",
-                            getPeersUrl() + Constant.API_UPLOAD, getBackUrl());
-                    UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
-                    String filePath = resultVo.getPath();
-                    fileService.saveFilePathByUserId(getUser().getId(), filePath, getPeers().getId(), resultVo.getMd5());
-                    return responseVo;
+                    long fileSize = conn.getContentLengthLong();
+                    if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername(),fileSize)){
+                        String contentDisposition = new String(conn.getHeaderField("Content-Disposition").getBytes("utf-8"), "utf-8");
+                        String filename = URLDecoder.decode(contentDisposition.substring(contentDisposition.indexOf("=") + 1).trim(), "UTF-8");
+                        FileResponseVo responseVo = FileUtils.upload(inputStream, filename, path, "link",
+                                getPeersUrl() + Constant.API_UPLOAD, getBackUrl());
+                        UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
+                        String filePath = resultVo.getPath();
+                        fileService.saveFilePathByUserId(user.getId(), filePath, getPeers().getId(), resultVo.getMd5());
+                        return responseVo;
+                    }else {
+                        return FileResponseVo.fail("剩余存储空间不足!");
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

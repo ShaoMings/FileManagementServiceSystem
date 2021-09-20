@@ -119,7 +119,7 @@ public class PeersController extends BaseController {
         }
         //不存在则添加集群
         if (peersService.addPeers(peers)) {
-            FileResponseVo.success();
+            return FileResponseVo.success();
         }
         return FileResponseVo.fail("系统出现异常!");
     }

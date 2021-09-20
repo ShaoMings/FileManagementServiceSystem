@@ -60,6 +60,12 @@ public class User implements Serializable {
     @ApiModelProperty(value = "证书盐值")
     private String credentialsSalt;
 
+    @ApiModelProperty(value = "用户总存储空间")
+    private Double totalDiskSpace;
+
+    @ApiModelProperty(value = "用户剩余存储空间")
+    private Double leftDiskSpace;
+
     @ApiModelProperty(value = "注册时间")
     private Date createTime;
 

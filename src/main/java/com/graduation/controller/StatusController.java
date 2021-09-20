@@ -8,11 +8,13 @@ import cn.hutool.system.SystemUtil;
 import com.graduation.model.pojo.Peers;
 import com.graduation.model.pojo.User;
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.model.vo.UserDirStatusVo;
 import com.graduation.service.IndexService;
 import com.graduation.service.PeersService;
 import com.graduation.service.UserService;
 import com.graduation.utils.Constant;
 import com.graduation.utils.DateConverter;
+import com.graduation.utils.FileSizeConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,6 +83,53 @@ public class StatusController extends BaseController {
             if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
                 Map<String, Object> res = indexService.getStatus(jsonObject.get("data"));
                 return FileResponseVo.success(res);
+            } else {
+                return FileResponseVo.fail("调用接口失败");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return FileResponseVo.fail("系统异常");
+    }
+
+
+    @RequestMapping("/getUserStatus")
+    @ResponseBody
+    public FileResponseVo getUserStatus(){
+        try {
+            String json = HttpUtil.get(getPeersUrl() + Constant.API_USER_STATUS+"?userPath="+getUser().getUsername());
+            JSONObject jsonObject = JSONUtil.parseObj(json);
+            if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
+                JSONObject data = JSONUtil.parseObj(jsonObject.get("data"));
+                // 用户文件总数
+                Integer fileCount = (Integer) data.get("count");
+                // 用户存储空间使用量
+                Object tmpSize = data.get("size");
+                Double userLeftDiskSpace;
+                String size;
+                // 用户初始总存储空间大小
+                Double userTotalDiskSpace = userService.getUserTotalDiskSpace(getUser().getId());
+                if (tmpSize instanceof Integer){
+                    Integer sumOfUsedSize = (Integer) data.get("size");
+                    // 用户真实剩余存储空间
+                    userLeftDiskSpace = userTotalDiskSpace - sumOfUsedSize.doubleValue();
+                    userService.updateUserLeftDiskSpace(getUser().getId(),userLeftDiskSpace);
+                    size = FileSizeConverter.getLength(sumOfUsedSize);
+                }else {
+                    Long sumOfUsedSize = (Long) data.get("size");
+                    // 用户真实剩余存储空间
+                    userLeftDiskSpace = userTotalDiskSpace - sumOfUsedSize.doubleValue();
+                    userService.updateUserLeftDiskSpace(getUser().getId(),userLeftDiskSpace);
+                    size = FileSizeConverter.getLength(sumOfUsedSize);
+                }
+                String total = FileSizeConverter.getLength(userTotalDiskSpace.longValue());
+                String left = FileSizeConverter.getLength(userLeftDiskSpace.longValue());
+                UserDirStatusVo statusVo = new UserDirStatusVo();
+                statusVo.setCount(fileCount);
+                statusVo.setSize(size);
+                statusVo.setTotal(total);
+                statusVo.setLeft(left);
+                return FileResponseVo.success(statusVo);
             } else {
                 return FileResponseVo.fail("调用接口失败");
             }
@@ -193,7 +242,7 @@ public class StatusController extends BaseController {
         if (id == getPeers().getId()){
             return FileResponseVo.fail("当前集群正在使用中");
         }
-        User user = new User();
+        User user = getUser();
         user.setPeersid(id);
         user.setId(getUser().getId());
         // 用户更新时间

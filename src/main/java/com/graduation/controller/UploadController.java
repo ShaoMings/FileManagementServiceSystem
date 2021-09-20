@@ -1,10 +1,12 @@
 package com.graduation.controller;
 
 import cn.hutool.core.util.StrUtil;
+import com.graduation.model.pojo.User;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.UploadParamVo;
 import com.graduation.model.vo.UploadResultVo;
 import com.graduation.service.FileService;
+import com.graduation.service.UserService;
 import com.graduation.utils.Constant;
 import com.graduation.utils.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,9 @@ public class UploadController extends BaseController{
     @Autowired
     private FileService fileService;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * 文件上传页面
      * @param model model对象
@@ -55,13 +60,14 @@ public class UploadController extends BaseController{
     @RequestMapping("/upload/moreFileUpload")
     @ResponseBody
     public FileResponseVo fileUpload(UploadParamVo param){
+        User user = getUser();
         if (param.getFile().isEmpty()) {
             return FileResponseVo.fail("请先选择要上传的文件");
         }
         if (StrUtil.isBlank(param.getScene())){
             return FileResponseVo.fail("请先选择上传场景");
         }
-        String username = getUser().getUsername();
+        String username = user.getUsername();
         if ("/files".equals(param.getPath())){
             param.setPath(username);
         }
@@ -79,28 +85,31 @@ public class UploadController extends BaseController{
             param.setShowUrl(getUploadShowUrl());
         }
         MultipartFile multipartFile = param.getFile();
-        // 文件夹处理
-        String originalFilename = multipartFile.getOriginalFilename();
-        assert originalFilename != null;
-        if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
-            List<FileResponseVo> list = FileUtils.uploadDirZip(param, getPeersUrl() + Constant.API_UPLOAD);
-            list.forEach(e ->{
-                UploadResultVo resultVo = (UploadResultVo) e.getData();
+        long fileSize = multipartFile.getSize();
+        if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(),user.getId(),username,fileSize)) {
+            // 文件夹处理
+            String originalFilename = multipartFile.getOriginalFilename();
+            assert originalFilename != null;
+            if (originalFilename.endsWith(Constant.DIR_FLAG_CONSTANT)) {
+                List<FileResponseVo> list = FileUtils.uploadDirZip(param, getPeersUrl() + Constant.API_UPLOAD);
+                list.forEach(e ->{
+                    UploadResultVo resultVo = (UploadResultVo) e.getData();
+                    String filePath = resultVo.getPath();
+                    fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId(), resultVo.getMd5());
+                });
+                return FileResponseVo.success("上传文件夹成功!");
+            }else {
+                FileResponseVo responseVo = null;
+                responseVo = upload(multipartFile,param.getPath(),
+                        param.getScene(),getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
+                assert responseVo != null;
+                UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
                 String filePath = resultVo.getPath();
                 fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId(), resultVo.getMd5());
-            });
-            return FileResponseVo.success("上传文件夹成功!");
+                return responseVo;
+            }
         }else {
-            FileResponseVo responseVo = null;
-            responseVo = upload(multipartFile,param.getPath(),
-                    param.getScene(),getPeersUrl() + Constant.API_UPLOAD, param.getShowUrl());
-            assert responseVo != null;
-            UploadResultVo resultVo = (UploadResultVo) responseVo.getData();
-            String filePath = resultVo.getPath();
-            fileService.saveFilePathByUserId(getUser().getId(),filePath,getPeers().getId(), resultVo.getMd5());
-            return responseVo;
+            return FileResponseVo.fail("剩余存储空间不足!");
         }
     }
-
-
 }

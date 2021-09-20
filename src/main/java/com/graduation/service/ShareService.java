@@ -48,6 +48,16 @@ public interface ShareService extends IService<Share> {
      */
     List<Share> getSevenDayShareFilesRecord(Date startTime, Date endTime);
 
+
+    /**
+     * 通过指定日期时间段查询特定用户该时间段的记录
+     * @param startTime 开始时间
+     * @param endTime 结束时间
+     * @param username 用户名
+     * @return 该时间段分享的文件记录
+     */
+    List<Share> getSevenDayShareFilesRecordByUserName(Date startTime, Date endTime,String username);
+
     /**
      * 通过文件id移除公开记录
      * @param fileId 文件id

@@ -130,31 +130,4 @@ public class InitSystemController {
     }
 
 
-    /**
-     *  用户注册以及系统信息初始化
-     * @param installVo 系统信息vo
-     * @param bindingResult 用于接收错误信息 即配合@Validated注解，将不符合要求的参数提示的错误信息进行接收
-     * @return 响应对象
-     */
-    @RequestMapping("/doInstall")
-    @ResponseBody
-    @Validated
-    public FileResponseVo doinstall(@Valid InstallVo installVo,BindingResult bindingResult){
-        if (bindingResult.hasErrors()) {
-            return FileResponseVo.fail(Objects.requireNonNull(bindingResult.getFieldError()).getDefaultMessage());
-        }
-        Peers peers = installVo.getPeers();
-        if (peersService.save(peers)) {
-            User user = installVo.getUser();
-            user.setPeersid(peers.getId());
-            user.setAge(18);
-            // 用户注册
-            if (userService.save(user)){
-                return FileResponseVo.success("信息初始化成功");
-            }
-            return FileResponseVo.fail("信息初始化失败");
-        }
-        return FileResponseVo.fail("信息初始化失败");
-    }
-
 }

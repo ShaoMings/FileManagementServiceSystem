@@ -11,8 +11,13 @@
     <groupId>com.graduation.project</groupId>
     <artifactId>FileManagementServiceSystem</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <modules>
+        <module>FileManagementService</module>
+        <module>FileManagementCheck</module>
+    </modules>
     <name>FileManagementServiceSystem</name>
     <description>FileManagementServiceSystem</description>
+    <packaging>pom</packaging>
     <properties>
         <java.version>1.8</java.version>
     </properties>
@@ -223,29 +228,6 @@
             <groupId>ws.schild</groupId>
             <artifactId>jave-all-deps</artifactId>
             <version>3.1.1</version>
-        </dependency>
-
-<!--        文件转pdf依赖-->
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-words</artifactId>
-            <version>20.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/aspose-words-20.4-c-jdk17.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-cells</artifactId>
-            <version>20.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/aspose-cells-20.4 - c.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>com.aspose</groupId>
-            <artifactId>aspose-slides</artifactId>
-            <version>20.4</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/aspose-slides-20.4-jdk16-c.jar</systemPath>
         </dependency>
 
         <dependency>

@@ -11,10 +11,10 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @Slf4j
 @MapperScan(basePackages = {"com.graduation.mapper"})
 @SpringBootApplication
-public class FileManagementServiceSystemApplication {
+public class FileManagementServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(FileManagementServiceSystemApplication.class, args);
+        SpringApplication.run(FileManagementServiceApplication.class, args);
     }
 
 }

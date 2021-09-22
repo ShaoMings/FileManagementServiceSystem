@@ -1,5 +1,6 @@
 package com.graduation.utils;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
 /**
@@ -66,5 +67,19 @@ public class FileSizeConverter {
     public static String getLengthOfMb(long filesize) {
         DecimalFormat df = new DecimalFormat("######0.00");
         return df.format(((double) filesize) / (Constant.SIZE_K * Constant.SIZE_K));
+    }
+
+
+    /**
+     * 比较两个double类型的数值
+     *
+     * @param a 数值1
+     * @param b 数值2
+     * @return 返回 > 0 表示第一个值大 返回0表示等于   < 0 表示第二个值大
+     */
+    public static int compareDouble(double a, double b) {
+        BigDecimal b1 = new BigDecimal(a);
+        BigDecimal b2 = new BigDecimal(b);
+        return b1.compareTo(b2);
     }
 }

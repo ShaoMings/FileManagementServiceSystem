@@ -53,18 +53,6 @@ public class SignController extends BaseController {
     private final UserRoleService userRoleService;
 
 
-    /**
-     * 比较两个double类型的数值
-     *
-     * @param a 数值1
-     * @param b 数值2
-     * @return 返回 > 0 表示第一个值大 返回0表示等于   < 0 表示第二个值大
-     */
-    private int compareDouble(double a, double b) {
-        BigDecimal b1 = new BigDecimal(a);
-        BigDecimal b2 = new BigDecimal(b);
-        return b1.compareTo(b2);
-    }
 
     /**
      * 登录页视图跳转
@@ -119,7 +107,7 @@ public class SignController extends BaseController {
                         Double peersLeftSpace = peersService.getPeersLeftSpace(p.getId());
                         // 默认新用户5GB存储空间
                         Double initSpace = FileSizeConverter.getLengthAutoCalToByte("5GB");
-                        if (compareDouble(peersLeftSpace, initSpace) > 0) {
+                        if (FileSizeConverter.compareDouble(peersLeftSpace, initSpace) > 0) {
                             peersLeftSpace -= initSpace;
                             peersService.updatePeersLeftSpace(p.getId(), peersLeftSpace);
                             InstallVo installVo = new InstallVo();

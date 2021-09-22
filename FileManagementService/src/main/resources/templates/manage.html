@@ -51,6 +51,16 @@
                             return getRoleName(o.roleId);
                         }
                     },
+                    {
+                        field: 'totalSize', title: '存储空间总大小', unresize: true, edit: 'text', templet: function (o) {
+                            return formatFileSize(o.totalSize);
+                        }
+                    },
+                    {
+                        field: 'leftSize', title: '剩余空间大小', unresize: true, templet: function (o) {
+                            return formatFileSize(o.leftSize);
+                        }
+                    },
                     {fixed: 'right', title: '操作', toolbar: '#barOption', unresize: true}
                 ]
             ],
@@ -59,7 +69,6 @@
                 type: 'asc'
             },
             parseData: function (res) {
-                console.log(res);
                 return {
                     "code": res.code,
                     "msg": res.msg,
@@ -142,6 +151,13 @@
                     obj.tr.find('td[data-field=peersId] input').val(oldText);
                     obj.update({peersId: oldText});
                 }
+            } else if (obj.field === 'totalSize') {
+                let reg = /^\d+$/g;
+                if (!reg.test(obj.value)) {
+                    layer.msg('只能输入数字!');
+                    obj.tr.find('td[data-field=totalSize] input').val(oldText);
+                    obj.update({totalSize: oldText});
+                }
             } else if (obj.field === 'password') {
                 if (obj.value.length > 18) {
                     layer.msg('密码长度在18位之内!');
@@ -214,6 +230,23 @@
             }
         });
     });
+
+    function formatFileSize(size) {
+        let value = Number(size);
+        if (size && !isNaN(value)) {
+            const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB', 'BB'];
+            let index = 0;
+            let k = value;
+            if (value >= 1024) {
+                while (k > 1024) {
+                    k = k / 1024;
+                    index++;
+                }
+            }
+            return `${(k).toFixed(2)}${units[index]}`;
+        }
+        return '-';
+    }
 
     function getRoleName(roleId) {
         switch (roleId) {

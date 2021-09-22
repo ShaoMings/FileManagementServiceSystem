@@ -82,6 +82,9 @@ public class StatusController extends BaseController {
             JSONObject jsonObject = JSONUtil.parseObj(json);
             if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
                 Map<String, Object> res = indexService.getStatus(jsonObject.get("data"));
+                Double peerUsed = FileSizeConverter.getLengthAutoCalToByte((String) res.get("peerUsed"));
+                peersService.updatePeersUsedSpace(getPeers().getId(),peerUsed);
+                res.put("peerFree",FileSizeConverter.getLength(peersService.getPeersLeftSpace(getPeers().getId()).longValue()));
                 return FileResponseVo.success(res);
             } else {
                 return FileResponseVo.fail("调用接口失败");

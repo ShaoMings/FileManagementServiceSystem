@@ -781,7 +781,7 @@ $("#file-result").on("click", ".resultFile", function () {
             area: ['400px', '271x'],
             title: name,
             shade: 0.3,
-            content: '<video src="' + source + '" autoplay controls style="width: 400px;height: 226px">您的浏览器不支持 video 标签。</video>'
+            content: '<easy-player video-url="' + source + '" style="width: 400px;height: 226px;position: fixed"></easy-player>'
         });
     } else if (kit.getFileType(suffix) === "txt") {
         // 文本

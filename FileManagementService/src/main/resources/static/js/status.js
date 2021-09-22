@@ -128,12 +128,12 @@ function getStatus() {
         if (data.code === 200) {
             $("#totalFileCount").text(data.data.totalFileCount);
             $("#totalFileSize").text(data.data.totalFileSize);
-            $("#dayFileSize").text(data.data.dayFileSize);
-            $("#dayFileCount").text(data.data.dayFileCount);
+            $("#peerFileCount").text(data.data.peerFileCount);
+            $("#peerTotalSize").text(data.data.peerTotal);
             $("#diskTotalSize").text(data.data.diskTotalSize);
             $("#diskFreeSize").text(data.data.diskFreeSize);
-            $("#inodesTotal").text(data.data.inodesTotal);
-            $("#inodesFree").text(data.data.inodesFree);
+            $("#peerUsedSize").text(data.data.peerUsed);
+            $("#peerLeftSize").text(data.data.peerFree);
             let myChart = echarts.init(document.getElementById('main'));
             myChart.setOption(
                 option = {

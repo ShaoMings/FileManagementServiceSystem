@@ -76,7 +76,7 @@ public class PeersController extends BaseController {
      * @return 页面
      */
     @RequestMapping("/edit")
-    public String edit(int id, Model model) {
+    public String edit(Integer id, Model model) {
         Peers peers = peersService.getById(id);
         model.addAttribute("peers", peers);
         return "peers/edit";

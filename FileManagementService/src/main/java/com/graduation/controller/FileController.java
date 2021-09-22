@@ -179,7 +179,7 @@ public class FileController extends BaseController {
         User user = getUser();
         path = checkUserPath(path);
         if (fileService.deleteFile(getPeersUrl(), getPeersGroupName(), path, false)) {
-            if (userService.userDeleteFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername())) {
+            if (userService.userDeleteFileToUpdateDiskSpace(getPeersUrl(), user.getId(), user.getUsername())) {
                 return FileResponseVo.success();
             }
         }
@@ -198,7 +198,7 @@ public class FileController extends BaseController {
         User user = getUser();
         path = checkUserPath(path);
         if (fileService.deleteDir(getPeersUrl(), path)) {
-            if (userService.userDeleteFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername())) {
+            if (userService.userDeleteFileToUpdateDiskSpace(getPeersUrl(), user.getId(), user.getUsername())) {
                 return FileResponseVo.success();
             }
         }
@@ -251,7 +251,7 @@ public class FileController extends BaseController {
         path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        boolean isSuccess = fileService.convertPictureFile(convertVo,getPeersUrl(),user.getId(),user.getUsername());
+        boolean isSuccess = fileService.convertPictureFile(convertVo, getPeersUrl(), user.getId(), user.getUsername());
         if (isSuccess) {
             return FileResponseVo.success();
         }
@@ -274,7 +274,7 @@ public class FileController extends BaseController {
         path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        boolean isSuccess = fileService.convertAudioFile(convertVo,getPeersUrl(),user.getId(),user.getUsername());
+        boolean isSuccess = fileService.convertAudioFile(convertVo, getPeersUrl(), user.getId(), user.getUsername());
         if (isSuccess) {
             return FileResponseVo.success();
         }
@@ -297,7 +297,7 @@ public class FileController extends BaseController {
         path = checkUserPath(path);
         ConvertVo convertVo = new ConvertVo(getUser().getId(), path, filename, getPeersGroupName(),
                 getPeersUrl(), srcSuffix, destSuffix);
-        boolean isSuccess = fileService.convertDocumentFile(convertVo,getPeersUrl(),user.getId(),user.getUsername());
+        boolean isSuccess = fileService.convertDocumentFile(convertVo, getPeersUrl(), user.getId(), user.getUsername());
         if (isSuccess) {
             return FileResponseVo.success();
         }
@@ -388,7 +388,11 @@ public class FileController extends BaseController {
         String untilToTime = DateConverter.dayCalculateBaseOnNow(shareFileVo.getDays());
         String content;
         String filePath = shareFileVo.getPath() + "/" + shareFileVo.getFilename();
-        shareFileVo.setPath(getUser().getUsername() + shareFileVo.getPath());
+        if ("".equals(shareFileVo.getPath())) {
+            shareFileVo.setPath(getUser().getUsername() + shareFileVo.getPath());
+        } else {
+            shareFileVo.setPath(getUser().getUsername() + "/" + shareFileVo.getPath());
+        }
         if ("".equals(shareFileVo.getPath())) {
             content = getUser().getUsername() + "/" + shareFileVo.getFilename() + "@"
                     + untilToTime;
@@ -401,7 +405,11 @@ public class FileController extends BaseController {
         String serverAddress = request.getRequestURL().toString().replace(request.getRequestURI(), "");
         String token = AesUtils.getTokenByCode(code);
         long expires = DateConverter.getSecondsByDays(shareFileVo.getDays());
-        redisUtils.set("token-" + getUser().getUsername() + filePath, token, expires);
+        if (filePath.startsWith("/")) {
+            redisUtils.set("token-" + getUser().getUsername() + filePath, token, expires);
+        } else {
+            redisUtils.set("token-" + getUser().getUsername() + "/" + filePath, token, expires);
+        }
         return FileResponseVo.success(new ShareFileLinkVo(serverAddress + "/check/code?code=" + code, check, untilToTime));
     }
 
@@ -423,7 +431,7 @@ public class FileController extends BaseController {
                 String deletePath = Constant.OUTPUT_TMP_FILE_PATH + link.substring(link.lastIndexOf("/") + 1, link.lastIndexOf("."));
                 File tmpPath = new File(deletePath);
                 long fileSize = tmpPath.length();
-                if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername(),fileSize)){
+                if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(), user.getId(), user.getUsername(), fileSize)) {
                     List<FileResponseVo> list = FileUtils.uploadDir("git", path, getPeersUrl() + Constant.API_UPLOAD, getBackUrl(), filesPath);
                     if (list == null) {
                         return FileResponseVo.fail("链接需要身份认证，请输入开源的git仓库链接!");
@@ -445,7 +453,7 @@ public class FileController extends BaseController {
                     HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                     InputStream inputStream = conn.getInputStream();
                     long fileSize = conn.getContentLengthLong();
-                    if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(),user.getId(),user.getUsername(),fileSize)){
+                    if (userService.userUploadFileToUpdateDiskSpace(getPeersUrl(), user.getId(), user.getUsername(), fileSize)) {
                         String contentDisposition = new String(conn.getHeaderField("Content-Disposition").getBytes("utf-8"), "utf-8");
                         String filename = URLDecoder.decode(contentDisposition.substring(contentDisposition.indexOf("=") + 1).trim(), "UTF-8");
                         FileResponseVo responseVo = FileUtils.upload(inputStream, filename, path, "link",
@@ -454,7 +462,7 @@ public class FileController extends BaseController {
                         String filePath = resultVo.getPath();
                         fileService.saveFilePathByUserId(user.getId(), filePath, getPeers().getId(), resultVo.getMd5());
                         return responseVo;
-                    }else {
+                    } else {
                         return FileResponseVo.fail("剩余存储空间不足!");
                     }
                 } catch (IOException e) {

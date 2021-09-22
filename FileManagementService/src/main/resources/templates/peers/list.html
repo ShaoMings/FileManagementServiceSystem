@@ -55,7 +55,7 @@
 <script th:src="@{/static/lib/layui-v2.5.6/layui/layui.js}"></script>
 <script>
 	layui.use('table', function() {
-		var table = layui.table;
+		let table = layui.table;
 		table.init('peersList', {
 			limit: 15,
 			response: {
@@ -69,15 +69,15 @@
 
 		//监听行工具事件
 		table.on('tool(peersList)', function(obj){
-			var data = obj.data;
+			let data = obj.data;
 			if(obj.event === 'del'){
 				layer.confirm('确定要删除该集群吗?', function(index){
-					$.post("/peers/del",{"id":obj.data.id},function (data) {
-						if(data.code === 200){
+					$.post("/peers/del",{"id":data.id},function (res) {
+						if(res.code === 200){
 							obj.del();
 							layer.msg("删除成功");
 						}else{
-							layer.msg(data.msg);
+							layer.msg(res.msg);
 						}
 					})
 					layer.close(index);
@@ -89,7 +89,7 @@
 					title :'编辑集群',
 					shadeClose: true,
 					maxmin: true,
-					content: '/peers/edit?id='+obj.data.id
+					content: '/peers/edit?id='+data.id
 				});
 			}
 		});

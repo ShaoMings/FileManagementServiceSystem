@@ -7,6 +7,11 @@ html,body,.layui-container,.layui-row,.layui-col-md12{
 .layui-card{
     min-height: 100%;
 }
+
+.layui-layer-content{
+    height: auto;
+}
+
 .icon {
     width: 1.3em;
     height: 1.3em;

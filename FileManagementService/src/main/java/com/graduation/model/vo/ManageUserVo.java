@@ -24,4 +24,6 @@ public class ManageUserVo {
     private String email;
     private Integer peersId;
     private Integer roleId;
+    private Double totalSize;
+    private Double leftSize;
 }

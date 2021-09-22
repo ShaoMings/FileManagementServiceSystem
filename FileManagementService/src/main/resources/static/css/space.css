@@ -6,6 +6,10 @@
     margin: 8px 8px;
 }
 
+.layui-layer-content{
+    height: auto;
+}
+
 .page-view-totla {
     font-size: 36px;
     color: #666;

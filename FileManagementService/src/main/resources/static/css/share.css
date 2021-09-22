@@ -18,6 +18,10 @@
     flex-direction: column;
 }
 
+.layui-layer-content{
+    height: auto;
+}
+
 .share-file-item:hover{
     box-shadow: 0 6px 20px 0 rgb(0 0 0 / 10%);
 }

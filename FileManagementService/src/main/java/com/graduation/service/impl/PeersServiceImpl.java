@@ -82,10 +82,23 @@ public class PeersServiceImpl extends ServiceImpl<PeersMapper, Peers> implements
     }
 
     @Override
+    public Double getPeersUsedSpace(Integer peersId) {
+        return this.getById(peersId).getDiskUsedSize();
+    }
+
+    @Override
     public boolean updatePeersLeftSpace(Integer peersId, Double leftSpace) {
         UpdateWrapper<Peers> updateWrapper = new UpdateWrapper<>();
         updateWrapper.eq("id",peersId);
         updateWrapper.set("disk_left_size",leftSpace);
+        return this.update(updateWrapper);
+    }
+
+    @Override
+    public boolean updatePeersUsedSpace(Integer peersId, Double usedSpace) {
+        UpdateWrapper<Peers> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.eq("id",peersId);
+        updateWrapper.set("disk_used_size",usedSpace);
         return this.update(updateWrapper);
     }
 
@@ -109,10 +122,10 @@ public class PeersServiceImpl extends ServiceImpl<PeersMapper, Peers> implements
         JSONObject jsonObject = JSONUtil.parseObj(json);
         if (Constant.API_STATUS_SUCCESS.equals(jsonObject.getStr(Constant.STATUS_CONSTANT))) {
             Map<String, Object> res = indexService.getStatus(jsonObject.get("data"));
-            String diskFreeSize = (String) res.get("diskFreeSize");
-            double freeLength = FileSizeConverter.getLengthAutoCalToByte(diskFreeSize);
+            double freeLength = FileSizeConverter.getLengthAutoCalToByte((String) res.get("peerFree"));
             peers.setDiskTotalSize(freeLength);
             peers.setDiskLeftSize(freeLength);
+            peers.setDiskUsedSize(0D);
         }
         return this.save(peers);
     }

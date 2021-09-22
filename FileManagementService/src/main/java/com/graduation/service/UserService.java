@@ -3,6 +3,8 @@ package com.graduation.service;
 import com.graduation.model.pojo.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -44,6 +46,13 @@ public interface UserService extends IService<User> {
     boolean removeUsersDirByUserIds(String peersUrl,Integer[] userIds);
 
     /**
+     * 删除用户后归还存储空间到集群中
+     * @param users 用户
+     * @return 是否归还成功
+     */
+    boolean updatePeersLeftDiskSpaceByRemoveUserIds(List<User> users);
+
+    /**
      * 获取用户剩余存储空间
      * @param userId 用户id
      * @return 剩余存储空间
@@ -56,6 +65,24 @@ public interface UserService extends IService<User> {
      * @return 总存储空间
      */
     Double getUserTotalDiskSpace(Integer userId);
+
+
+    /**
+     * 修改用户的总存储空间大小
+     * @param userId 用户id
+     * @param size 空间大小
+     * @return 是否修改成功
+     */
+    boolean modifyUserTotalDiskSpaceByUserId(Integer userId,Double size);
+
+
+    /**
+     * 更新用户总存储空间
+     * @param userId 用户id
+     * @param size 空间
+     * @return 是否更新成功
+     */
+    boolean updateUserTotalDiskSpace(Integer userId,Double size);
 
 
     /**

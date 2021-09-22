@@ -8,6 +8,7 @@ import com.graduation.model.vo.ManageUserVo;
 import com.graduation.model.vo.ListDataResponseVo;
 import com.graduation.service.UserRoleService;
 import com.graduation.service.UserService;
+import com.graduation.utils.FileSizeConverter;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -62,7 +63,7 @@ public class UserController extends BaseController {
             Integer id = u.getId();
             Integer roleId = userRoleService.getUserRole(id);
             user.add(new ManageUserVo(id, u.getUsername(), u.getNickName(), u.getPassword(),
-                    u.getGender(), u.getAge(), u.getEmail(), u.getPeersid(), roleId));
+                    u.getGender(), u.getAge(), u.getEmail(), u.getPeersid(), roleId,u.getTotalDiskSpace(),u.getLeftDiskSpace()));
         });
         return new ListDataResponseVo<>(0, "", userRoleService.getLowerLevelUserCountByRoleId(userRoleId), user);
     }
@@ -72,9 +73,15 @@ public class UserController extends BaseController {
     @ResponseBody
     public FileResponseVo deleteSelected(@RequestParam("ids[]") String[] ids) {
         Integer[] userIds = (Integer[]) ConvertUtils.convert(ids, Integer.class);
+        List<User> deleteUserList = new ArrayList<>();
+        for (Integer userId : userIds) {
+            deleteUserList.add(userService.getById(userId));
+        }
         boolean isDelAll = userService.removeByIds(Arrays.asList(userIds));
         userService.removeUsersDirByUserIds(getPeersUrl(),userIds);
         if (isDelAll) {
+            // 释放用户存储空间到集群
+            userService.updatePeersLeftDiskSpaceByRemoveUserIds(deleteUserList);
             return FileResponseVo.success();
         } else {
             return FileResponseVo.fail("删除失败!");
@@ -85,10 +92,16 @@ public class UserController extends BaseController {
     @RequestMapping("/delete")
     @ResponseBody
     public FileResponseVo delete(Integer id) {
-        boolean isDel = userService.removeById(id);
         Integer[] userIds = {id};
+        List<User> deleteUserList = new ArrayList<>();
+        for (Integer userId : userIds) {
+            deleteUserList.add(userService.getById(userId));
+        }
+        boolean isDel = userService.removeById(id);
         userService.removeUsersDirByUserIds(getPeersUrl(),userIds);
         if (isDel) {
+            // 释放用户存储空间到集群
+            userService.updatePeersLeftDiskSpaceByRemoveUserIds(deleteUserList);
             return FileResponseVo.success();
         } else {
             return FileResponseVo.fail("删除失败!");
@@ -116,8 +129,14 @@ public class UserController extends BaseController {
         user.setPeersid(userVo.getPeersId());
         user.setUpdateTime(new Date());
         boolean isModify = userService.modifyUser(user);
+        boolean isModifySize;
+        if (FileSizeConverter.compareDouble(oldUser.getTotalDiskSpace(),userVo.getTotalSize()) != 0){
+            isModifySize = userService.modifyUserTotalDiskSpaceByUserId(user.getId(),userVo.getTotalSize());
+        }else {
+            isModifySize = true;
+        }
         userRoleService.updateUserRoleByUserId(userVo.getId(),userVo.getRoleId());
-        if (isModify) {
+        if (isModify && isModifySize) {
             return FileResponseVo.success();
         } else {
             return FileResponseVo.fail("修改失败!");

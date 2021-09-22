@@ -47,19 +47,34 @@ public interface PeersService extends IService<Peers> {
 
 
     /**
-     * 获取集群剩余存储空间
+     * 获取集群剩余可分配空间
      * @param peersId 集群id
      * @return 剩余存储空间大小
      */
     Double getPeersLeftSpace(Integer peersId);
 
     /**
-     * 更新集群目前剩余存储空间
+     * 获取集群已用空间
+     * @param peersId 集群id
+     * @return 已用存储空间大小
+     */
+    Double getPeersUsedSpace(Integer peersId);
+
+    /**
+     * 更新集群目前可分配存储空间
      * @param peersId 集群id
      * @param leftSpace 剩余空间
      * @return 是否更新成功
      */
     boolean updatePeersLeftSpace(Integer peersId,Double leftSpace);
+
+    /**
+     * 更新集群目前已用存储空间
+     * @param peersId 集群id
+     * @param usedSpace 已使用空间
+     * @return 是否更新成功
+     */
+    boolean updatePeersUsedSpace(Integer peersId,Double usedSpace);
 
 
     /**

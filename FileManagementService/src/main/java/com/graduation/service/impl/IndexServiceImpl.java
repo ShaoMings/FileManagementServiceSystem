@@ -30,6 +30,15 @@ public class IndexServiceImpl implements IndexService {
         // 声明30天内日期容器
         List<String> dayNumList = new ArrayList<>();
         JSONObject parseObj = JSONUtil.parseObj(data);
+        // 集群空间总大小
+        result.put("peerTotal",FileSizeConverter.getLength(Long.parseLong(parseObj.getStr("peerTotal"))));
+        // 集群剩余可用空间 = 磁盘剩余
+        result.put("peerFree",FileSizeConverter.getLength(Long.parseLong(parseObj.getStr("peerFree"))));
+        // 集群已用空间 = files 文件总大小
+        result.put("peerUsed",FileSizeConverter.getLength(Long.parseLong(parseObj.getStr("peerUsed"))));
+        //  集群总文件数量 = files 文件总数
+        result.put("peerFileCount",Long.parseLong(parseObj.getStr("peerFileCount")));
+        // 文件状态json数组
         JSONArray parseArray = JSONUtil.parseArray(parseObj.get("Fs.FileStats"));
         // 剩余空间
         result.put("diskFreeSize", FileSizeConverter.getLength(Long.parseLong(JSONUtil.parseObj(parseObj.get("Sys.DiskInfo")).getStr("free"))));

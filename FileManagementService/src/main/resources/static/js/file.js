@@ -781,7 +781,7 @@ $("#file-result").on("click", ".resultFile", function () {
             area: ['400px', '271x'],
             title: name,
             shade: 0.3,
-            content: '<easy-player video-url="' + source + '" style="width: 400px;height: 226px;position: fixed"></easy-player>'
+            content: '<easy-player video-url="' + source + '" decodeWasm="true" style="width: 400px;height: 226px;position: fixed"></easy-player>'
         });
     } else if (kit.getFileType(suffix) === "txt") {
         // 文本

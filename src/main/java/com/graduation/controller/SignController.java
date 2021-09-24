@@ -26,6 +26,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -97,41 +98,47 @@ public class SignController extends BaseController {
 
     @RequestMapping("/doSignUp")
     @ResponseBody
-    public FileResponseVo register(UserSignUpVo user) {
+    public FileResponseVo register(UserSignUpVo user, HttpServletResponse response) throws IOException {
         if (userService.getUserByUserName(user.getAccount())!=null){
             return FileResponseVo.fail("账号已存在");
         }
         if (user.getPassword().equals(user.getConfirm())) {
             List<Peers> peers = peersService.getAllPeers();
-            boolean isSign = false;
-            for (Peers p : peers) {
-                try {
-                    if (peersService.checkPeersAddressIsUseful(p.getServerAddress() + "/" + p.getGroupName())) {
-                        Double peersLeftSpace = peersService.getPeersLeftSpace(p.getId());
-                        // 默认新用户5GB存储空间
-                        Double initSpace = FileSizeConverter.getLengthAutoCalToByte("5GB");
-                        if (FileSizeConverter.compareDouble(peersLeftSpace, initSpace) > 0) {
-                            peersLeftSpace -= initSpace;
-                            peersService.updatePeersLeftSpace(p.getId(), peersLeftSpace);
-                            InstallVo installVo = new InstallVo();
-                            User voUser = installVo.getUser(user.getPassword(), user.getAccount(), user.getEmail(), user.getName());
-                            voUser.setPeersid(p.getId());
-                            voUser.setAge(18);
-                            voUser.setTotalDiskSpace(initSpace);
-                            voUser.setLeftDiskSpace(initSpace);
-                            isSign = userService.save(voUser);
-                            // 设置用户角色 默认普通用户
-                            Integer userId = voUser.getId();
-                            boolean isExist = userRoleService.isExistRecordByUserId(userId);
-                            if (!isExist) {
-                                userRoleService.save(new UserRole(null, userId, 4));
+            if (peers.size()>0){
+                boolean isSign = false;
+                for (Peers p : peers) {
+                    try {
+                        if (peersService.checkPeersAddressIsUseful(p.getServerAddress() + "/" + p.getGroupName())) {
+                            Double peersLeftSpace = peersService.getPeersLeftSpace(p.getId());
+                            // 默认新用户5GB存储空间
+                            Double initSpace = FileSizeConverter.getLengthAutoCalToByte("5GB");
+                            if (FileSizeConverter.compareDouble(peersLeftSpace, initSpace) > 0) {
+                                peersLeftSpace -= initSpace;
+                                peersService.updatePeersLeftSpace(p.getId(), peersLeftSpace);
+                                InstallVo installVo = new InstallVo();
+                                User voUser = installVo.getUser(user.getPassword(), user.getAccount(), user.getEmail(), user.getName());
+                                voUser.setPeersid(p.getId());
+                                voUser.setAge(18);
+                                voUser.setTotalDiskSpace(initSpace);
+                                voUser.setLeftDiskSpace(initSpace);
+                                isSign = userService.save(voUser);
+                                // 设置用户角色 默认普通用户
+                                Integer userId = voUser.getId();
+                                boolean isExist = userRoleService.isExistRecordByUserId(userId);
+                                if (!isExist) {
+                                    userRoleService.save(new UserRole(null, userId, 4));
+                                }
                             }
                         }
-                    }
-                } catch (Exception ignored) {}
-            }
-            if (isSign) {
-                return FileResponseVo.success();
+                    } catch (Exception ignored) {}
+                }
+                if (isSign) {
+                    return FileResponseVo.success();
+                }
+            }else {
+                // 没有集群 跳转到集群添加页面
+                response.sendRedirect("/install");
+                return FileResponseVo.fail("没有可用集群,请添加集群!");
             }
             return FileResponseVo.fail("注册失败,请联系管理员请检查是否存在可用集群!");
         } else {

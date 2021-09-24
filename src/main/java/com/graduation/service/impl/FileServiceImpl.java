@@ -189,8 +189,12 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
     @Override
     public boolean saveFilePathByUserId(Integer id, String filePath,Integer peerId,String md5) {
         String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
+        String tmpPath = filePath.substring(0,filePath.lastIndexOf("/")+1);
         QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
         fileQueryWrapper.eq("file_name",filename);
+        if (tmpPath.contains("//")){
+            filePath = tmpPath.replaceAll("//","/") + filename;
+        }
         fileQueryWrapper.eq("file_path",filePath);
         fileQueryWrapper.eq("peer_id",peerId);
         if (this.list(fileQueryWrapper).size()<=0) {

@@ -92,13 +92,13 @@ $("#recently").on("click", ".file-title", function () {
     let token;
     let address = "http://1.15.221.117:8085/group1";
     let canReadFlag = true;
-    // $.ajax({
-    //     url: "/peers/address",
-    //     async: false,
-    //     success: function (res) {
-    //         address = res;
-    //     }
-    // });
+    $.ajax({
+        url: "/peers/address",
+        async: false,
+        success: function (res) {
+            address = res;
+        }
+    });
     let source = address + "/" + username + "/" + (path === "" ? name : path + "/" + name);
 
     // 文件预览token
@@ -142,16 +142,17 @@ $("#recently").on("click", ".file-title", function () {
             content: '<audio src="' + source + '" autoplay controls style="width: 350px;display: block;margin: 10px auto auto;">您的浏览器不支持 audio 标签。</audio>'
         });
     } else if (kit.getFileType(suffix) === "video") {
-        //视频
-        layer.open({
-            type: 1,
-            shadeClose: true,
-              area: ['400px', '271x'],
-            offset: ['35%', '35%'],
-            offset: ['35%', '35%'],
-            title: name,
-            shade: 0.3,
-            content: '<easy-player video-url="' + source + '" decodeWasm="true" style="width: 400px;height: 226px;position: fixed"></easy-player>'
+        $.getScript("/static/js/easyplayer.min.js",function () {
+            //视频
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                area: ['400px', '271x'],
+                offset: ['35%', '35%'],
+                title: name,
+                shade: 0.3,
+                content: '<easy-player video-url="' + source + '" decodeWasm="true" style="width: 400px;height: 226px;position: fixed"></easy-player>'
+            });
         });
     } else if (kit.getFileType(suffix) === "txt") {
         // 文本

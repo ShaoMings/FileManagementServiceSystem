@@ -56,21 +56,21 @@ public class ShareFileController extends BaseController {
             if (isNoOverdue) {
                 String untilToTime = path.substring(path.lastIndexOf("@") + 1);
                 String token = AesUtils.getTokenByCode(code);
-//                if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
-//                    peerAddress = getPeersUrl();
-//                } else {
-//                    // 非服务器部署 使用内网fileServer
-//                    Integer peerId = fileService.getFilePeerIdByFilePath("/" + group + "/" + username + groupFilePath);
-//                    if (peerId != null) {
-//                        Peers peers = peersService.getById(peerId);
-//                        peerAddress = peers.getServerAddress() + "/" + group;
-//                    } else {
-//                        throw new FileDownloadException("文件服务地址有误!");
-//                    }
-//                }
+                if (session.getAttribute("isLogin") != null && (Boolean) session.getAttribute("isLogin")) {
+                    peerAddress = getPeersUrl();
+                } else {
+                    // 非服务器部署 使用内网fileServer
+                    Integer peerId = fileService.getFilePeerIdByFilePath("/" + group + "/" + username + groupFilePath);
+                    if (peerId != null) {
+                        Peers peers = peersService.getById(peerId);
+                        peerAddress = peers.getServerAddress() + "/" + group;
+                    } else {
+                        throw new FileDownloadException("文件服务地址有误!");
+                    }
+                }
 
                 // 服务器部署时打开
-        peerAddress = "http://1.15.221.117:8085/"+group;
+//        peerAddress = "http://1.15.221.117:8085/"+group;
 
                 // 链接检验未过期
                 if (!DateConverter.isOverdueBaseNow(untilToTime)) {

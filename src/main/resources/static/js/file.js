@@ -715,13 +715,13 @@ $("#file-result").on("click", ".resultFile", function () {
     let token;
     let address = "http://1.15.221.117:8085/group1";
     // 部署时使用上面的 下面注释
-    // $.ajax({
-    //     url: "/peers/address",
-    //     async: false,
-    //     success: function (res) {
-    //         address = res;
-    //     }
-    // });
+    $.ajax({
+        url: "/peers/address",
+        async: false,
+        success: function (res) {
+            address = res;
+        }
+    });
 
 
     $.ajax({
@@ -774,15 +774,17 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<audio src="' + source + '" autoplay controls style="width: 350px;display: block;margin: 10px auto auto;">您的浏览器不支持 audio 标签。</audio>'
         });
     } else if (kit.getFileType(suffix) === "video") {
-        //视频
-        layer.open({
-            type: 1,
-            shadeClose: true,
-             area: ['400px', '271x'],
-            offset: ['35%', '35%'],
-            title: name,
-            shade: 0.3,
-            content: '<easy-player video-url="' + source + '" decodeWasm="true" style="width: 400px;height: 226px;position: fixed"></easy-player>'
+        $.getScript("/static/js/easyplayer.min.js",function () {
+            //视频
+            layer.open({
+                type: 1,
+                shadeClose: true,
+                area: ['400px', '271x'],
+                offset: ['35%', '35%'],
+                title: name,
+                shade: 0.3,
+                content: '<easy-player video-url="' + source + '" decodeWasm="true" style="width: 400px;height: 226px;position: fixed"></easy-player>'
+            });
         });
     } else if (kit.getFileType(suffix) === "txt") {
         // 文本

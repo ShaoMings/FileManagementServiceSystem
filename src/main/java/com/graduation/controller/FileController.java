@@ -50,14 +50,21 @@ public class FileController extends BaseController {
         if ("".equals(dir)) {
             dir = getUser().getUsername();
         }
+        if (dir.startsWith("files")) {
+            dir = dir.replace("files", "");
+        }
         if (dir.startsWith("files/")) {
             dir = dir.replace("files/", "");
         }
         if (!dir.startsWith(username)) {
-            if (dir.startsWith("/")) {
-                dir = username + dir;
-            } else {
-                dir = username + "/" + dir;
+            if("".equals(dir)){
+                dir = username;
+            }else {
+                if (dir.startsWith("/")) {
+                    dir = username + dir;
+                } else {
+                    dir = username + "/" + dir;
+                }
             }
         }
         return dir;

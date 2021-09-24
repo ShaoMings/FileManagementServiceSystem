@@ -84,14 +84,9 @@ function getUserStatus() {
 $("#recently").on("click", ".file-title", function () {
     let name = $(this).data("name");
     let path = $(this).data("path");
-    let obj = $(this);
-    let shareId = $(this).data("id");
-    let readCount = $(this).data("read");
-    let read = $(this).parent().find('.file-read-count');
     let username = $(this).data("username");
     let token;
     let address = "http://1.15.221.117:8085/group1";
-    let canReadFlag = true;
     $.ajax({
         url: "/peers/address",
         async: false,
@@ -207,23 +202,5 @@ $("#recently").on("click", ".file-title", function () {
             return;
         }
         layer.msg("该文件格式暂不支持预览");
-        canReadFlag = false;
-    }
-    if (canReadFlag) {
-        $.ajax({
-            url: "/share/read",
-            method: "post",
-            data: {"shareId": shareId, "newCount": readCount + 1},
-            success: function (res) {
-                if (res.code === 200) {
-                    obj.data("read", readCount + 1);
-                    read.html('&nbsp;&nbsp;' + (readCount + 1));
-                } else {
-                    layer.msg(res.msg);
-                }
-            }
-        });
-    } else {
-        canReadFlag = true;
     }
 });

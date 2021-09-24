@@ -98,6 +98,9 @@ public class SignController extends BaseController {
     @RequestMapping("/doSignUp")
     @ResponseBody
     public FileResponseVo register(UserSignUpVo user) {
+        if (userService.getUserByUserName(user.getAccount())!=null){
+            return FileResponseVo.fail("账号已存在");
+        }
         if (user.getPassword().equals(user.getConfirm())) {
             List<Peers> peers = peersService.getAllPeers();
             boolean isSign = false;

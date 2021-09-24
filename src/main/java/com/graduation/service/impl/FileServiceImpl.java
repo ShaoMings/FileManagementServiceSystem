@@ -250,7 +250,10 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         QueryWrapper<File> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("file_path",filePath);
         List<File> list = this.list(queryWrapper);
-        return list.get(0).getId();
+        if (list.size()>0){
+            return list.get(0).getId();
+        }
+        return null;
     }
 
     @Override

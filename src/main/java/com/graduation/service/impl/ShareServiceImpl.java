@@ -90,4 +90,5 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
         queryWrapper.in("file_id",fileIds);
         return this.remove(queryWrapper);
     }
+
 }

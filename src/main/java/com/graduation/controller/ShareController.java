@@ -7,7 +7,9 @@ import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.OpenFileInfoVo;
 import com.graduation.model.vo.UserOpenFileInfoVo;
 import com.graduation.service.FileService;
+import com.graduation.service.MailReceiveService;
 import com.graduation.service.ShareService;
+import com.graduation.service.UserRoleService;
 import com.graduation.utils.DateConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,6 +42,12 @@ public class ShareController extends BaseController {
     @Autowired
     private ShareService shareService;
 
+    @Autowired
+    private UserRoleService userRoleService;
+
+    @Autowired
+    private MailReceiveService mailReceiveService;
+
     @RequestMapping("/open")
     public FileResponseVo openFile(String filename, String path, String size) {
         String filePath;
@@ -49,7 +57,8 @@ public class ShareController extends BaseController {
             filePath = "/" + getPeersGroupName() + "/" + getUser().getUsername() + "/" + path + "/" + filename;
         }
         Integer fileId = fileService.getFileIdByFilePath(filePath);
-        boolean isShared = shareService.save(new Share(null, fileId,filename,path, size,getUser().getUsername(),getUser().getNickName(), new Date(), null, null));
+        Integer userRole = userRoleService.getUserRole(getUser().getId());
+        boolean isShared = shareService.save(new Share(null, fileId,filename,path, size,getUser().getUsername(),getUser().getNickName(),userRole, new Date(), null, null));
         boolean statusChanged = fileService.changeOpenStatusById(fileId, 1);
         if (isShared && statusChanged) {
             return FileResponseVo.success();
@@ -83,8 +92,33 @@ public class ShareController extends BaseController {
         List<Share> records = shareService.getSevenDayShareFilesRecord(start, new Date());
         List<OpenFileInfoVo> list = new ArrayList<>();
         records.forEach(r->list.add(new OpenFileInfoVo(r.getId(),r.getFileName(),r.getFilePath(),r.getSharerUsername(),r.getSharer(),
-                r.getFileSize(),DateConverter.getFormatDate(r.getShareTime()),r.getDownloadCount(),r.getReadCount())));
+                r.getSharerRole(),r.getFileSize(),DateConverter.getFormatDate(r.getShareTime()),r.getDownloadCount(),r.getReadCount())));
         return FileResponseVo.success(list);
+    }
+
+    @RequestMapping("/delRecord")
+    public FileResponseVo deleteRecord(Integer shareId){
+        Share share = shareService.getById(shareId);
+        Integer fileId = share.getFileId();
+        String sharerUsername = share.getSharerUsername();
+        String fileName = share.getFileName();
+        String shareTime = DateConverter.getFormatDate(share.getShareTime());
+        if (shareService.removeById(shareId)) {
+            if (fileService.changeOpenStatusById(fileId,0)) {
+                // 删除的不是自己的分享
+                if (!sharerUsername.equals(getUser().getUsername())){
+                    // 向分享用户发送删除信息
+                    boolean isNoticed = mailReceiveService.addNoticeOfShareDeletedByUserName(sharerUsername,
+                            getUser().getNickName(), fileName, shareTime);
+                    if (isNoticed){
+                        return FileResponseVo.success();
+                    }
+                }else {
+                    return FileResponseVo.success();
+                }
+            }
+        }
+        return FileResponseVo.fail("删除失败!");
     }
 
 

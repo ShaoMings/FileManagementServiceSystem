@@ -46,7 +46,18 @@ public interface MailReceiveService extends IService<MailReceive> {
 
     /**
      *  是否有未读信息
+     * @param userId  用户id
      * @return 是否有未读信息
      */
     boolean hasUnreadMessages(Integer userId);
+
+    /**
+     * 通过用户名通知用户公开分享记录被删除
+     * @param username 被通知的用户名
+     * @param admin 管理员名
+     * @param fileName 文件名
+     * @param shareTime 文件公开分享时间
+     * @return 是否通知成功
+     */
+    boolean addNoticeOfShareDeletedByUserName(String username,String admin,String fileName,String shareTime);
 }

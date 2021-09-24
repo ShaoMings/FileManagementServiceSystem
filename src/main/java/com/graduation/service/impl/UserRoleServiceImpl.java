@@ -41,8 +41,11 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole> i
         QueryWrapper<UserRole> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("user_id", userId);
         List<UserRole> list = this.list(queryWrapper);
-        UserRole userRole = list.get(0);
-        return userRole.getRoleId();
+        if (list.size()>0){
+            UserRole userRole = list.get(0);
+            return userRole.getRoleId();
+        }
+        return null;
     }
 
     @Override

@@ -50,6 +50,9 @@ public class Share implements Serializable {
     @ApiModelProperty(value = "分享人")
     private String sharer;
 
+    @ApiModelProperty(value = "分享人角色")
+    private Integer sharerRole;
+
     @ApiModelProperty(value = "分享时间")
     private Date shareTime;
 

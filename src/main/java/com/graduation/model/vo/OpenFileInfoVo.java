@@ -20,6 +20,7 @@ public class OpenFileInfoVo {
     private String filePath;
     private String sharerUsername;
     private String sharer;
+    private Integer sharerRole;
     private String size;
     private String time;
     private Integer download;

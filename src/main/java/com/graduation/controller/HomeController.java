@@ -1,6 +1,9 @@
 package com.graduation.controller;
 
+import com.graduation.service.UserRoleService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -12,10 +15,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
  */
 @Controller
 @RequestMapping("/home")
-public class HomeController {
+public class HomeController extends BaseController{
+
+    @Autowired
+    private UserRoleService userRoleService;
 
     @RequestMapping("/share")
-    public String share() {
+    public String share(Model model) {
+        model.addAttribute("role",userRoleService.getUserRole(getUser().getId()));
         return "share";
     }
 

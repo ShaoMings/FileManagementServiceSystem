@@ -21,6 +21,7 @@ public interface ShareService extends IService<Share> {
      * 通过分享的文件的表id对下载量加1
      * @param shareId id
      * @param newCount 加1后的总数
+     * @return  是否更新成功
      */
     boolean downloadCountPlusById(Integer shareId,Integer newCount);
 
@@ -28,6 +29,7 @@ public interface ShareService extends IService<Share> {
      * 通过分享的文件的表的id对阅读量加1
      * @param shareId id
      * @param newCount 加1后的总数
+     * @return  是否更新成功
      */
     boolean readCountPlusById(Integer shareId,Integer newCount);
 
@@ -71,5 +73,6 @@ public interface ShareService extends IService<Share> {
      * @return 是否删除成功
      */
     boolean privateFilesToRemoveRecordsByFileIdList(List<Integer> fileIds);
+
 
 }

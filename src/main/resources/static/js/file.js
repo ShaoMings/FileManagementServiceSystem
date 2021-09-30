@@ -715,13 +715,13 @@ $("#file-result").on("click", ".resultFile", function () {
     let token;
     let address = "http://1.15.221.117:8085/group1";
     // 部署时使用上面的 下面注释
-    // $.ajax({
-    //     url: "/peers/address",
-    //     async: false,
-    //     success: function (res) {
-    //         address = res;
-    //     }
-    // });
+    $.ajax({
+        url: "/peers/address",
+        async: false,
+        success: function (res) {
+            address = res;
+        }
+    });
 
 
     $.ajax({

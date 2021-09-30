@@ -12,22 +12,6 @@
 <div class="layui-row">
     <div class="layui-col-md3" style="padding:5px;">
         <div class="layui-card">
-            <div class="layui-card-header">文件总数<i class="fa fa-calculator" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
-            <div class="layui-card-body">
-                <p class="page-view-totla" id="totalFileCount"></p>
-            </div>
-        </div>
-    </div>
-    <div class="layui-col-md3" style="padding:5px;">
-        <div class="layui-card">
-            <div class="layui-card-header">文件总大小<i class="fa fa-file-archive-o" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
-            <div class="layui-card-body">
-                <p class="page-view-totla" id="totalFileSize"></p>
-            </div>
-        </div>
-    </div>
-    <div class="layui-col-md3" style="padding:5px;">
-        <div class="layui-card">
             <div class="layui-card-header">集群文件总数<i class="fa fa-calculator" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
             <div class="layui-card-body">
                 <p class="page-view-totla" id="peerFileCount"></p>
@@ -45,17 +29,17 @@
 
     <div class="layui-col-md3" style="padding:5px;">
         <div class="layui-card">
-            <div class="layui-card-header">磁盘总空间<i class="fa fa-cubes" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
+            <div class="layui-card-header">文件总数<i class="fa fa-calculator" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
             <div class="layui-card-body">
-                <p class="page-view-totla" id="diskTotalSize"></p>
+                <p class="page-view-totla" id="totalFileCount"></p>
             </div>
         </div>
     </div>
     <div class="layui-col-md3" style="padding:5px;">
         <div class="layui-card">
-            <div class="layui-card-header">磁盘剩余空间<i class="fa fa-cube" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
+            <div class="layui-card-header">文件总大小<i class="fa fa-file-archive-o" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
             <div class="layui-card-body">
-                <p class="page-view-totla" id="diskFreeSize"></p>
+                <p class="page-view-totla" id="totalFileSize"></p>
             </div>
         </div>
     </div>
@@ -76,71 +60,70 @@
         </div>
     </div>
 
-
-
-    <div class="layui-col-md6" style="padding:5px;">
-        <div class="layui-card" style="overflow: auto;">
-            <div class="layui-card-header">快捷操作<i class="layui-icon" style="float: right;font-size: 20px;">&#xe614;</i></div>
-            <div class="layui-card-body" style="float: left;padding: 5px 10px 5px 5px;height: 200px;">
-                <a class="shortcut-button" href="javascript:;" id="fileUpload">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe681;</i></span>
-                    <span>文件上传</span>
-                </a>
-                <a class="shortcut-button" href="javascript:;" id="fileList">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe621;</i></span>
-                    <span>文件列表</span>
-                </a>
-                <a class="shortcut-button" href="javascript:;" id="switchPeers">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe674;</i></span>
-                    <span>切换集群</span>
-                </a>
-                <a class="shortcut-button" href="javascript:;" id="repair_stat">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe62c;</i></span>
-                    <span>修正统计信息</span>
-                </a>
-                <a class="shortcut-button" href="javascript:;" id="remove_empty_dir">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe640;</i></span>
-                    <span>删除空目录</span>
-                </a>
-                <a class="shortcut-button" href="javascript:;" id="backup">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe656;</i></span>
-                    <span>备份元数据</span>
-                </a>
-                <a class="shortcut-button" href="javascript:;" id="repair">
-                    <span class="shortcut-button-icon"><i class="layui-icon" style="font-size: 25px">&#xe631;</i></span>
-                    <span>同步失败修复</span>
-                </a>
+    <div class="layui-col-md3" style="padding:5px;">
+        <div class="layui-card">
+            <div class="layui-card-header">磁盘总空间<i class="fa fa-cubes" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
+            <div class="layui-card-body">
+                <p class="page-view-totla" id="diskTotalSize"></p>
             </div>
         </div>
     </div>
-    <div class="layui-col-md6" style="padding:5px;">
+    <div class="layui-col-md3" style="padding:5px;">
+        <div class="layui-card">
+            <div class="layui-card-header">磁盘剩余空间<i class="fa fa-cube" style="font-size: 16px;position: absolute;right: 15px;top: 10px;"></i></div>
+            <div class="layui-card-body">
+                <p class="page-view-totla" id="diskFreeSize"></p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="layui-col-md12" style="padding:5px;">
         <div class="layui-card" style="overflow: auto;">
-            <div class="layui-card-header">版本信息<i class="layui-icon" style="float: right;font-size: 20px;">&#xe60b;</i></div>
-            <div class="layui-card-body" style="height: 200px;padding: 5px 10px 5px 5px;">
-                <table class="layui-table">
-                    <colgroup>
-                        <col width="200">
-                        <col>
-                    </colgroup>
-                    <tbody>
-                    <tr>
-                        <td>当前版本</td>
-                        <td><span th:text="${version}"></span>&nbsp;&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <td>发布日期</td>
-                        <td th:text="${versionDate}"></td>
-                    </tr>
-                    <tr>
-                        <td>操作系统</td>
-                        <td th:text="${osName}"></td>
-                    </tr>
-                    <tr>
-                        <td>系统架构</td>
-                        <td th:text="${osArch}"></td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div class="layui-card-header">快捷操作<i class="layui-icon" style="float: right;font-size: 20px;">&#xe614;</i></div>
+            <div class="layui-card-body" style="display: flex;justify-content:space-between;align-items: center;padding: 5px 10px 5px 5px;height: 200px;">
+                <a class="shortcut-button" href="javascript:;" id="fileUpload">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-cloud-upload" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>文件上传</span>
+                </a>
+                <a class="shortcut-button" href="javascript:;" id="fileList">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-file" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>文件列表</span>
+                </a>
+                <a class="shortcut-button" href="javascript:;" id="switchPeers">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-refresh" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>切换集群</span>
+                </a>
+                <a class="shortcut-button" href="javascript:;" id="repair_stat">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-check-square" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>修正统计信息</span>
+                </a>
+                <a class="shortcut-button" href="javascript:;" id="remove_empty_dir">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-trash" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>删除空目录</span>
+                </a>
+                <a class="shortcut-button" href="javascript:;" id="backup">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-clone" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>备份元数据</span>
+                </a>
+                <a class="shortcut-button" href="javascript:;" id="repair">
+                    <span class="shortcut-button-icon">
+                        <i class="fa fa-wrench" style="font-size: 45px" aria-hidden="true"></i>
+                    </span>
+                    <span>同步失败修复</span>
+                </a>
             </div>
         </div>
     </div>

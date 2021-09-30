@@ -111,6 +111,7 @@ $("#recently").on("click", ".file-title", function () {
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
     let doc_types = ["word", "excel", "ppt"];
+    let loadIndex = layer.load();
     //图片
     if (kit.getFileType(suffix) === "image") {
         let img = {
@@ -121,6 +122,7 @@ $("#recently").on("click", ".file-title", function () {
                 }
             ]
         }
+        layer.close(loadIndex);
         layer.photos({
             photos: img,
             anim: 5,
@@ -128,6 +130,7 @@ $("#recently").on("click", ".file-title", function () {
         });
     } else if (kit.getFileType(suffix) === "song") {
         //音乐
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             shadeClose: true,
@@ -139,6 +142,7 @@ $("#recently").on("click", ".file-title", function () {
     } else if (kit.getFileType(suffix) === "video") {
         $.getScript("/static/js/easyplayer.min.js",function () {
             //视频
+            layer.close(loadIndex);
             layer.open({
                 type: 1,
                 shadeClose: true,
@@ -152,6 +156,7 @@ $("#recently").on("click", ".file-title", function () {
     } else if (kit.getFileType(suffix) === "txt") {
         // 文本
         let resObj = $.ajax({url: source, async: false});
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             skin: 'layui-layer-rim', //加上边框
@@ -166,6 +171,7 @@ $("#recently").on("click", ".file-title", function () {
         let resObj = $.ajax({url: source, async: false});
         let converter = new showdown.Converter();
         let context = converter.makeHtml('```md\n' + resObj.responseText + '\n```');
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             skin: 'layui-layer-rim', //加上边框
@@ -180,6 +186,7 @@ $("#recently").on("click", ".file-title", function () {
         let resObj = $.ajax({url: source, async: false});
         let converter = new showdown.Converter();
         let context = converter.makeHtml(resObj.responseText);
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             title: '文件内容',
@@ -189,6 +196,7 @@ $("#recently").on("click", ".file-title", function () {
         })
     } else if (kit.getFileType(suffix) === "pdf") {
         let viewer_url = source + "?auth_token=" + token + "&download=0";
+        layer.close(loadIndex);
         layer.open({
             type: 2,
             title: '文件内容',

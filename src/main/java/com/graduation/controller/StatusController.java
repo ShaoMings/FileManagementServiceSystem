@@ -41,11 +41,6 @@ import java.util.Map;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RequestMapping("/status")
 public class StatusController extends BaseController {
-    @Value("${version}")
-    private String version;
-
-    @Value("${version.date}")
-    private String versionDate;
 
     private final IndexService indexService;
     private final PeersService peersService;
@@ -54,17 +49,10 @@ public class StatusController extends BaseController {
 
     /**
      * 首页视图
-     *
-     * @param model 模型对象
      * @return 首页
      */
     @RequestMapping("")
-    public String home(Model model) {
-        OsInfo osInfo = SystemUtil.getOsInfo();
-        model.addAttribute("osName", osInfo.getName());
-        model.addAttribute("osArch", osInfo.getArch());
-        model.addAttribute("version", version);
-        model.addAttribute("versionDate", versionDate);
+    public String home() {
         return "status";
     }
 

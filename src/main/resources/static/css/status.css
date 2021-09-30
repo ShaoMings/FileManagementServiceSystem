@@ -1,3 +1,13 @@
+
+.layui-card{
+    border-radius:10px;
+}
+
+.layui-card:hover{
+    box-shadow: 0 6px 20px 0 rgb(0 0 0 / 10%);
+}
+
+
 .page-view-totla {
     font-size: 36px;
     color: #666;
@@ -9,21 +19,21 @@
     white-space: nowrap;
 }
 .shortcut-button{
-    width: 100px;
-    height: 80px;
+    width: auto;
+    height: auto;
     display: block;
-    float: left;
-    margin-left: 10px;
-    margin-top: 10px;
     cursor: pointer;
     text-align: center;
 }
 .shortcut-button-icon{
     display: block;
-    height: 55px;
+    width: 180px;
+    height: 100px;
+    -webkit-text-emphasis: dot #F8F8F8;
     text-align: center;
     line-height: 55px;
     background: #F8F8F8;
+    border-radius: 8px;
 }
 .shortcut-button:hover{
     color: #2F4056;

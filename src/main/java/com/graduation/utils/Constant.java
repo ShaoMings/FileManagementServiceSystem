@@ -108,7 +108,10 @@ public class Constant {
 
     /** 消息标识常量 */
     public static final String PARAM_KEY_MSG = "message";
+
     /** data 标识常量 */
     public static final String PARAM_KEY_DATA = "data";
+
+
 
 }

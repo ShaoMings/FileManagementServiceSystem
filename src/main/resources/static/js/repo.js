@@ -1,12 +1,41 @@
-getParentFile()
-/*初始化layui*/
 let element;
-layui.use(['element'], function () {
+let gitee_token;
+layui.use(['element','form'], function () {
     element = layui.element;
+    let form = layui.form;
+    form.on('select(project)',function (data) {
+        let value = data.value;
+        let info = getOwnerAndRepo(value);
+        getParentFile(info[0],info[1]);
+    });
+    form.on('select(repo)',function (data) {
+        let value = data.value;
+        $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip" value=""></div></div>');
+        $("#project-item").html('<select name="project" lay-filter="project" id="project-select"><option value="">选择项目</option></select>');
+        layui.form.render('select');
+        if (value === "gitee"){
+            gitee_token = getTokenOfGitee();
+            if (gitee_token === ""){
+                if (getTokenOfGitee() === ""){
+                    layer.msg("您还未获取Gitee远程仓库授权! 即将跳转到授权页面!");
+                    setTimeout(function () {
+                        let newTab = window.open('_blank');
+                        newTab.location = "/repo/gite/auth";
+                    },2000);
+                }else {
+                    getAllRepo();
+                }
+            }else {
+                getAllRepo();
+            }
+        }
+    })
 });
 
 
-
+ if ($('#repo-select option:selected').val() === ""){
+     layer.msg("请选择你要管理的仓库!");
+ }
 /*监听创建文件夹按钮点击*/
 $('#mkdir').click(function () {
     let dir_path = $('#dir-path').data('path');
@@ -460,13 +489,59 @@ function removeItem(arr, e) {
     });
 }
 
+function getAllRepo(){
+    $.ajax({
+        url:"/repo/gite/allRepoName",
+        data:{access_token:gitee_token},
+        success:function (res) {
+            if (res.code === 200){
+                repo = res.data;
+                let el = "";
+                $.each(repo,function (index,item) {
+                    el += '<option  value="'+item.owner+"@"+item.path+'">'+item.name+'</option>\n'
+                });
+                $('#form-item select[name="project"]').append(el);
+                layui.form.render('select');
+            }else {
+                layer.msg("找不到该用户的仓库!");
+            }
+        }
+    });
+}
+
+function getOwnerAndRepo(value) {
+    let owner = value.substring(0,value.indexOf("@"));
+    let repo = value.substring(value.indexOf("@")+1);
+    return [owner,repo];
+}
+
+function getTokenOfGitee() {
+    let token = "";
+    $.ajax({
+        url:"/repo/gite/token",
+        method:"get",
+        async:false,
+        success:function (res) {
+            if (res.code === 200){
+                token = res.data;
+            }
+        }
+    });
+    return token;
+}
+
 /*获取所有一级目录及文件*/
-function getParentFile() {
+function getParentFile(owner,repo) {
     let index = layer.load();
-    $.post('/file/getParentFile', function (result) {
+    $.post('/repo/gite/trees',{
+        "owner":owner,
+        "repo":repo,
+        "access_token":gitee_token,
+        "sha":"master",
+    }, function (result) {
         if (result.code === 200) {
             let data = result;
-            console.log(data);
+            // console.log(data);
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {
@@ -485,38 +560,53 @@ function getParentFile() {
             layer.close(index);
         } else {
             layer.close(index);
-            layer.msg("系统异常");
+            // layer.msg(result.msg);
         }
     });
 }
 
 /*文件夹点击事件*/
 $("#file-result").on("click", ".resultDir", function () {
+    let type = $(this).data("type");
+    let sha = $(this).data("sha");
     let dirName = $(this).data("name");
     let dirPath = $(this).data("path");
-    openDir(dirPath + "/" + dirName);
+    let dir = dirPath + "/" + dirName;
+    let info = getOwnerAndRepo($('#project-select option:selected').val());
+    openDir(type,sha,dir,info[0],info[1]);
 });
 
 /*监听文件导航*/
 $("#path-side").on("click", ".path-side-btn", function () {
     let dir = $(this).data("path");
-    openDir(dir);
+    let type = $(this).data("type");
+    let sha = $(this).data("sha");
+    let info = getOwnerAndRepo($('#project-select option:selected').val());
+    openDir(type,sha,dir,info[0],info[1]);
 })
 
 //打开文件夹
-function openDir(dir) {
-    console.log(dir)
-    let index = layer.load();
-    let suff = dir.substring(0, 1);
-    if (suff === "/") {
-        dir = dir.substring(1);
-    }
-    if (dir === "files") {
+function openDir(type,sha,dir,owner,repo) {
+    // console.log(dir)
+    if (dir === undefined){
         dir = "";
     }
-    $.post('/file/getDirFile', {"dir": dir}, function (result) {
+    let index = layer.load();
+    let url = "/repo/gite/trees";
+    if (dir === "" || dir === "/") {
+        sha = "master";
+    }
+    $.post(url, {
+        "owner":owner,
+        "repo":repo,
+        "type": type,
+        "sha":sha,
+        "access_token":gitee_token,
+        "path":dir
+    }, function (result) {
         if (result.code === 200) {
             let data = result;
+            // console.log(data);
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {
@@ -531,23 +621,28 @@ function openDir(dir) {
             });
             let html = template('file-list', data);
             $("#file-result").html(html);
-            setPathSide("/" + dir);
+            setPathSide("/" + dir,type,result.msg);
             layer.close(index);
         } else {
             layer.close(index);
-            layer.msg("系统异常");
+            layer.msg("请求频繁,已被限制! 请稍后再试!");
         }
     });
 }
 
 //设置文件导航
-function setPathSide(dir) {
+function setPathSide(dir,type,sha) {
     let arr = dir.split('/');
-    let html = '<a class="path-side-btn" data-path="">全部文件</a>';
+    let side = $('.file-list-side').find('a');
+    let shaes = [''];
+    $.each(side,function (index, value) {
+       shaes.push($(value).data('sha'));
+    })
+    let html = '<a class="path-side-btn" data-path="" data-sha="master">全部文件</a>';
     let path = "";
-    for (let i = 0; i < arr.length; i++) {
+    for (let i = 1; i < arr.length; i++) {
         if (arr[i] !== "") {
-            html += '<a class="path-side-btn" data-path="' + (path + "/" + arr[i]) + '">' + arr[i] + '</a>';
+            html += '<a class="path-side-btn" data-type="'+type+'" data-sha="'+(i === (arr.length-1)?sha:shaes[i])+'" data-path="' + (path + "/" + arr[i]) + '">' + arr[i] + '</a>';
             path += "/" + arr[i];
         }
     }
@@ -712,40 +807,17 @@ $("#file-result").on("click", ".delete-file-btn", function () {
 // 文件预览
 $("#file-result").on("click", ".resultFile", function () {
     let name = $(this).data("name");
-    let path = $(this).data("path");
-    let username;
-    let token;
-    let address = "http://1.15.221.117:8085/group1";
-    // 部署时使用上面的 下面注释
-    $.ajax({
-        url: "/peers/address",
-        async: false,
-        success: function (res) {
-            address = res;
-        }
-    });
-
-
-    $.ajax({
-        url: "/user/username",
-        async: false,
-        success: function (res) {
-            username = res;
-        }
-    })
-    let source = address + "/"+ username + "/" + (path === "" ? name : path + "/" + name);
-
+    let sha = $(this).data("sha");
+    let token = gitee_token;
+    let tmp = getOwnerAndRepo($('#project-select option:selected').val());
     // 文件预览token
-    $.ajax({
-        url: "/preview/token",
-        method: "post",
-        data: {"filePath": username + "/"+(path === "" ? name : path + "/" + name)},
-        async: false,
-        success: function (res) {
-            token = res;
-            source = source + "?auth_token=" + token;
-        }
-    });
+    let info = {
+        token:token,
+        owner:tmp[0],
+        repo:tmp[1],
+        sha:sha
+    }
+    let source =  `/repo/gite/blob?access_token=${info.token}&owner=${info.owner}&repo=${info.repo}&sha=${info.sha}&filename=${name}`;
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
@@ -827,7 +899,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source + "?auth_token=" + token+"&download=0";
+        let viewer_url = source +"&download=0";
         layer.open({
             type: 2,
             title: '文件内容',

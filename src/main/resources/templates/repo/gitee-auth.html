@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Gitee认证中心</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" th:href="@{/static/lib/layui-v2.5.6/layui/css/layui.css}">
+    <link th:href="@{/static/lib/font-awesome-4.7.0/css/font-awesome.min.css}" rel="stylesheet"/>
+    <style>
+        .layui-form-label {
+            width: 120px;
+            color: #657180;
+        }
+
+        .reset {
+            height: 33px;
+            line-height: 33px;
+        }
+
+        .layui-input-inline {
+            width: 350px !important;
+        }
+    </style>
+</head>
+<body>
+<div class="layui-container" style="width: 100%;padding: 0">
+    <div class="layui-row">
+        <div class="layui-col-md12" style="padding:5px;">
+            <div class="layui-card">
+                <div class="layui-card-header">Gitee认证中心</div>
+                <div class="layui-card-body">
+                    <form class="layui-form" style="width: fit-content;margin: 0 auto;" onsubmit="return false;">
+                        <div class="layui-form-item" id="choose">
+                            <label class="layui-form-label">授权方式:</label>
+                            <div class="layui-input-inline" style="width: 250px;">
+                                <select name="method" lay-filter="method" id="auth-method">
+                                    <option value="1" selected="">OAuth2认证</option>
+                                    <option value="0">私人令牌</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="method">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:src="@{/static/lib/jquery/jquery-3.5.1.min.js}"></script>
+<script th:src="@{/static/lib/layui-v2.5.6/layui/layui.all.js}"></script>
+<script th:inline="javascript">
+    layui.use('form', function () {
+        let form = layui.form;
+        let addr = location.host;
+        let auth_method = ""
+        if (!addr.startsWith("http")) {
+            addr = "http://" + addr;
+        }
+        let personal = '<div class="layui-form-item">\n' +
+            '                                <label class="layui-form-label">私人令牌:</label>\n' +
+            '                                <div class="layui-input-inline">\n' +
+            '                                    <input type="text" name="accessToken" lay-verify="pass" placeholder="输入私人令牌"\n' +
+            '                                           autocomplete="off" class="layui-input">\n' +
+            '                                </div>\n' +
+            '                                <div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/profile/personal_access_tokens/new"\n' +
+            '                                                                              target="_blank">如何获取? 请点击获取教程</a></div>\n' +
+            '                            </div>\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                                <div class="layui-input-block" style="width: 390px">\n' +
+            '                                    <button class="layui-btn" id="accredit" style="float: right">授权访问</button>\n' +
+            '                                </div>\n' +
+            '                            </div>' +
+            '                        </div>';
+        let oauth = '<div class="layui-form-item">\n' +
+            '                                <label class="layui-form-label">client_id:</label>\n' +
+            '                                <div class="layui-input-inline">\n' +
+            '                                    <input type="text" name="clientId" lay-verify="pass" placeholder="输入clientID"\n' +
+            '                                           autocomplete="off" class="layui-input">\n' +
+            '                                </div>\n' +
+            '                                <div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/api/v5/oauth_doc#/"\n' +
+            '                                                                              target="_blank">如何获取? 请参照 创建应用流程 步骤</a></div>\n' +
+            '                            </div>\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                                <label class="layui-form-label">client_secret:</label>\n' +
+            '                                <div class="layui-input-inline">\n' +
+            '                                    <input type="text" name="clientSecret" lay-verify="pass" placeholder="输入clientSecret"\n' +
+            '                                           autocomplete="off" class="layui-input">\n' +
+            '                                </div>\n' +
+            '                                <div class="layui-form-mid layui-word-aux"><a href="https://gitee.com/api/v5/oauth_doc#/"\n' +
+            '                                                                              target="_blank">如何获取? 请参照 创建应用流程 步骤</a></div>\n' +
+            '                            </div>\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                                <label class="layui-form-label">应用主页:</label>\n' +
+            '                                <div class="layui-input-inline">\n' +
+            '                                    <input type="text" name="host" id="host" lay-verify="pass" autocomplete="off"\n' +
+            '                                           class="layui-input"\n' +
+            '                                           readonly>\n' +
+            '                                </div>\n' +
+            '                                <div class="layui-form-mid layui-word-aux">将此项填入创建流程对应项</div>\n' +
+            '                            </div>\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                                <label class="layui-form-label">应用回调地址:</label>\n' +
+            '                                <div class="layui-input-inline">\n' +
+            '                                    <input type="text" name="backUrl" id="backUrl" lay-verify="pass" autocomplete="off"\n' +
+            '                                           class="layui-input"\n' +
+            '                                           readonly>\n' +
+            '                                </div>\n' +
+            '                                <div class="layui-form-mid layui-word-aux">将此项填入创建流程对应项</div>\n' +
+            '                            </div>\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                                <label class="layui-form-label">accessToken:</label>\n' +
+            '                                <div class="layui-input-inline">\n' +
+            '                                    <input type="text" name="accessToken" lay-verify="pass" placeholder="输入accessToken"\n' +
+            '                                           autocomplete="off" class="layui-input">\n' +
+            '                                </div>\n' +
+            '                                <div class="layui-form-mid layui-word-aux" style="padding: 0 !important;margin-top: 2px;">\n' +
+            '                                    <button class="layui-btn" id="get_token">获取token</button>\n' +
+            '                                </div>\n' +
+            '                            </div>\n' +
+            '                            <div class="layui-form-item">\n' +
+            '                                <div class="layui-input-block" style="width: 390px">\n' +
+            '                                    <button class="layui-btn" id="accredit" style="float: right">授权访问</button>\n' +
+            '                                </div>\n' +
+            '                            </div>'
+        $('#method').html(oauth);
+        $('#host').val(addr);
+        $('#backUrl').val(addr + "/repo/gite/code");
+
+        form.on('select(method)', function (data) {
+            let value = data.value;
+            auth_method = value;
+            if (value == 0) {
+                $('#method').html(personal);
+            } else if (value == 1) {
+                $('#method').html(oauth);
+                $('#host').val(addr);
+                $('#backUrl').val(addr + "/repo/gite/code");
+            } else {
+                $('#method').html('');
+            }
+        });
+        form.render();
+
+        if (localStorage.getItem("clientId") !== null || localStorage.getItem("clientId") !== undefined) {
+            $("input[name='clientId']").val(localStorage.getItem("clientId"));
+            $("input[name='clientSecret']").val(localStorage.getItem("clientSecret"));
+        }
+
+        $.ajax({
+            url: "/repo/gite/tokenCheck",
+            method: "get",
+            success: function (res) {
+                if (res.code === 200) {
+                    $('#get_token').attr("disabled", true);
+                    $("input[name='accessToken']").val(res.data);
+                }
+            }
+        });
+
+        $('body').on('click','#get_token', function () {
+            $.ajax({
+                url: "/repo/gite/codeCheck",
+                method: "get",
+                success: function (res) {
+                    if (res.code === 200) {
+                        let clientId = $("input[name='clientId']").val();
+                        let clientSecret = $("input[name='clientSecret']").val();
+                        if (clientId !== "" && clientSecret !== "") {
+                            $.ajax({
+                                url: "/repo/gite/certification",
+                                method: "post",
+                                data: {
+                                    clientId: clientId,
+                                    clientSecret: clientSecret,
+                                    backUrl: $('#backUrl').val()
+                                },
+                                success: function (res) {
+                                    if (res.code === 200 && res.data.accessToken !== "") {
+                                        $("input[name='accessToken']").val(res.data.accessToken);
+                                    }
+                                }
+                            })
+                        } else {
+                            layer.msg("请确保 clientId 和 clientSecret 已填写!");
+                        }
+                    } else {
+                        let clientId = $("input[name='clientId']").val();
+                        if (clientId !== "") {
+                            layer.msg("您未进行授权操作,即将跳转到授权页面!");
+                            setTimeout(function () {
+                                let clientSecret = $("input[name='clientSecret']").val();
+                                localStorage.setItem("clientId", clientId);
+                                localStorage.setItem("clientSecret", clientSecret);
+                                self.opener = null;
+                                self.close();
+                                let newTab = window.open('_blank');
+                                newTab.location = `https://gitee.com/oauth/authorize?client_id=${clientId}&redirect_uri=${$('#backUrl').val()}&response_type=code`;
+                            }, 2000);
+                        } else {
+                            layer.msg("请先填入clientId!");
+                        }
+                    }
+                }
+            });
+        });
+
+        $("body").on('click','#accredit', function () {
+            let token = $("input[name='accessToken']").val();
+            // let refresh = $("input[name=refresh]:checked").val() === 1;
+            if (token !== "") {
+                $.ajax({
+                    url: "/repo/gite/authorization",
+                    method: "post",
+                    data: {
+                        token: token,
+                        refresh: false,
+                        method:auth_method
+                    },
+                    success: function (res) {
+                        if (res.code === 200) {
+                            layer.msg("授权成功! 页面即将关闭,请重新刷新主页面!");
+                            if (localStorage.getItem("clientId") !== null || localStorage.getItem("clientId") !== undefined) {
+                                localStorage.removeItem("clientId");
+                                localStorage.removeItem("clientSecret");
+                            }
+                            setTimeout(function () {
+                                self.opener = null;
+                                self.close();
+                            }, 2000)
+                        }
+                    }
+                })
+            } else {
+                layer.msg("请确保token信息已填写!");
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

@@ -22,28 +22,64 @@
 
                     <li class="layui-nav-item f-nav-item">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/home/share" id="2" data-icon="fa-search" data-name="分享发现">
-                            <i class="fa fa-search" aria-hidden="true"></i>
-                            <span class="f-nav-content">分享发现</span>
-                        </a>
-                    </li>
-
-                    <li class="layui-nav-item f-nav-item">
-                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/home/space" id="3" data-icon="fa-cube" data-name="我的空间">
+                           data-url="/home/share" id="2" data-icon="fa-cube" data-name="分享空间">
                             <i class="fa fa-cube" aria-hidden="true"></i>
-                            <span class="f-nav-content">我的空间</span>
+                            <span class="f-nav-content">分享空间</span>
                         </a>
                     </li>
+
+<!--                    <li class="layui-nav-item f-nav-item">-->
+<!--                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"-->
+<!--                           data-url="/home/space" id="3" data-icon="fa-cube" data-name="我的空间">-->
+<!--                            <i class="fa fa-cube" aria-hidden="true"></i>-->
+<!--                            <span class="f-nav-content">个人空间</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+
+
+<!--                    <li class="layui-nav-item f-nav-item">-->
+<!--                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"-->
+<!--                           data-url="/file" id="4" data-icon="fa-file-o" data-name="我的文件">-->
+<!--                            <i class="fa fa-file-o" aria-hidden="true"></i>-->
+<!--                            <span class="f-nav-content">我的文件</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+
 
 
                     <li class="layui-nav-item f-nav-item">
-                        <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/file" id="4" data-icon="fa-file-o" data-name="我的文件">
-                            <i class="fa fa-file-o" aria-hidden="true"></i>
-                            <span class="f-nav-content">我的文件</span>
+                        <a class="" href="javascript:;">
+                            <i class="fa fa-clipboard" aria-hidden="true"></i>
+                            <span class="f-nav-content">文件管理</span>  <span class="layui-badge-dot unread" style="display: none"></span>
                         </a>
+                        <dl class="layui-nav-child">
+                            <dd class="f-child-side">
+                                <a href="javascript:;" class="p-menu-item"
+                                   data-url="/file" id="3" data-icon="fa-file-o"
+                                   data-name="个人仓库"
+                                   onclick="clickMenu(this);">
+                                    个人仓库
+                                </a>
+                            </dd>
+                            <dd class="f-child-side">
+                                <a href="javascript:;" class="p-menu-item"
+                                   data-url="/home/space" id="4" data-icon="fa-cube"
+                                   data-name="仓库信息"
+                                   onclick="clickMenu(this);">
+                                    仓库信息
+                                </a>
+                            </dd>
+                            <dd class="f-child-side">
+                                <a href="javascript:;" class="p-menu-item"
+                                   data-url="/repo/index" id="5" data-icon="fa-file-o"
+                                   data-name="远程仓库"
+                                   onclick="clickMenu(this);">
+                                    远程仓库 <span class="layui-badge-dot unread" style="display: none"></span>
+                                </a>
+                            </dd>
+                        </dl>
                     </li>
+
 
                     <li class="layui-nav-item f-nav-item">
                         <a class="" href="javascript:;">
@@ -53,7 +89,7 @@
                         <dl class="layui-nav-child">
                             <dd class="f-child-side">
                                 <a href="javascript:;" class="p-menu-item"
-                                   data-url="/mail/index" id="5" data-icon="fa-envira"
+                                   data-url="/mail/index" id="6" data-icon="fa-envira"
                                    data-name="写信箱"
                                    onclick="clickMenu(this);">
                                     写信箱
@@ -61,7 +97,7 @@
                             </dd>
                             <dd class="f-child-side">
                                 <a href="javascript:;" class="p-menu-item"
-                                   data-url="/mail/inboxes" id="6" data-icon="fa-envelope-open-o"
+                                   data-url="/mail/inboxes" id="7" data-icon="fa-envelope-open-o"
                                    data-name="收信箱"
                                    onclick="clickMenu(this);">
                                     收信箱 <span class="layui-badge-dot unread" style="display: none"></span>
@@ -70,7 +106,7 @@
 
                             <dd class="f-child-side">
                                 <a href="javascript:;" class="p-menu-item"
-                                   data-url="/mail/sendboxes" id="7" data-icon="fa-history"
+                                   data-url="/mail/sendboxes" id="8" data-icon="fa-history"
                                    data-name="发信箱"
                                    onclick="clickMenu(this);">
                                     发信箱
@@ -81,7 +117,7 @@
 
                     <li class="layui-nav-item f-nav-item" th:if="${role} eq '1'">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/peers" id="8" data-icon="fa-server" data-name="集群管理">
+                           data-url="/peers" id="9" data-icon="fa-server" data-name="集群管理">
                             <i class="fa fa-server" aria-hidden="true"></i>
                             <span class="f-nav-content">集群管理</span>
                         </a>
@@ -89,7 +125,7 @@
 
                     <li class="layui-nav-item f-nav-item" th:if="${role} eq '1' or ${role} eq '2' or ${role} eq '3'">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/user/manage" id="9" data-icon="fa-address-card" data-name="用户管理">
+                           data-url="/user/manage" id="10" data-icon="fa-address-card" data-name="用户管理">
                             <i class="fa fa-address-card" aria-hidden="true"></i>
                             <span class="f-nav-content">用户管理</span>
                         </a>
@@ -98,9 +134,9 @@
 
                     <li class="layui-nav-item f-nav-item">
                         <a href="javascript:;" onclick="clickMenu(this)" class="p-menu-item"
-                           data-url="/settings/user" id="10" data-icon="fa-user" data-name="个人中心">
-                            <i class="fa fa-user" aria-hidden="true"></i>
-                            <span class="f-nav-content">个人中心</span>
+                           data-url="/settings/user" id="11" data-icon="fa-pencil-square-o" data-name="信息修改">
+                            <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                            <span class="f-nav-content">信息修改</span>
                         </a>
                     </li>
                 </ul>

@@ -1,20 +1,21 @@
 package com.graduation.controller.adapter.gitee;
 
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
+import com.graduation.controller.BaseController;
 import com.graduation.model.dto.gitee.request.AllRepoDto;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.gitee.RepoInfoVo;
 import com.graduation.model.vo.gitee.RepoSimpleInfoVo;
-import com.graduation.utils.DateConverter;
+import com.graduation.repo.adapter.GiteeAdapter;
+import com.graduation.utils.RedisUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description 用于管理仓库的控制器
@@ -25,51 +26,42 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/repo/gite")
-public class RepoContentController {
+public class RepoContentController extends BaseController {
 
-    @RequestMapping("allRepo")
+    @Autowired
+    private GiteeAdapter giteeAdapter;
+
+    @Autowired
+    private RedisUtils redisUtils;
+
+    @RequestMapping("/allRepo")
     public FileResponseVo getUserAllRepo(AllRepoDto dto){
-         if (StringUtils.isNotBlank(dto.getAccess_token())){
-             String request = "https://gitee.com/api/v5/user/repos?access_token="
-                     +dto.getAccess_token()+"&sort="+(dto.getSort() == null?"full_name":dto.getSort())
-                     +"&page="+(dto.getPage() == null?"1":dto.getPage())
-                     +"&pre_page="+(dto.getPer_page() == null?"20":dto.getPer_page());
-             String json = HttpUtil.get(request);
-             JSONArray jsonArray = JSONUtil.parseArray(json);
-             JSONObject obj;
-             List<RepoInfoVo> list = new ArrayList<>();
-             for (Object o : jsonArray) {
-                 obj = (JSONObject) o;
-                 list.add(new RepoInfoVo(
-                         obj.getStr("name"),obj.getStr("path"),obj.getStr("full_name"),
-                         obj.getStr("project_creator"),obj.getStr("html_url"),obj.getStr("description"),
-                         obj.getBool("public"),obj.getStr("default_branch"), DateConverter.getFormatDate(obj.getDate("created_at")),
-                         DateConverter.getFormatDate(obj.getDate("pushed_at")),DateConverter.getFormatDate(obj.getDate("updated_at"))));
-             }
-             return FileResponseVo.success(list);
-         }
+        if (StringUtils.isNotBlank(dto.getAccess_token())){
+            String api = "https://gitee.com/api/v5/user/repos";
+            Map<String, Object> params = new HashMap<>(4);
+            params.put("access_token",dto.getAccess_token());
+            params.put("sort",(dto.getSort() == null?"full_name":dto.getSort()));
+            params.put("page",(dto.getPage() == null?"1":dto.getPage()));
+            params.put("pre_page",(dto.getPer_page() == null?"20":dto.getPer_page()));
+            List<RepoInfoVo> list = giteeAdapter.initializeRepository(getUser().getUsername(), api, params, "GET");
+            return FileResponseVo.success(list);
+        }
          return FileResponseVo.fail("error");
     }
 
     @RequestMapping("/allRepoName")
+    @SuppressWarnings("unchecked")
     public FileResponseVo getUserAllRepoName(AllRepoDto dto){
         if (StringUtils.isNotBlank(dto.getAccess_token())){
-            String request = "https://gitee.com/api/v5/user/repos?access_token="
-                    +dto.getAccess_token()+"&sort="+(dto.getSort() == null?"full_name":dto.getSort())
-                    +"&page="+(dto.getPage() == null?"1":dto.getPage())
-                    +"&pre_page="+(dto.getPer_page() == null?"20":dto.getPer_page());
-            String json = HttpUtil.get(request);
-            JSONArray jsonArray = JSONUtil.parseArray(json);
-            JSONObject obj;
-            List<RepoSimpleInfoVo> list = new ArrayList<>();
-            for (Object o : jsonArray) {
-                obj = (JSONObject) o;
-                list.add(new RepoSimpleInfoVo(
-                        obj.getStr("full_name").substring(0,obj.getStr("full_name").indexOf("/")),
-                        obj.getStr("name"),
-                        obj.getStr("path")));
+            if (redisUtils.hasKey(getUser().getUsername() + "-auth_token")){
+                String token = (String) redisUtils.get(getUser().getUsername() + "-auth_token");
+                if (dto.getAccess_token().equals(token)){
+                    List<RepoInfoVo> list = (List<RepoInfoVo>) getUserAllRepo(dto).getData();
+                    List<RepoSimpleInfoVo> res = new ArrayList<>();
+                    list.forEach(r-> res.add(new RepoSimpleInfoVo(r.getProjectCreator(),r.getName(),r.getPath())));
+                    return FileResponseVo.success(res);
+                }
             }
-            return FileResponseVo.success(list);
         }
         return FileResponseVo.fail("error");
     }

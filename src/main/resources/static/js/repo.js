@@ -494,15 +494,16 @@ function getAllRepo(){
         url:"/repo/gite/allRepoName",
         data:{access_token:gitee_token},
         success:function (res) {
-            if (res.code === 200){
+            let repo;
+            if (res.code === 200) {
                 repo = res.data;
                 let el = "";
-                $.each(repo,function (index,item) {
-                    el += '<option  value="'+item.owner+"@"+item.path+'">'+item.name+'</option>\n'
+                $.each(repo, function (index, item) {
+                    el += '<option  value="' + item.owner + "@" + item.path + '">' + item.name + '</option>\n'
                 });
                 $('#form-item select[name="project"]').append(el);
                 layui.form.render('select');
-            }else {
+            } else {
                 layer.msg("找不到该用户的仓库!");
             }
         }

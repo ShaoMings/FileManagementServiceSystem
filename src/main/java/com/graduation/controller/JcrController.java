@@ -23,7 +23,7 @@ public class JcrController {
 
     @RequestMapping("/all/{repo}/{project}")
     public FileResponseVo getAllFilesOfRepo(@PathVariable("repo") String repo,@PathVariable("project") String project){
-        jcrUtils.getAllPathsInfo();
+        jcrUtils.getAllFilesPathInfo();
         return FileResponseVo.fail("error");
     }
 }

@@ -26,6 +26,11 @@ import java.util.List;
 @RequestMapping("/repo/gite")
 public class ContentTreeController {
 
+    /**
+     * 用于获取指定路径下的文件或文件夹信息
+     * @param dto 数据传输对象封装类
+     * @return 响应对象
+     */
     @RequestMapping("/trees")
     public FileResponseVo getRepoTree(ContentTreeDto dto){
         boolean hasToken = true;

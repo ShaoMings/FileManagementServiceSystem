@@ -1,5 +1,7 @@
 package com.graduation.utils;
 
+import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
@@ -12,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Description 用于进行jcr管理的工具类 此工具类放入spring容器进行管理
@@ -27,9 +30,18 @@ public class JcrUtils {
 
     private static final String SEPARATOR = "/";
 
+    private static final String GTE_METHOD = "get";
+
+    private static final String POST_METHOD = "post";
+
+    private static final String PUT_METHOD = "put";
+
+    private static final String DELETE_METHOD = "delete";
+
     private Session session;
 
-    private List<String> allFilePaths = new ArrayList<>();
+    private List<String> allFilesPath = new ArrayList<>();
+    private List<String> allDirsPath = new ArrayList<>();
 
     /**
      * 初始化构造session  默认本地jcr认证id密码均为admin
@@ -79,6 +91,7 @@ public class JcrUtils {
      * @param filename 文件名
      * @return 是否存在该文件
      */
+    @Deprecated
     public boolean hasProperty(String filename) {
         try {
             Node rootNode = getRootNode();
@@ -133,6 +146,21 @@ public class JcrUtils {
     }
 
     /**
+     * 通过绝对路径获取字符串
+     *
+     * @param absPath 绝对路径
+     * @return 字符串
+     */
+    public String getStringPropertyByAbsPath(String absPath) {
+        try {
+            return session.getProperty(absPath).getString();
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
      * 获取头节点
      *
      * @return 头节点
@@ -141,6 +169,43 @@ public class JcrUtils {
         try {
             return session.getRootNode();
         } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+    /**
+     *  获取指定路径下的所有一级文件夹名称
+     * @param absPath 指定路径
+     * @return 所有一级文件夹名称
+     */
+    public List<String> getAllNodeNamesOnNodeByAbs(String absPath) {
+        try {
+            Node node;
+            if (session.nodeExists(absPath)) {
+                node = session.getNode(absPath);
+            }else {
+                boolean isAdded = addNodeOnRootByAbsPath(absPath);
+                if (isAdded){
+                    node = session.getNode(absPath);
+                }else {
+                    node = null;
+                }
+            }
+            assert node != null;
+            if (node.hasNodes()){
+                List<String > list = new ArrayList<>();
+                NodeIterator nodes = node.getNodes();
+                while (nodes.hasNext()) {
+                    String name = nodes.nextNode().getName();
+                    if (!isIgnores(name)){
+                        list.add(name);
+                    }
+                }
+                return list;
+            }
+        }catch (RepositoryException e){
             e.printStackTrace();
         }
         return null;
@@ -176,12 +241,29 @@ public class JcrUtils {
      *
      * @return 绝对路径列表
      */
-    public List<String> getAllPathsInfo() {
+    public List<String> getAllFilesPathInfo() {
         try {
             Node rootNode = getRootNode();
-            allFilePaths.clear();
-            getFilePaths(rootNode);
-            return allFilePaths;
+            allFilesPath.clear();
+            getFilesPath(rootNode);
+            return allFilesPath;
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取仓库里面所有节点或属性的绝对路径
+     *
+     * @return 绝对路径列表
+     */
+    public List<String> getAllDirsPathInfo() {
+        try {
+            Node rootNode = getRootNode();
+            allDirsPath.clear();
+            getDirPaths(rootNode);
+            return allDirsPath;
         } catch (RepositoryException e) {
             e.printStackTrace();
         }
@@ -193,11 +275,27 @@ public class JcrUtils {
      *
      * @return 绝对路径列表
      */
-    public List<String> getAllPathsInfoOfNode(Node node) {
+    public List<String> getAllFilesPathInfoOfNode(Node node) {
         try {
-            allFilePaths.clear();
-            getFilePaths(node);
-            return allFilePaths;
+            allFilesPath.clear();
+            getFilesPath(node);
+            return allFilesPath;
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 获取仓库里面所有节点或属性的绝对路径
+     *
+     * @return 绝对路径列表
+     */
+    public List<String> getAllDirsPathInfoOfNode(Node node) {
+        try {
+            allDirsPath.clear();
+            getDirPaths(node);
+            return allDirsPath;
         } catch (RepositoryException e) {
             e.printStackTrace();
         }
@@ -205,12 +303,18 @@ public class JcrUtils {
     }
 
 
-    private void getFilePaths(Node node) throws RepositoryException {
+    /**
+     * 递归获取节点下所有文件绝对路径
+     *
+     * @param node 当前节点
+     * @throws RepositoryException 仓库异常
+     */
+    private void getFilesPath(Node node) throws RepositoryException {
         if (!isIgnores(node.getPath())) {
             if (node.hasNodes()) {
                 NodeIterator nodes = node.getNodes();
                 while (nodes.hasNext()) {
-                    getFilePaths(nodes.nextNode());
+                    getFilesPath(nodes.nextNode());
                 }
             }
             if (node.hasProperties()) {
@@ -222,9 +326,32 @@ public class JcrUtils {
 
                     path = property.getPath();
                     if (!isIgnores(path)) {
-                        allFilePaths.add(path);
+                        allFilesPath.add(path);
                     }
                 }
+            }
+        }
+    }
+
+
+    /**
+     * 递归获取节点下所有文件夹绝对路径
+     *
+     * @param node 当前节点
+     * @throws RepositoryException 仓库异常
+     */
+    private void getDirPaths(Node node) throws RepositoryException {
+        if (!isIgnores(node.getPath())) {
+            if (node.hasNodes()) {
+                NodeIterator nodes = node.getNodes();
+                while (nodes.hasNext()) {
+                    getDirPaths(nodes.nextNode());
+                }
+            }
+            String path;
+            path = node.getPath();
+            if (!isIgnores(path)) {
+                allDirsPath.add(path);
             }
         }
     }
@@ -246,7 +373,12 @@ public class JcrUtils {
         return false;
     }
 
-    public void addNodeOnRootByAbsPath(String absPath) {
+    /**
+     * 通过绝对路径添加多级目录
+     *
+     * @param absPath 绝对路径
+     */
+    public boolean addNodeOnRootByAbsPath(String absPath) {
         if (absPath.startsWith(SEPARATOR)) {
             String[] nodes = absPath.split(SEPARATOR);
             String prePath = "/";
@@ -274,6 +406,12 @@ public class JcrUtils {
                 prePath = nowPath.toString();
             }
         }
+        try {
+            return session.nodeExists(absPath);
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     /**
@@ -407,7 +545,7 @@ public class JcrUtils {
      * @param absPath 节点或文件的绝对路径
      * @return 是否移除成功
      */
-    public boolean removePropertyByAbsPath(String absPath) {
+    public boolean removeItemByAbsPath(String absPath) {
         try {
             session.removeItem(absPath);
             return true;
@@ -419,19 +557,67 @@ public class JcrUtils {
         return false;
     }
 
+    /**
+     * 重命名节点   采用workspace move来移动节点及其子图到指定的新位置  workspace move不能用于单个属性
+     *
+     * @param absPath 原节点的绝对路径
+     * @param newName 节点的新名称
+     * @return 是否修改成功
+     * @throws RepositoryException 仓库异常
+     */
+    public boolean renameNodeByAbsPath(String absPath, String newName) throws RepositoryException {
+        String newPath = absPath.substring(0, absPath.lastIndexOf("/") + 1) + newName;
+        session.getWorkspace().move(absPath, newPath);
+        return session.getNode(newPath) != null;
+    }
+
+    /**
+     * 重命名属性
+     * @param nodeAbsPath 该属性所在节点的绝对路径
+     * @param oldName 原属性名
+     * @param newName 新属性名
+     * @return 是否更改成功
+     * @throws RepositoryException 仓库异常
+     */
+    public boolean renamePropertyByAbsPath(String nodeAbsPath, String oldName, String newName) throws RepositoryException {
+        Node node = session.getNode(nodeAbsPath);
+        Property property = session.getProperty(nodeAbsPath + "/" + oldName);
+        Property newProperty = node.setProperty(newName, property.getValue());
+        property.remove();
+        return newProperty != null;
+    }
+
 
     /** ------------------------ 对外适配器使用API ----------------------------*/
 
     /**
-     * 添加 json 到某个节点下
-     * @param pName 属性名
+     * 通过节点绝对路径  添加 json 到某个节点下
+     *
+     * @param pName      属性名
      * @param objectJson 对象json
-     * @param node 节点
+     * @param absPath       节点绝对路径
      * @return 是否添加成功
      * @throws RepositoryException 仓库异常
      */
-    public boolean addPropertiesOnNode(String pName,String objectJson,Node node) throws RepositoryException {
-        if (node !=null){
+    public boolean addPropertiesOnNode(String pName, String objectJson,String absPath) throws RepositoryException {
+        Node node = session.getNode(absPath);
+        if (node != null) {
+            return node.setProperty(pName, objectJson) != null;
+        }
+        return false;
+    }
+
+    /**
+     * 添加 json 到某个节点下
+     *
+     * @param pName      属性名
+     * @param objectJson 对象json
+     * @param node       节点
+     * @return 是否添加成功
+     * @throws RepositoryException 仓库异常
+     */
+    public boolean addPropertiesOnNode(String pName, String objectJson, Node node) throws RepositoryException {
+        if (node != null) {
             return node.setProperty(pName, objectJson) != null;
         }
         return false;
@@ -439,17 +625,37 @@ public class JcrUtils {
 
     /**
      * 将json格式的字符串转为实体类
+     *
      * @param objectJson json字符串
-     * @param beanClass 实体类型
-     * @param <T> Bean类型
+     * @param beanClass  实体类型
+     * @param <T>        Bean类型
      * @return Bean对象
      */
-    public <T> T toBean(String objectJson,Class<T> beanClass){
+    public <T> T toBean(String objectJson, Class<T> beanClass) {
         return JSONUtil.toBean(objectJson, beanClass);
     }
 
 
-    
+    /**
+     * 用于执行远程操作的方法
+     *
+     * @param url    远程操作api
+     * @param params 参数
+     * @param method 方式
+     * @return 执行结果json
+     */
+    public String executeUrl(String url, Map<String, Object> params, String method) {
+        if (GTE_METHOD.equalsIgnoreCase(method)) {
+            return HttpUtil.get(url, params);
+        } else if (POST_METHOD.equalsIgnoreCase(method)) {
+            return HttpUtil.post(url, params);
+        }else if (PUT_METHOD.equalsIgnoreCase(method)) {
+            return HttpRequest.put(url).form(params).execute().body();
+        }else if (DELETE_METHOD.equalsIgnoreCase(method)) {
+            return HttpRequest.delete(url).form(params).execute().body();
+        }
+        return null;
+    }
 
 
 }

@@ -4,7 +4,6 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.graduation.model.dto.gitee.request.ContentBlobDto;
 import com.graduation.model.dto.gitee.response.SingleFileResultDto;
-import com.graduation.model.vo.FileResponseVo;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +25,7 @@ import java.io.IOException;
 public class ContentBlobController {
 
     @RequestMapping("/blob")
-    public FileResponseVo getBlobContent(ContentBlobDto dto, HttpServletResponse response) throws IOException {
+    public void getBlobContent(ContentBlobDto dto, HttpServletResponse response) throws IOException {
         boolean hasToken = true;
         if (StringUtils.isBlank(dto.getAccess_token())){
             hasToken = false;
@@ -39,13 +38,9 @@ public class ContentBlobController {
         if (StringUtils.isNotBlank(content)){
             byte[] bytes = Base64.decodeBase64(content);
             ServletOutputStream out = response.getOutputStream();
-            response.setContentType("application/octet-stream");
             response.setHeader("Content-Disposition", "attachment;filename=" + dto.getFilename());
             out.write(bytes);
             out.flush();
-            return FileResponseVo.success();
-        }else {
-            return FileResponseVo.fail("失败");
         }
     }
 }

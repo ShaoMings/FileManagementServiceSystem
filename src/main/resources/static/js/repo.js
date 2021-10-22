@@ -490,6 +490,8 @@ function removeItem(arr, e) {
 }
 
 function getAllRepo(){
+    layer.msg("正在初始化仓库,请耐心等待一下!");
+    let index = layer.load();
     $.ajax({
         url:"/repo/gite/allRepoName",
         data:{access_token:gitee_token},
@@ -501,6 +503,7 @@ function getAllRepo(){
                 $.each(repo, function (index, item) {
                     el += '<option  value="' + item.owner + "@" + item.path + '">' + item.name + '</option>\n'
                 });
+                layer.close(index);
                 $('#form-item select[name="project"]').append(el);
                 layui.form.render('select');
             } else {
@@ -535,10 +538,8 @@ function getTokenOfGitee() {
 function getParentFile(owner,repo) {
     let index = layer.load();
     $.post('/repo/gite/trees',{
-        "owner":owner,
-        "repo":repo,
-        "access_token":gitee_token,
-        "sha":"master",
+        "path":"",
+        "repo":repo
     }, function (result) {
         if (result.code === 200) {
             let data = result;
@@ -568,42 +569,28 @@ function getParentFile(owner,repo) {
 
 /*文件夹点击事件*/
 $("#file-result").on("click", ".resultDir", function () {
-    let type = $(this).data("type");
-    let sha = $(this).data("sha");
-    let dirName = $(this).data("name");
     let dirPath = $(this).data("path");
-    let dir = dirPath + "/" + dirName;
     let info = getOwnerAndRepo($('#project-select option:selected').val());
-    openDir(type,sha,dir,info[0],info[1]);
+    openDir(dirPath,info[1]);
 });
 
 /*监听文件导航*/
 $("#path-side").on("click", ".path-side-btn", function () {
     let dir = $(this).data("path");
-    let type = $(this).data("type");
-    let sha = $(this).data("sha");
     let info = getOwnerAndRepo($('#project-select option:selected').val());
-    openDir(type,sha,dir,info[0],info[1]);
+    openDir(dir,info[1]);
 })
 
 //打开文件夹
-function openDir(type,sha,dir,owner,repo) {
-    // console.log(dir)
+function openDir(dir,repo) {
     if (dir === undefined){
         dir = "";
     }
     let index = layer.load();
     let url = "/repo/gite/trees";
-    if (dir === "" || dir === "/") {
-        sha = "master";
-    }
     $.post(url, {
-        "owner":owner,
-        "repo":repo,
-        "type": type,
-        "sha":sha,
-        "access_token":gitee_token,
-        "path":dir
+        "path":dir,
+        "repo":repo
     }, function (result) {
         if (result.code === 200) {
             let data = result;
@@ -622,7 +609,7 @@ function openDir(type,sha,dir,owner,repo) {
             });
             let html = template('file-list', data);
             $("#file-result").html(html);
-            setPathSide("/" + dir,type,result.msg);
+            setPathSide("/" + dir);
             layer.close(index);
         } else {
             layer.close(index);
@@ -632,18 +619,18 @@ function openDir(type,sha,dir,owner,repo) {
 }
 
 //设置文件导航
-function setPathSide(dir,type,sha) {
+function setPathSide(dir) {
     let arr = dir.split('/');
     let side = $('.file-list-side').find('a');
     let shaes = [''];
     $.each(side,function (index, value) {
        shaes.push($(value).data('sha'));
     })
-    let html = '<a class="path-side-btn" data-path="" data-sha="master">全部文件</a>';
+    let html = '<a class="path-side-btn" data-path="">全部文件</a>';
     let path = "";
     for (let i = 1; i < arr.length; i++) {
         if (arr[i] !== "") {
-            html += '<a class="path-side-btn" data-type="'+type+'" data-sha="'+(i === (arr.length-1)?sha:shaes[i])+'" data-path="' + (path + "/" + arr[i]) + '">' + arr[i] + '</a>';
+            html += '<a class="path-side-btn" data-path="' + (path + "/" + arr[i]) + '">' + arr[i] + '</a>';
             path += "/" + arr[i];
         }
     }

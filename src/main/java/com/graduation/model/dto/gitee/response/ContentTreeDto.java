@@ -10,13 +10,13 @@ import java.util.List;
  * Description 码云仓库文件目录树封装类
  *
  * @author shaoming
- * @date 2021/10/15 15:20
+ * @date 2021/10/22 17:19
  * @since 1.0
  */
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class FileTreeDto {
+public class ContentTreeDto {
     /** 分支名(如master)、Commit或者目录Tree的SHA值 */
     private String sha;
     /** 当前仓库请求api */

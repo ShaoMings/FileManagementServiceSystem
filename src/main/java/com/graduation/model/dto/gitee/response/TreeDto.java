@@ -37,6 +37,8 @@ public class TreeDto {
     /** 是否为文件夹*/
     private Boolean is_dir;
 
+    private String owner;
+
 
     public void setSize(Integer size) {
         this.size = size;
@@ -60,7 +62,8 @@ public class TreeDto {
                 this.setName(path);
             }
         }
+        String tmp = url.substring(url.indexOf("/repos/") + 7);
+        this.setOwner(tmp.substring(0,tmp.indexOf("/")));
         return contains?path.substring(0,path.lastIndexOf("/")):"";
-//        return path;
     }
 }

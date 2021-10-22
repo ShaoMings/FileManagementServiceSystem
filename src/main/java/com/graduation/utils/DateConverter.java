@@ -4,9 +4,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 
 /**
  * Description 日期转换工具
@@ -175,7 +178,7 @@ public class DateConverter {
 
     /**
      * 计算传入时间是否没有当前时间大(是否过时了)
-     *
+     * 也就是说判断传入时间是否早与现在
      * @return true过时了 反之不过时
      */
     public static boolean isOverdueBaseNow(String time) {
@@ -267,5 +270,37 @@ public class DateConverter {
         return 24L *60*60*days;
     }
 
+    /**
+     *  将带T 以及 +时区时间的格式转为Date格式
+     * @param utcTime 示例  "2021-10-21T17:59:39+08:00"
+     * @return Date格式
+     */
+    public static Date utcTimeToLocalDateTime(String utcTime){
+        String time = ZonedDateTime.parse(utcTime).toInstant().toString();
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        try {
+            return df.parse(time);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * 通过传入utc时间与现在比较 是否utc时间早于现在
+     * @param utcTime utc时间 示例  "2021-10-21T17:59:39+08:00"
+     * @return 是否早于现在
+     */
+    public static boolean isUtcTimeIsEarlierThanNow(String utcTime){
+        Date date = utcTimeToLocalDateTime(utcTime);
+        return isOverdueBaseNow(getFormatDate(date));
+    }
+
+    public static void main(String[] args) throws ParseException {
+        String s = "https://gitee.com/api/v5/repos/shaoming123/ColaDemo/git/blobs/0c37a95750bdf11bc63b69b84506520ab8482766";
+        String tmp = s.substring(s.indexOf("/repos/") + 7);
+        System.out.println(tmp.substring(0,tmp.indexOf("/")));
+    }
 
 }

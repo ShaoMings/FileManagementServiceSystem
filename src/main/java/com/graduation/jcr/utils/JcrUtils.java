@@ -1,8 +1,10 @@
-package com.graduation.utils;
+package com.graduation.jcr.utils;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.graduation.jcr.model.dto.JcrContentTreeDto;
+import com.graduation.utils.FileSizeConverter;
 import org.apache.jackrabbit.oak.Oak;
 import org.apache.jackrabbit.oak.jcr.Jcr;
 import org.apache.jackrabbit.value.BinaryImpl;
@@ -128,6 +130,48 @@ public class JcrUtils {
             e.printStackTrace();
         }
         return false;
+    }
+
+
+    /**
+     * 获取指定路径下的文件及文件夹
+     * @param absPath 绝对路径
+     * @return 文件及文件夹
+     */
+    public List<JcrContentTreeDto> getContentTreeOfNodeByAbsPath(String absPath){
+        try{
+            if (session.nodeExists(absPath)) {
+                List<JcrContentTreeDto> list = new ArrayList<>();
+                Node node = session.getNode(absPath);
+                if (node.hasNodes()) {
+                    NodeIterator nodes = node.getNodes();
+                    while (nodes.hasNext()) {
+                        Node n = nodes.nextNode();
+                        String name = n.getName();
+                        String path = n.getPath();
+                        if (!isIgnores(path)) {
+                            list.add(new JcrContentTreeDto(path,name,0L,"0B",true));
+                        }
+                    }
+                }
+                if (node.hasProperties()){
+                    PropertyIterator properties = node.getProperties();
+                    while (properties.hasNext()){
+                        Property p = properties.nextProperty();
+                        String name = p.getName();
+                        String path = p.getPath();
+                        if (!isIgnores(path)){
+                            long size = p.getLength();
+                            list.add(new JcrContentTreeDto(path,name,size, FileSizeConverter.getLength(size),false));
+                        }
+                    }
+                }
+                return list;
+            }
+        }catch (RepositoryException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

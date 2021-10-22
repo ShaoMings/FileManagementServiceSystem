@@ -1,7 +1,7 @@
 package com.graduation.controller;
 
 import com.graduation.model.vo.FileResponseVo;
-import com.graduation.utils.JcrUtils;
+import com.graduation.jcr.utils.JcrUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

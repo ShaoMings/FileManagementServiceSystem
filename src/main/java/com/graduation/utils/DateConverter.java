@@ -196,6 +196,18 @@ public class DateConverter {
     }
 
     /**
+     * 计算传入时间t1 t2 是否 t1  小于 t2
+     * 也就是判断t1 是否比 t2 早
+     * @return true t1 小(早)
+     */
+    public static boolean isT1EarlierT2(Date t1,Date t2) {
+            if (t1.getTime() < t2.getTime()) {
+                return true;
+            }
+        return false;
+    }
+
+    /**
      * 月份相差天数计算辅助类
      *
      * @param eDate            较早(小)的日期
@@ -288,13 +300,15 @@ public class DateConverter {
     }
 
     /**
-     * 通过传入utc时间与现在比较 是否utc时间早于现在
-     * @param utcTime utc时间 示例  "2021-10-21T17:59:39+08:00"
-     * @return 是否早于现在
+     * 通过传入utc时间进行比较 是否t1早于或等于t2
+     * @param t1 utc时间 示例  "2021-10-21T17:59:39+08:00"
+     * @param t2 utc时间 示例  "2021-10-21T17:59:39+08:00"
+     * @return t1是否早于t2  也就是说是不是t2较晚
      */
-    public static boolean isUtcTimeIsEarlierThanNow(String utcTime){
-        Date date = utcTimeToLocalDateTime(utcTime);
-        return isOverdueBaseNow(getFormatDate(date));
+    public static boolean isFirstUtcTimeIsEarlier(String t1,String t2){
+        Date d1 = utcTimeToLocalDateTime(t1);
+        Date d2 = utcTimeToLocalDateTime(t2);
+        return isT1EarlierT2(d1,d2);
     }
 
     public static void main(String[] args) throws ParseException {

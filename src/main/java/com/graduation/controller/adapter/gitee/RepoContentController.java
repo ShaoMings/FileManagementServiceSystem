@@ -71,11 +71,13 @@ public class RepoContentController extends BaseController {
      * @param repo 项目仓库
      * @return 是否初始化成功
      */
-    private boolean initializeRepository(String token,String owner,String repo){
+    boolean initializeRepository(String token, String owner, String repo){
         String api = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/git/trees/master";
         Map<String, Object> params = new HashMap<>(2);
         params.put("access_token", token);
         params.put("recursive", 1);
+        params.put("owner", owner);
+        params.put("repo", repo);
         String repository = getUser().getUsername()+"/"+ repo;
         return giteeAdapter.initializeRepository(repository,api,params,"GET");
     }
@@ -95,6 +97,8 @@ public class RepoContentController extends BaseController {
                     sb.append(CommonUtils.toUpperFirstChar(s));
                 }
                 list.add(new RepoSimpleInfoVo(owner, sb.toString(), r));
+            }else {
+                list.add(new RepoSimpleInfoVo(owner, r, r));
             }
         });
         return list;
@@ -103,10 +107,11 @@ public class RepoContentController extends BaseController {
     @RequestMapping("/allRepoName")
     public FileResponseVo getUserAllRepoName(AllRepoDto dto) {
         if (StringUtils.isNotBlank(dto.getAccess_token())) {
-            if (redisUtils.hasKey(getUser().getUsername() + "-auth_token")) {
-                String token = (String) redisUtils.get(getUser().getUsername() + "-auth_token");
+            String username = getUser().getUsername();
+            if (redisUtils.hasKey(username + "-auth_token")) {
+                String token = (String) redisUtils.get(username + "-auth_token");
                 if (dto.getAccess_token().equals(token)) {
-                    List<String> names = giteeAdapter.getAllRepoNames(getUser().getUsername());
+                    List<String> names = giteeAdapter.getAllRepoNames(username);
                     if (names!=null){
                         StringBuilder sb = new StringBuilder();
                         String owner = giteeAdapter.getOwnerByToken(token);
@@ -117,8 +122,10 @@ public class RepoContentController extends BaseController {
                             sb.delete(0,sb.length());
                             sb.append("https://gitee.com/api/v5/repos/").append(owner)
                                     .append("/").append(n).append("/events");
-                            boolean isLast = giteeAdapter.isTheLast(sb.toString(), params, "GET");
-                            if (!isLast){
+                            boolean isNoLast = giteeAdapter.isNoTheLast(sb.toString(), params, "GET"
+                                    ,giteeAdapter.getTheLastOnRepo(username,n));
+                            // 有更新 需要重新拉取
+                            if (isNoLast){
                                 initializeRepository(token,owner,n);
                             }
                         });

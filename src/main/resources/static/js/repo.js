@@ -539,7 +539,8 @@ function getParentFile(owner,repo) {
     let index = layer.load();
     $.post('/repo/gite/trees',{
         "path":"",
-        "repo":repo
+        "repo":repo,
+        "token":gitee_token
     }, function (result) {
         if (result.code === 200) {
             let data = result;
@@ -590,7 +591,8 @@ function openDir(dir,repo) {
     let url = "/repo/gite/trees";
     $.post(url, {
         "path":dir,
-        "repo":repo
+        "repo":repo,
+        "token":gitee_token
     }, function (result) {
         if (result.code === 200) {
             let data = result;
@@ -794,18 +796,10 @@ $("#file-result").on("click", ".delete-file-btn", function () {
 
 // 文件预览
 $("#file-result").on("click", ".resultFile", function () {
-    let name = $(this).data("name");
-    let sha = $(this).data("sha");
-    let token = gitee_token;
+    let name = $(this).data("name")
+    let path = $(this).data("path");
     let tmp = getOwnerAndRepo($('#project-select option:selected').val());
-    // 文件预览token
-    let info = {
-        token:token,
-        owner:tmp[0],
-        repo:tmp[1],
-        sha:sha
-    }
-    let source =  `/repo/gite/blob?access_token=${info.token}&owner=${info.owner}&repo=${info.repo}&sha=${info.sha}&filename=${name}`;
+    let source =  `/repo/gite/blob?path=${path}&repo=${tmp[1]}&code=${gitee_token}`;
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();

@@ -286,13 +286,12 @@ public interface Jcr {
 
     /**
      * 获取文件
-     * @param dirAbsolute 文件存放的文件夹绝对路径
-     * @param filename 文件名
+     * @param absolute 文件存放的文件夹绝对路径
      * @param beanClass 用于接收文件信息的实体类型
      * @param <T> 实体类型
      * @return 文件
      */
-    default <T> T getFile(String dirAbsolute,String filename,Class<T> beanClass){
+    default <T> T getFile(String absolute,Class<T> beanClass){
         return null;
     }
 

@@ -37,7 +37,10 @@ public class TreeDto {
     /** 是否为文件夹*/
     private Boolean is_dir;
 
+    /**  仓库用户名*/
     private String owner;
+    /** 上次修改时间*/
+    private String lastModified;
 
 
     public void setSize(Integer size) {

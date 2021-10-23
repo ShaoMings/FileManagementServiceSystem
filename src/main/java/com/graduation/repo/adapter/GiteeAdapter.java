@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -32,70 +33,66 @@ public class GiteeAdapter implements Jcr {
     private JcrUtils jcrUtils;
 
 
-//    public List<RepoInfoVo> initializeRepository(String user, String api, Map<String, Object> params, String method) {
-//        String json = jcrUtils.executeUrl(api, params, method);
-//        if (StringUtils.isNotBlank(json)) {
-//            JSONArray jsonArray = JSONUtil.parseArray(json);
-//            JSONObject obj;
-//            List<RepoInfoVo> list = new ArrayList<>();
-//            List<String> repos = new ArrayList<>();
-//            for (Object o : jsonArray) {
-//                obj = (JSONObject) o;
-//                repos.add(obj.getStr("path"));
-//                list.add(new RepoInfoVo(
-//                        obj.getStr("name"), obj.getStr("path"), obj.getStr("full_name"),
-//                        obj.getStr("project_creator"), obj.getStr("html_url"), obj.getStr("description"),
-//                        obj.getBool("public"), obj.getStr("default_branch"), DateConverter.getFormatDate(obj.getDate("created_at")),
-//                        DateConverter.getFormatDate(obj.getDate("pushed_at")), DateConverter.getFormatDate(obj.getDate("updated_at"))));
-//            }
-//            repos.forEach(r -> jcrUtils.addNodeOnRootByAbsPath("/" +user+"/"+r));
-//            List<String> names = jcrUtils.getAllNodeNamesOnNodeByAbs("/" + user);
-//            System.out.println(names);
-//            return list;
-//        }
-//        return null;
-//    }
-
-
     /**
      * 初始化仓库  一般授权后执行 初始化已授权的仓库信息到jcr中
      *
      * @param repository 初始化的jcr仓库名称  这里设定为登录用户的用户+/+当前远程仓库名称
-     * @param api    实际远程操作的api
-     * @param params 请求参数
-     * @param method 请求方式
+     * @param api        实际远程操作的api
+     * @param params     请求参数
+     * @param method     请求方式
      * @return 是否初始化成功
      */
     @Override
-    public boolean initializeRepository(String repository,String api, Map<String, Object> params, String method) {
+    public boolean initializeRepository(String repository, String api, Map<String, Object> params, String method) {
+        // 如果之前仓库有数据，需重新删除 添加
+        boolean hasOld = jcrUtils.hasItemOnNodeByAbsPath("/" + repository);
+        if (hasOld) {
+            jcrUtils.removeItemByAbsPath("/" + repository);
+        }
+        // last modified time
+        StringBuilder sb = new StringBuilder();
+        String owner = (String) params.get("owner");
+        String repo = (String) params.get("repo");
+        String token = (String) params.get("access_token");
+        sb.append("https://gitee.com/api/v5/repos/").append(owner)
+                .append("/").append(repo).append("/events");
+        Map<String, Object> m = new HashMap<>();
+        m.put("access_token", token);
+        m.put("limit", 1);
+        String lastUtcTime = getTheLast(sb.toString(), m, "GET");
+        jcrUtils.addPropertyOnNodeByAbsPath(".last-" + repo, lastUtcTime, "/" + repository);
+        params.remove("owner");
+        params.remove("repo");
+        // init repository
         String json = jcrUtils.executeUrl(api, params, method);
-        if (StringUtils.isNotBlank(json)){
-            String prefix = "/"+repository+"/";
+        if (StringUtils.isNotBlank(json)) {
+            String prefix = "/" + repository + "/";
             ContentTreeDto fileTreeDto = JSONUtil.toBean(json, ContentTreeDto.class);
             List<TreeDto> tree = fileTreeDto.getTree();
-               if (tree!=null){
-                   tree.forEach(t->{
-                       if (!"".equals(t.getPath())&&t.getIs_dir()){
-                           jcrUtils.addNodeOnRootByAbsPath(prefix+t.getPath());
-                       }else {
-                           jcrUtils.addPropertyOnNodeByAbsPath(t.getName(),JSONUtil.toJsonStr(t),prefix+t.getPath());
-                       }
-                   });
-                   return true;
-               }
+            if (tree != null) {
+                tree.forEach(t -> {
+                    if (!"".equals(t.getPath()) && t.getIs_dir()) {
+                        jcrUtils.addNodeOnRootByAbsPath(prefix + t.getPath());
+                    } else {
+                        jcrUtils.addPropertyOnNodeByAbsPath(t.getName(), JSONUtil.toJsonStr(t), prefix + t.getPath());
+                    }
+                });
+                return true;
+            }
         }
         return false;
     }
 
     /**
      * 通过token 获取 远程仓库用户名
+     *
      * @param token token
      * @return 远程仓库用户名
      */
-    public String getOwnerByToken(String token){
-        String api = "https://gitee.com/api/v5/user?access_token="+token;
+    public String getOwnerByToken(String token) {
+        String api = "https://gitee.com/api/v5/user?access_token=" + token;
         String json = HttpUtil.get(api);
-        if (StringUtils.isNotBlank(json)){
+        if (StringUtils.isNotBlank(json)) {
             return JSONUtil.parseObj(json).getStr("login");
         }
         return null;
@@ -103,26 +100,52 @@ public class GiteeAdapter implements Jcr {
 
     /**
      * 获取仓库最近一次更新时间 是否比现在早   判断是否为最新的
+     *
      * @param api    实际远程操作的api
      * @param params 请求参数
      * @param method 请求方式
+     * @return 仓库是否需要更新数据
+     */
+    public boolean isNoTheLast(String api, Map<String, Object> params, String method, String repoLastTime) {
+        if (repoLastTime != null) {
+            String utcTime = getTheLast(api, params, method);
+            return DateConverter.isFirstUtcTimeIsEarlier(repoLastTime, utcTime);
+        }
+        return true;
+    }
+
+    /**
+     * 获取仓库存放的最近一次更新时间
+     *
      * @return 仓库是否为最新状态
      */
-    public boolean isTheLast(String api,Map<String, Object> params,String method){
+    public String getTheLastOnRepo(String user, String repo) {
+        return jcrUtils.getStringPropertyByAbsPath("/" + user + "/" + repo + "/" + ".last-" + repo);
+    }
+
+    /**
+     * 获取仓库最近一次更新时间
+     *
+     * @param api    实际远程操作的api
+     * @param params 请求参数
+     * @param method 请求方式
+     * @return 仓库最近一次更新时间 utc
+     */
+    public String getTheLast(String api, Map<String, Object> params, String method) {
         String json = jcrUtils.executeUrl(api, params, method);
         JSONArray jsonArray = JSONUtil.parseArray(json);
         JSONObject jsonObject = (JSONObject) jsonArray.get(0);
-        String utcTime = jsonObject.getStr("created_at");
-        return DateConverter.isUtcTimeIsEarlierThanNow(utcTime);
+        return jsonObject.getStr("created_at");
     }
 
     /**
      * 获取用户的所有授权仓库名称
+     *
      * @param user 用户名
      * @return 仓库名
      */
-    public List<String> getAllRepoNames(String user){
-        return jcrUtils.getAllNodeNamesOnNodeByAbs("/"+user);
+    public List<String> getAllRepoNames(String user) {
+        return jcrUtils.getAllNodeNamesOnNodeByAbs("/" + user);
     }
 
     /**
@@ -181,12 +204,12 @@ public class GiteeAdapter implements Jcr {
     /**
      * 获取绝对路径文件夹下的文件或文件夹
      *
-     * @param absolute  文件夹的绝对路径
+     * @param absolute 文件夹的绝对路径
      * @return 文件或文件夹信息列表
      */
     @Override
     public List<JcrContentTreeDto> getDirectoryFiles(String absolute) {
-        return  jcrUtils.getContentTreeOfNodeByAbsPath(absolute);
+        return jcrUtils.getContentTreeOfNodeByAbsPath(absolute);
     }
 
     /**
@@ -313,13 +336,13 @@ public class GiteeAdapter implements Jcr {
     /**
      * 获取文件
      *
-     * @param dirAbsolute 文件存放的文件夹绝对路径
-     * @param filename    文件名
-     * @param beanClass   用于接收文件信息的实体类型
+     * @param absolute  文件绝对路径
+     * @param beanClass 用于接收文件信息的实体类型
      * @return 文件
      */
     @Override
-    public <T> T getFile(String dirAbsolute, String filename, Class<T> beanClass) {
-        return Jcr.super.getFile(dirAbsolute, filename, beanClass);
+    public <T> T getFile(String absolute, Class<T> beanClass) {
+        String json = jcrUtils.getStringPropertyByAbsPath(absolute);
+        return JSONUtil.toBean(json, beanClass);
     }
 }

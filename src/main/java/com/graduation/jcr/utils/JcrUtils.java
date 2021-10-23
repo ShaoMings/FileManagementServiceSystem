@@ -2,6 +2,7 @@ package com.graduation.jcr.utils;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpUtil;
+import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.graduation.jcr.model.dto.JcrContentTreeDto;
 import com.graduation.utils.FileSizeConverter;
@@ -132,6 +133,24 @@ public class JcrUtils {
         return false;
     }
 
+    /**
+     * 通过绝对路径判断是否存在该文件
+     *
+     * @param absPath 文件绝对路径
+     * @return 是否存在该文件
+     */
+    public boolean hasItemOnNodeByAbsPath(String absPath) {
+        try {
+            if (session.nodeExists(absPath)){
+                Node node = session.getNode(absPath);
+                return node.hasNodes() ||  node.hasProperties();
+            }
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
     /**
      * 获取指定路径下的文件及文件夹
@@ -159,10 +178,15 @@ public class JcrUtils {
                     while (properties.hasNext()){
                         Property p = properties.nextProperty();
                         String name = p.getName();
-                        String path = p.getPath();
-                        if (!isIgnores(path)){
-                            long size = p.getLength();
-                            list.add(new JcrContentTreeDto(path,name,size, FileSizeConverter.getLength(size),false));
+                        if (!name.startsWith(".last-")){
+                            String path = p.getPath();
+                            if (!isIgnores(path) && !isIgnores(name)){
+                                String json = p.getString();
+                                JSONObject jsonObject = JSONUtil.parseObj(json);
+                                Long size = jsonObject.getLong("size");
+                                String file_size = jsonObject.getStr("file_size");
+                                list.add(new JcrContentTreeDto(path,name,size, file_size,false));
+                            }
                         }
                     }
                 }
@@ -197,7 +221,9 @@ public class JcrUtils {
      */
     public String getStringPropertyByAbsPath(String absPath) {
         try {
-            return session.getProperty(absPath).getString();
+            if (session.propertyExists(absPath)){
+                return session.getProperty(absPath).getString();
+            }
         } catch (RepositoryException e) {
             e.printStackTrace();
         }
@@ -213,6 +239,21 @@ public class JcrUtils {
         try {
             return session.getRootNode();
         } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public String getNodeStringPropertyByAbs(String absPath,String repo){
+        try {
+            Node node;
+            if (session.nodeExists(absPath)) {
+                node = session.getNode(absPath);
+                node.getProperty(".");
+            } else {
+                return null;
+            }
+        }catch (RepositoryException e){
             e.printStackTrace();
         }
         return null;

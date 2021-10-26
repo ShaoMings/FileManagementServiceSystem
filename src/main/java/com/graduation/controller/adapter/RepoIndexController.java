@@ -18,4 +18,9 @@ public class RepoIndexController {
     public String index() {
         return "repo/file";
     }
+
+    @RequestMapping("/upload")
+    public String upload() {
+        return "repo/upload";
+    }
 }

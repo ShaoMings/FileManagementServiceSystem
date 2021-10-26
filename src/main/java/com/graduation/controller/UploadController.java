@@ -32,9 +32,6 @@ import static com.graduation.utils.FileUtils.upload;
 @RequestMapping("/file")
 public class UploadController extends BaseController{
 
-    @Value("${upload.temp.path}")
-    private String tempPath;
-
     @Autowired
     private FileService fileService;
 

@@ -1,6 +1,7 @@
 package com.graduation.jcr.utils;
 
 import cn.hutool.http.HttpRequest;
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
@@ -29,7 +30,7 @@ import java.util.Map;
 @Component
 public class JcrUtils {
 
-    private static final String[] IGNORES = {"/jcr:", "/rep:", "/oak:"};
+    private static final String[] IGNORES = {"/jcr:", "/rep:", "/oak:", ".last-", ".keep"};
 
     private static final String SEPARATOR = "/";
 
@@ -52,8 +53,8 @@ public class JcrUtils {
     public JcrUtils() {
         try {
             session = new Jcr(new Oak()).createRepository().login(new SimpleCredentials("admin", "admin".toCharArray()));
-        } catch (RepositoryException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
     }
 
@@ -141,9 +142,9 @@ public class JcrUtils {
      */
     public boolean hasItemOnNodeByAbsPath(String absPath) {
         try {
-            if (session.nodeExists(absPath)){
+            if (session.nodeExists(absPath)) {
                 Node node = session.getNode(absPath);
-                return node.hasNodes() ||  node.hasProperties();
+                return node.hasNodes() || node.hasProperties();
             }
         } catch (RepositoryException e) {
             e.printStackTrace();
@@ -154,11 +155,12 @@ public class JcrUtils {
 
     /**
      * 获取指定路径下的文件及文件夹
+     *
      * @param absPath 绝对路径
      * @return 文件及文件夹
      */
-    public List<JcrContentTreeDto> getContentTreeOfNodeByAbsPath(String absPath){
-        try{
+    public List<JcrContentTreeDto> getContentTreeOfNodeByAbsPath(String absPath) {
+        try {
             if (session.nodeExists(absPath)) {
                 List<JcrContentTreeDto> list = new ArrayList<>();
                 Node node = session.getNode(absPath);
@@ -169,30 +171,29 @@ public class JcrUtils {
                         String name = n.getName();
                         String path = n.getPath();
                         if (!isIgnores(path)) {
-                            list.add(new JcrContentTreeDto(path,name,0L,"0B",true));
+                            list.add(new JcrContentTreeDto(path, name, 0L, "0B", true));
                         }
                     }
                 }
-                if (node.hasProperties()){
+                if (node.hasProperties()) {
                     PropertyIterator properties = node.getProperties();
-                    while (properties.hasNext()){
+                    while (properties.hasNext()) {
                         Property p = properties.nextProperty();
-                        String name = p.getName();
-                        if (!name.startsWith(".last-")){
-                            String path = p.getPath();
-                            if (!isIgnores(path) && !isIgnores(name)){
-                                String json = p.getString();
-                                JSONObject jsonObject = JSONUtil.parseObj(json);
-                                Long size = jsonObject.getLong("size");
-                                String file_size = jsonObject.getStr("file_size");
-                                list.add(new JcrContentTreeDto(path,name,size, file_size,false));
-                            }
+                        String path = p.getPath();
+                        if (!isIgnores(path)) {
+                            String name = p.getName();
+                            String json = p.getString();
+                            JSONObject jsonObject = JSONUtil.parseObj(json);
+                            Long size = jsonObject.getLong("size");
+                            String file_size = jsonObject.getStr("file_size");
+                            list.add(new JcrContentTreeDto(path, name, size, file_size, false));
                         }
+
                     }
                 }
                 return list;
             }
-        }catch (RepositoryException e){
+        } catch (RepositoryException e) {
             e.printStackTrace();
         }
         return null;
@@ -221,7 +222,7 @@ public class JcrUtils {
      */
     public String getStringPropertyByAbsPath(String absPath) {
         try {
-            if (session.propertyExists(absPath)){
+            if (session.propertyExists(absPath)) {
                 return session.getProperty(absPath).getString();
             }
         } catch (RepositoryException e) {
@@ -244,7 +245,7 @@ public class JcrUtils {
         return null;
     }
 
-    public String getNodeStringPropertyByAbs(String absPath,String repo){
+    public String getNodeStringPropertyByAbs(String absPath, String repo) {
         try {
             Node node;
             if (session.nodeExists(absPath)) {
@@ -253,7 +254,7 @@ public class JcrUtils {
             } else {
                 return null;
             }
-        }catch (RepositoryException e){
+        } catch (RepositoryException e) {
             e.printStackTrace();
         }
         return null;
@@ -261,7 +262,8 @@ public class JcrUtils {
 
 
     /**
-     *  获取指定路径下的所有一级文件夹名称
+     * 获取指定路径下的所有一级文件夹名称
+     *
      * @param absPath 指定路径
      * @return 所有一级文件夹名称
      */
@@ -270,27 +272,27 @@ public class JcrUtils {
             Node node;
             if (session.nodeExists(absPath)) {
                 node = session.getNode(absPath);
-            }else {
+            } else {
                 boolean isAdded = addNodeOnRootByAbsPath(absPath);
-                if (isAdded){
+                if (isAdded) {
                     node = session.getNode(absPath);
-                }else {
+                } else {
                     node = null;
                 }
             }
             assert node != null;
-            if (node.hasNodes()){
-                List<String > list = new ArrayList<>();
+            if (node.hasNodes()) {
+                List<String> list = new ArrayList<>();
                 NodeIterator nodes = node.getNodes();
                 while (nodes.hasNext()) {
                     String name = nodes.nextNode().getName();
-                    if (!isIgnores(name)){
+                    if (!isIgnores(name)) {
                         list.add(name);
                     }
                 }
                 return list;
             }
-        }catch (RepositoryException e){
+        } catch (RepositoryException e) {
             e.printStackTrace();
         }
         return null;
@@ -658,9 +660,10 @@ public class JcrUtils {
 
     /**
      * 重命名属性
+     *
      * @param nodeAbsPath 该属性所在节点的绝对路径
-     * @param oldName 原属性名
-     * @param newName 新属性名
+     * @param oldName     原属性名
+     * @param newName     新属性名
      * @return 是否更改成功
      * @throws RepositoryException 仓库异常
      */
@@ -680,11 +683,11 @@ public class JcrUtils {
      *
      * @param pName      属性名
      * @param objectJson 对象json
-     * @param absPath       节点绝对路径
+     * @param absPath    节点绝对路径
      * @return 是否添加成功
      * @throws RepositoryException 仓库异常
      */
-    public boolean addPropertiesOnNode(String pName, String objectJson,String absPath) throws RepositoryException {
+    public boolean addPropertiesOnNode(String pName, String objectJson, String absPath) throws RepositoryException {
         Node node = session.getNode(absPath);
         if (node != null) {
             return node.setProperty(pName, objectJson) != null;
@@ -734,10 +737,24 @@ public class JcrUtils {
             return HttpUtil.get(url, params);
         } else if (POST_METHOD.equalsIgnoreCase(method)) {
             return HttpUtil.post(url, params);
-        }else if (PUT_METHOD.equalsIgnoreCase(method)) {
+        } else if (PUT_METHOD.equalsIgnoreCase(method)) {
             return HttpRequest.put(url).form(params).execute().body();
-        }else if (DELETE_METHOD.equalsIgnoreCase(method)) {
+        } else if (DELETE_METHOD.equalsIgnoreCase(method)) {
             return HttpRequest.delete(url).form(params).execute().body();
+        }
+        return null;
+    }
+
+
+    public HttpResponse executeUrlBackResponse(String url, Map<String, Object> params, String method) {
+        if (GTE_METHOD.equalsIgnoreCase(method)) {
+            return HttpRequest.get(url).form(params).execute();
+        } else if (POST_METHOD.equalsIgnoreCase(method)) {
+            return HttpRequest.post(url).form(params).execute();
+        } else if (PUT_METHOD.equalsIgnoreCase(method)) {
+            return HttpRequest.put(url).form(params).execute();
+        } else if (DELETE_METHOD.equalsIgnoreCase(method)) {
+            return HttpRequest.delete(url).form(params).execute();
         }
         return null;
     }

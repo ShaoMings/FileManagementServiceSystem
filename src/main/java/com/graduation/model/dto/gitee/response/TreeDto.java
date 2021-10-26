@@ -20,27 +20,21 @@ public class TreeDto {
     private String path;
     /** 文件名 */
     private String name;
-    /** 未知属性 */
-    private String mode;
     /** 文件类型 blob 表示为文件  tree表示为文件夹*/
     private String type;
     /** 文件大小  文件夹为0*/
     private Integer size;
-
     /** 单位化后的文件大小*/
     private String file_size;
-
     /** 分支名(如master)、Commit或者目录Tree的SHA值*/
     private String sha;
     /** 文件或文件夹的访问api 文件返回的content 或为base64加密内容 需手动解密*/
     private String url;
     /** 是否为文件夹*/
     private Boolean is_dir;
-
     /**  仓库用户名*/
     private String owner;
-    /** 上次修改时间*/
-    private String lastModified;
+
 
 
     public void setSize(Integer size) {

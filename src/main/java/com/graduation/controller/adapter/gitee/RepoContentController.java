@@ -39,27 +39,20 @@ public class RepoContentController extends BaseController {
 
     private List<RepoInfoVo> getUserAllRepo(AllRepoDto dto) {
         if (StringUtils.isNotBlank(dto.getAccess_token())) {
-            String api = "https://gitee.com/api/v5/user/repos";
-            Map<String, Object> params = new HashMap<>(4);
-            params.put("access_token", dto.getAccess_token());
-            params.put("sort", (dto.getSort() == null ? "full_name" : dto.getSort()));
-            params.put("page", (dto.getPage() == null ? "1" : dto.getPage()));
-            params.put("pre_page", (dto.getPer_page() == null ? "20" : dto.getPer_page()));
-            String json = HttpUtil.get(api, params);
-            if (StringUtils.isNotBlank(json)) {
-                JSONArray jsonArray = JSONUtil.parseArray(json);
-                JSONObject obj;
-                List<RepoInfoVo> list = new ArrayList<>();
-                for (Object o : jsonArray) {
-                    obj = (JSONObject) o;
-                    list.add(new RepoInfoVo(
-                            obj.getStr("name"), obj.getStr("path"), obj.getStr("full_name"),
-                            obj.getStr("project_creator"), obj.getStr("html_url"), obj.getStr("description"),
-                            obj.getBool("public"), obj.getStr("default_branch"), DateConverter.getFormatDate(obj.getDate("created_at")),
-                            DateConverter.getFormatDate(obj.getDate("pushed_at")), DateConverter.getFormatDate(obj.getDate("updated_at"))));
+                JSONArray jsonArray = giteeAdapter.getAllRepoArray(dto.getAccess_token());
+                if (jsonArray!=null){
+                    JSONObject obj;
+                    List<RepoInfoVo> list = new ArrayList<>();
+                    for (Object o : jsonArray) {
+                        obj = (JSONObject) o;
+                        list.add(new RepoInfoVo(
+                                obj.getStr("name"), obj.getStr("path"), obj.getStr("full_name"),
+                                obj.getStr("project_creator"), obj.getStr("html_url"), obj.getStr("description"),
+                                obj.getBool("public"), obj.getStr("default_branch"), DateConverter.getFormatDate(obj.getDate("created_at")),
+                                DateConverter.getFormatDate(obj.getDate("pushed_at")), DateConverter.getFormatDate(obj.getDate("updated_at"))));
+                    }
+                    return list;
                 }
-                return list;
-            }
         }
         return null;
     }
@@ -112,7 +105,8 @@ public class RepoContentController extends BaseController {
                 String token = (String) redisUtils.get(username + "-auth_token");
                 if (dto.getAccess_token().equals(token)) {
                     List<String> names = giteeAdapter.getAllRepoNames(username);
-                    if (names!=null){
+                    Integer repoCount = giteeAdapter.getAllRepoCount(token);
+                    if (names!=null && names.size() == repoCount){
                         StringBuilder sb = new StringBuilder();
                         String owner = giteeAdapter.getOwnerByToken(token);
                         Map<String, Object> params = new HashMap<>(2);

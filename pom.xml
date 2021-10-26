@@ -231,7 +231,6 @@
             <version>5.12.0.202106070339-r</version>
         </dependency>
 
-
         <!--        文件转pdf依赖-->
         <dependency>
             <groupId>com.aspose</groupId>
@@ -248,7 +247,6 @@
             <artifactId>aspose-slides</artifactId>
             <version>20.4</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.apache.jackrabbit</groupId>
@@ -300,6 +298,29 @@
                 </configuration>
             </plugin>
         </plugins>
+        <resources>
+            <!-- fonts file cannot use filter as the data structure of byte file will be changed via filter -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <excludes>
+                    <exclude>static/**</exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>static/**</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.xml</include>
+                </includes>
+            </resource>
+        </resources>
     </build>
 
 </project>

@@ -57,6 +57,16 @@ public interface Jcr {
     /**
      * 删除文件夹
      * @param absolute 文件夹的绝对路径
+     * @param params 自定义参数
+     * @return 是否删除成功
+     */
+    default boolean removeDirectory(String absolute,Map<String,Object> params){
+        return false;
+    }
+
+    /**
+     * 删除文件夹
+     * @param absolute 文件夹的绝对路径
      * @param api 实际远程操作的api
      * @param params 请求参数
      * @param method 请求方式
@@ -136,15 +146,12 @@ public interface Jcr {
 
     /**
      * 添加文件
-     * @param dirAbsolute 文件存放的文件夹绝对路径
-     * @param filename 文件名
-     * @param content 文件源
      * @param api 实际远程操作的api
      * @param params 请求参数
      * @param method 请求方式
      * @return 是否添加成功
      */
-    default boolean addFile(String dirAbsolute, String filename, String content, String api, Map<String,Object> params,String method){
+    default boolean addFile(String api, Map<String,Object> params,String method){
         return false;
     }
 
@@ -180,6 +187,16 @@ public interface Jcr {
      * @return 是否删除成功
      */
     default boolean deleteFile(String dirAbsolute, String filename){
+        return false;
+    }
+
+    /**
+     * 删除文件
+     * @param absolute 文件的绝对路径
+     * @param params 自定义参数
+     * @return 是否删除成功
+     */
+    default boolean deleteFile(String absolute,Map<String,Object> params){
         return false;
     }
 

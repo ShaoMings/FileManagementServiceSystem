@@ -466,7 +466,7 @@ function getParentFile() {
     $.post('/file/getParentFile', function (result) {
         if (result.code === 200) {
             let data = result;
-            console.log(data);
+            // console.log(data);
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {

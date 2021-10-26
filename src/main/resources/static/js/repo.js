@@ -1,63 +1,58 @@
 let element;
 let gitee_token;
-layui.use(['element','form'], function () {
+let project;
+layui.use(['element', 'form'], function () {
     element = layui.element;
     let form = layui.form;
-    form.on('select(project)',function (data) {
-        let value = data.value;
-        let info = getOwnerAndRepo(value);
-        getParentFile(info[0],info[1]);
-    });
-    form.on('select(repo)',function (data) {
+    form.on('select(repo)', function (data) {
         let value = data.value;
         $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip" value=""></div></div>');
         $("#project-item").html('<select name="project" lay-filter="project" id="project-select"><option value="">选择项目</option></select>');
         layui.form.render('select');
-        if (value === "gitee"){
+        if (value === "gitee") {
             gitee_token = getTokenOfGitee();
-            if (gitee_token === ""){
-                if (getTokenOfGitee() === ""){
+            if (gitee_token === "") {
+                if (getTokenOfGitee() === "") {
                     layer.msg("您还未获取Gitee远程仓库授权! 即将跳转到授权页面!");
                     setTimeout(function () {
                         let newTab = window.open('_blank');
                         newTab.location = "/repo/gite/auth";
-                    },2000);
-                }else {
+                    }, 2000);
+                } else {
                     getAllRepo();
                 }
-            }else {
+            } else {
                 getAllRepo();
             }
         }
     })
+    form.on('select(project)', function (data) {
+        let value = data.value;
+        let info = getOwnerAndRepo(value);
+        project = info[1];
+        getParentFile(project);
+    });
 });
 
 
- if ($('#repo-select option:selected').val() === ""){
-     layer.msg("请选择你要管理的仓库!");
- }
+if ($('#repo-select option:selected').val() === "") {
+    layer.msg("请选择你要管理的仓库!");
+}
 /*监听创建文件夹按钮点击*/
-$('#mkdir').click(function () {
-    let dir_path = $('#dir-path').data('path');
-    let file_path = $('#file-path').data('path');
-    let current_path = "files/";
-    if (dir_path !== undefined && file_path === undefined) {
-        current_path += dir_path;
+$('body').on('click','#mkdir',function () {
+    let path_side = $('#path-side').children('a');
+    let current_path = "";
+    if (path_side.length > 1) {
+        current_path = $(path_side[path_side.length - 1]).data("path")
     }
-    if (file_path !== undefined && dir_path === undefined) {
-        current_path += file_path;
-    }
-    if (dir_path === undefined && file_path === undefined) {
-        current_path = "files" + $('#path-side').children("a:last-child").data("path");
-    }
-    if (dir_path !== undefined && file_path !== undefined) {
-        current_path += dir_path;
-    }
-
     layer.prompt({title: '输入文件夹名称', formType: 0}, function (name, index) {
-        $.post('/file/mkdir', {"path": current_path + "/" + name}, function (res) {
+        $.post('/repo/gite/addDir', {
+            path: current_path + "/" + name,
+            repo: project,
+            token: gitee_token
+        }, function (res) {
             if (res.code === 200) {
-                openDir(current_path.replace("files/", ""));
+                openDir(current_path, project);
                 layer.msg("创建成功");
             } else {
                 layer.msg(res.msg);
@@ -183,40 +178,40 @@ $('#search').on('input', function (e) {
     }
 });
 
- //公开文件监听
-$('#file-result').on('click','.open-btn',function () {
+//公开文件监听
+$('#file-result').on('click', '.open-btn', function () {
     let obj = $(this);
     let path = $(this).data('path');
     let filename = $(this).data('name');
     let filesize = $(this).data('size');
     let open = $(this).data('open');
 
-    if (open === 0){
+    if (open === 0) {
         $.ajax({
-            url:"/share/open",
+            url: "/share/open",
             method: "post",
-            data:{"filename":filename,"path":path,"size":filesize},
-            success:function (res) {
-                if (res.code === 200){
+            data: {"filename": filename, "path": path, "size": filesize},
+            success: function (res) {
+                if (res.code === 200) {
                     layer.msg("公开成功!");
-                    obj.data("open",1);
+                    obj.data("open", 1);
                     obj.text("私有");
-                }else {
+                } else {
                     layer.msg(res.msg);
                 }
             }
         })
-    }else {
+    } else {
         $.ajax({
-            url:"/share/private",
+            url: "/share/private",
             method: "post",
-            data:{"filename":filename,"path":path},
-            success:function (res) {
-                if (res.code === 200){
+            data: {"filename": filename, "path": path},
+            success: function (res) {
+                if (res.code === 200) {
                     layer.msg("私有成功!");
-                    obj.data("open",0);
+                    obj.data("open", 0);
                     obj.text("公开");
-                }else {
+                } else {
                     layer.msg(res.msg);
                 }
             }
@@ -267,7 +262,7 @@ $('#file-result').on('click', '.share-btn', function () {
                             let html = '<div class="file-details-box">' +
                                 '<ul>' +
                                 '<li><span>有效期至:&nbsp;</span>' + res.data.until + '</li>' +
-                                '<li><span>访问链接:</span></br><a target="_blank" href=' + res.data.link  + '>' + res.data.link + '</a></li>' +
+                                '<li><span>访问链接:</span></br><a target="_blank" href=' + res.data.link + '>' + res.data.link + '</a></li>' +
                                 '<li><span>提取码:&nbsp;</span>' + res.data.check + '</li>' +
                                 '<li><span>二维码:</span></br><div id="qrcode" style="width:150px; height:150px; margin:0 auto;"></div></li>' +
                                 '</ul>';
@@ -332,155 +327,6 @@ function checkSystemRightTime() {
 }
 
 
-/*监听格式转换按钮 */
-$('#file-result').on('click', '.converter-btn', function () {
-
-    let dir_path = $('#dir-path').data('path');
-    let file_path = $('#file-path').data('path');
-    let current_path = "files/";
-    if (dir_path !== undefined && file_path === undefined) {
-        current_path += dir_path;
-    }
-    if (file_path !== undefined && dir_path === undefined) {
-        current_path += file_path;
-    }
-    if (dir_path === undefined && file_path === undefined) {
-        current_path = "files" + $('#path-side').children("a:last-child").data("path");
-    }
-    if (dir_path !== undefined && file_path !== undefined) {
-        current_path += dir_path;
-    }
-    let oldName = $(this).data('name');
-    let suffix = oldName.substring(oldName.lastIndexOf(".") + 1);
-    let html;
-    let select;
-    // 支持格式转mp3
-    let audio_types = ['m4a', 'wav'];
-    let picture_type = ['jpg', 'png']
-    // 支持格式转pdf
-    let document_types = ['txt', 'ppt', 'pptx', 'docx', 'xlsx'];
-    let form = layui.form;
-    if (audio_types.indexOf(suffix) !== -1) {
-        html = '<div class="layui-input-inline">\n' +
-            '        <select id="before">\n' +
-            '          <option value=' + suffix + '>' + suffix + '</option>\n' +
-            '        </select>\n' +
-            '</div>';
-        select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
-            '<div class="layui-input-inline">\n' +
-            '<select id="after">' +
-            '<option value="mp3">mp3</option>' +
-            '</select>' +
-            '</div>';
-    } else if (picture_type.indexOf(suffix) !== -1) {
-        removeItem(picture_type, suffix);
-        html = '<div class="layui-input-inline">\n' +
-            '      <select id="before">\n' +
-            '        <option value=' + suffix + '>' + suffix + '</option>\n' +
-            '      </select>\n' +
-            '    </div>';
-        select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
-            '<div class="layui-input-inline">\n' +
-            '<select class="sel" id="after">' +
-            '<option value=' + picture_type[0] + '>' + picture_type[0] + '</option>' +
-            '</select>' +
-            '</div>';
-    } else if (document_types.indexOf(suffix) !== -1) {
-        html = '<div class="layui-input-inline">\n' +
-            '        <select id="before">\n' +
-            '          <option value=' + suffix + '>' + suffix + '</option>\n' +
-            '        </select>\n' +
-            '</div>';
-        select = '<label class="layui-form-label" style="text-align: center;">转换为</label>' +
-            '<div class="layui-input-inline">\n' +
-            '<select id="after">' +
-            '<option value="pdf">pdf</option>' +
-            '</select>' +
-            '</div>';
-    } else {
-        if (suffix === "mp3") {
-            layer.msg("目前仅m4a,wav格式转mp3 !");
-            return;
-        }
-        layer.msg("未知类型!");
-        return;
-    }
-    let confirm_btn = '<div class="layui-form-item"><div class="layui-input-block">\n' +
-        '      <button type="button" class="layui-btn" id="converter" style="float: right;margin-right: 10px;margin-top: 20px;">立即提交</button>\n' +
-        '    </div></div>'
-    layer.open({
-        type: 1,
-        skin: 'layui-layer-demo', //样式类名
-        title: false,
-        closeBtn: 0,
-        anim: 2,
-        shadeClose: true, //开启遮罩关闭
-        area: ['510px', '200px'],
-        content: '<div class="format"><form class="layui-form" style="align-self: center;"><div class="layui-form-item">' + html + select + '</div>' + confirm_btn + '</form></div>',
-        success: function (name, index) {
-            form.render('select');
-            let before = $('#before option:selected').val();
-            $('#before').on('change', function () {
-                before = $('#before option:selected').val();
-            })
-            let after = $('#after option:selected').val();
-            $('#after').on('change', function () {
-                after = $('#after option:selected').val();
-            })
-            $('#converter').click(function () {
-                layer.close(index);
-                layer.msg("格式转换花费的时间较长,请耐心等待!");
-                let load_index = layer.load();
-                let path = current_path.substring(current_path.indexOf("/") + 1)
-
-                // post: path filename src dest
-                if (audio_types.indexOf(before) !== -1) {
-                    $.post("/file/audioConverter", {
-                        "path": path,
-                        "filename": oldName,
-                        "srcSuffix": before,
-                        "destSuffix": after
-                    }, function (res) {
-                        if (res.code === 200) {
-                            layer.close(load_index);
-                            layer.msg("转换成功");
-                            openDir(path)
-                        }
-                    });
-                } else if (picture_type.indexOf(after) !== -1) {
-                    $.post("/file/picConverter", {
-                        "path": path,
-                        "filename": oldName,
-                        "srcSuffix": before,
-                        "destSuffix": after
-                    }, function (res) {
-                        if (res.code === 200) {
-                            layer.close(load_index);
-                            layer.msg("转换成功");
-                            openDir(path)
-                        }
-                    });
-                } else if (document_types.indexOf(before) !== -1) {
-                    $.post("/file/documentConverter", {
-                        "path": path,
-                        "filename": oldName,
-                        "srcSuffix": before,
-                        "destSuffix": after
-                    }, function (res) {
-                        if (res.code === 200) {
-                            layer.close(load_index);
-                            layer.msg("转换成功");
-                            openDir(path)
-                        }
-                    });
-                }
-
-            });
-        }
-
-    });
-})
-
 function removeItem(arr, e) {
     arr.forEach(function (item, index, arr) {
         if (item === e) {
@@ -489,13 +335,13 @@ function removeItem(arr, e) {
     });
 }
 
-function getAllRepo(){
+function getAllRepo() {
     layer.msg("正在初始化仓库,请耐心等待一下!");
     let index = layer.load();
     $.ajax({
-        url:"/repo/gite/allRepoName",
-        data:{access_token:gitee_token},
-        success:function (res) {
+        url: "/repo/gite/allRepoName",
+        data: {access_token: gitee_token},
+        success: function (res) {
             let repo;
             if (res.code === 200) {
                 repo = res.data;
@@ -514,19 +360,19 @@ function getAllRepo(){
 }
 
 function getOwnerAndRepo(value) {
-    let owner = value.substring(0,value.indexOf("@"));
-    let repo = value.substring(value.indexOf("@")+1);
-    return [owner,repo];
+    let owner = value.substring(0, value.indexOf("@"));
+    let repo = value.substring(value.indexOf("@") + 1);
+    return [owner, repo];
 }
 
 function getTokenOfGitee() {
     let token = "";
     $.ajax({
-        url:"/repo/gite/token",
-        method:"get",
-        async:false,
-        success:function (res) {
-            if (res.code === 200){
+        url: "/repo/gite/token",
+        method: "get",
+        async: false,
+        success: function (res) {
+            if (res.code === 200) {
                 token = res.data;
             }
         }
@@ -535,16 +381,15 @@ function getTokenOfGitee() {
 }
 
 /*获取所有一级目录及文件*/
-function getParentFile(owner,repo) {
+function getParentFile(repo) {
     let index = layer.load();
-    $.post('/repo/gite/trees',{
-        "path":"",
-        "repo":repo,
-        "token":gitee_token
+    $.post('/repo/gite/trees', {
+        "path": "",
+        "repo": repo,
+        "token": gitee_token
     }, function (result) {
         if (result.code === 200) {
             let data = result;
-            // console.log(data);
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {
@@ -561,6 +406,17 @@ function getParentFile(owner,repo) {
             $("#file-result").html(html);
             $("#path-side").html('<a class="path-side-btn" data-path=""><cite>全部文件</cite></a>');
             layer.close(index);
+            let button_html = '<div class="layui-input-inline" style="float: right;width: auto">\n' +
+                '                                <button class="layui-btn" id="mkdir">\n' +
+                '                                    <i class="fa fa-plus"></i>&nbsp;新建文件夹\n' +
+                '                                </button>\n' +
+                '                            </div>\n' +
+                '                            <div class="layui-input-inline" style="float: right;width: auto">\n' +
+                '                                <button class="layui-btn" id="upload">\n' +
+                '                                    <i class="fa fa-plus"></i>&nbsp;上传文件\n' +
+                '                                </button>\n' +
+                '                            </div>';
+            $('#form-item').append(button_html);
         } else {
             layer.close(index);
             // layer.msg(result.msg);
@@ -572,27 +428,27 @@ function getParentFile(owner,repo) {
 $("#file-result").on("click", ".resultDir", function () {
     let dirPath = $(this).data("path");
     let info = getOwnerAndRepo($('#project-select option:selected').val());
-    openDir(dirPath,info[1]);
+    openDir(dirPath, info[1]);
 });
 
 /*监听文件导航*/
 $("#path-side").on("click", ".path-side-btn", function () {
     let dir = $(this).data("path");
     let info = getOwnerAndRepo($('#project-select option:selected').val());
-    openDir(dir,info[1]);
+    openDir(dir, info[1]);
 })
 
 //打开文件夹
-function openDir(dir,repo) {
-    if (dir === undefined){
+function openDir(dir, repo) {
+    if (dir === undefined) {
         dir = "";
     }
     let index = layer.load();
     let url = "/repo/gite/trees";
     $.post(url, {
-        "path":dir,
-        "repo":repo,
-        "token":gitee_token
+        "path": dir,
+        "repo": repo,
+        "token": gitee_token
     }, function (result) {
         if (result.code === 200) {
             let data = result;
@@ -625,8 +481,8 @@ function setPathSide(dir) {
     let arr = dir.split('/');
     let side = $('.file-list-side').find('a');
     let shaes = [''];
-    $.each(side,function (index, value) {
-       shaes.push($(value).data('sha'));
+    $.each(side, function (index, value) {
+        shaes.push($(value).data('sha'));
     })
     let html = '<a class="path-side-btn" data-path="">全部文件</a>';
     let path = "";
@@ -653,7 +509,6 @@ $("#file-result").on("click", ".download-btn", function () {
 
 /*监听上传按钮*/
 $("#file-result").on("click", ".upload-file-btn", function () {
-    let name = $(this).data("name");
     let path = $(this).data("path");
     layer.open({
         type: 2,
@@ -662,25 +517,24 @@ $("#file-result").on("click", ".upload-file-btn", function () {
         shadeClose: true,
         shade: 0.3,
         area: ['90%', '90vh'],
-        content: "/file/upload",
+        content: "/repo/upload",
         success: function (obj, index) {
             let body = layer.getChildFrame('body', index);
             // 获取上传页面的元素进行初始化渲染
-            body.contents().find("#path").val(path + "/" + name);
+            body.contents().find("#path").val(path);
+            body.contents().find("#repo").val(project);
+            body.contents().find("#token").val(gitee_token);
         }
     });
 })
 
 
-
 /*监听页面上传按钮*/
-$("#upload").click(function () {
-    let dir = $('#path-side').children("a:last-child").data("path");
+$('body').on('click','#upload',function () {
+    let path_side = $('#path-side').children('a');
     let path = "";
-    if (dir !== "") {
-        path = path + dir;
-    } else {
-        path = ""
+    if (path_side.length > 1) {
+        path = $(path_side[path_side.length - 1]).data("path")
     }
     layer.open({
         type: 2,
@@ -689,14 +543,16 @@ $("#upload").click(function () {
         shadeClose: true,
         shade: 0.3,
         area: ['90%', '90vh'],
-        content: "/file/upload",
+        content: "/repo/upload",
         success: function (obj, index) {
             let body = layer.getChildFrame('body', index);
             // 获取上传页面的元素进行初始化渲染
             body.contents().find("#path").val(path);
+            body.contents().find("#repo").val(project);
+            body.contents().find("#token").val(gitee_token);
         },
         cancel: function () {
-            openDir(path);
+            openDir(path,project);
         }
     });
 })
@@ -710,20 +566,20 @@ $("#file-result").on("click", ".details-btn", function () {
     $.post('/file/details', {"md5": md5}, function (result) {
         if (undefined === result.data.name) {
             let filePath;
-            if (path === ""){
+            if (path === "") {
                 filePath = name;
-            }else {
-                filePath = path+"/"+name;
+            } else {
+                filePath = path + "/" + name;
             }
             $.ajax({
-                url:"/file/getBigFileInfo",
-                method:"post",
-                data:{"filePath":filePath},
-                async:false,
-                success:function (res) {
-                    if (res.code === 200){
+                url: "/file/getBigFileInfo",
+                method: "post",
+                data: {"filePath": filePath},
+                async: false,
+                success: function (res) {
+                    if (res.code === 200) {
                         result = res;
-                    }else {
+                    } else {
                         layer.msg(res.msg);
                     }
                 }
@@ -750,12 +606,15 @@ $("#file-result").on("click", ".details-btn", function () {
 
 /*监听文件夹删除按钮*/
 $("#file-result").on("click", ".delete-dir-btn", function () {
-    let name = $(this).data("name");
     let path = $(this).data("path");
     let $this = $(this);
+    console.log(path)
     layer.confirm('确定要删除该文件夹吗?', {icon: 3, title: '提示'}, function (index) {
-        $.post('/file/deleteDir', {"path": path + "/" + name}, function (result) {
-            // console.log(result);
+        $.post('/repo/gite/removeDir', {
+            path: path,
+            repo:project,
+            token:gitee_token
+        }, function (result) {
             if (result.code === 200) {
                 $this.parent().parent().remove();
                 let len = $(".file-list-file-box").length;
@@ -777,7 +636,11 @@ $("#file-result").on("click", ".delete-file-btn", function () {
     let path = $(this).data("path");
     let $this = $(this);
     layer.confirm('确定要删除' + name + '吗?', {icon: 3, title: '提示'}, function (index) {
-        $.post('/file/deleteFile', {"path": path + "/" + name}, function (result) {
+        $.post('/repo/gite/removeFile', {
+            path: path,
+            repo:project,
+            token:gitee_token
+        }, function (result) {
             if (result.code === 200) {
                 $this.parent().parent().remove();
                 let len = $(".file-list-file-box").length;
@@ -799,7 +662,7 @@ $("#file-result").on("click", ".resultFile", function () {
     let name = $(this).data("name")
     let path = $(this).data("path");
     let tmp = getOwnerAndRepo($('#project-select option:selected').val());
-    let source =  `/repo/gite/blob?path=${path}&repo=${tmp[1]}&code=${gitee_token}`;
+    let source = `/repo/gite/blob?path=${path}&repo=${tmp[1]}&code=${gitee_token}`;
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
@@ -830,7 +693,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<audio src="' + source + '" autoplay controls style="width: 350px;display: block;margin: 10px auto auto;">您的浏览器不支持 audio 标签。</audio>'
         });
     } else if (kit.getFileType(suffix) === "video") {
-        $.getScript("/static/js/easyplayer.min.js",function () {
+        $.getScript("/static/js/easyplayer.min.js", function () {
             //视频
             layer.open({
                 type: 1,
@@ -881,7 +744,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source +"&download=0";
+        let viewer_url = source + "&download=0";
         layer.open({
             type: 2,
             title: '文件内容',

@@ -78,6 +78,14 @@ public class DateConverter {
         return date;
     }
 
+    public static String getNowMonthAndDay(){
+        Calendar now = new GregorianCalendar();
+        int month = now.get(Calendar.MONTH)+1;
+        int day = now.get(Calendar.DAY_OF_MONTH);
+        return month+"-"+day;
+    }
+
+
 
     /**
      * 将字符串转为指定格式的日期时间类
@@ -312,9 +320,7 @@ public class DateConverter {
     }
 
     public static void main(String[] args) throws ParseException {
-        String s = "https://gitee.com/api/v5/repos/shaoming123/ColaDemo/git/blobs/0c37a95750bdf11bc63b69b84506520ab8482766";
-        String tmp = s.substring(s.indexOf("/repos/") + 7);
-        System.out.println(tmp.substring(0,tmp.indexOf("/")));
+        System.out.println(getNowMonthAndDay());
     }
 
 }

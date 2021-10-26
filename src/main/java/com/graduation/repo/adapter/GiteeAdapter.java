@@ -1,5 +1,6 @@
 package com.graduation.repo.adapter;
 
+import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
@@ -29,6 +30,8 @@ import java.util.Map;
 @Component
 public class GiteeAdapter implements Jcr {
 
+    private static final Integer FILE_CREATED_STATUS_CODE = 201;
+
     @Autowired
     private JcrUtils jcrUtils;
 
@@ -56,7 +59,7 @@ public class GiteeAdapter implements Jcr {
         String token = (String) params.get("access_token");
         sb.append("https://gitee.com/api/v5/repos/").append(owner)
                 .append("/").append(repo).append("/events");
-        Map<String, Object> m = new HashMap<>();
+        Map<String, Object> m = new HashMap<>(2);
         m.put("access_token", token);
         m.put("limit", 1);
         String lastUtcTime = getTheLast(sb.toString(), m, "GET");
@@ -71,7 +74,9 @@ public class GiteeAdapter implements Jcr {
             List<TreeDto> tree = fileTreeDto.getTree();
             if (tree != null) {
                 tree.forEach(t -> {
-                    if (!"".equals(t.getPath()) && t.getIs_dir()) {
+                    // 初始格式化 getPath
+                    t.getPath();
+                    if (t.getIs_dir()) {
                         jcrUtils.addNodeOnRootByAbsPath(prefix + t.getPath());
                     } else {
                         jcrUtils.addPropertyOnNodeByAbsPath(t.getName(), JSONUtil.toJsonStr(t), prefix + t.getPath());
@@ -81,6 +86,38 @@ public class GiteeAdapter implements Jcr {
             }
         }
         return false;
+    }
+
+    /**
+     * 获取用户授权的所有仓库项目
+     * @param token 用户令牌
+     * @return json数组
+     */
+    public JSONArray getAllRepoArray(String token){
+        String api = "https://gitee.com/api/v5/user/repos";
+        Map<String, Object> params = new HashMap<>(4);
+        params.put("access_token", token);
+        params.put("sort", "full_name");
+        params.put("page", "1");
+        params.put("pre_page","100");
+        String json = HttpUtil.get(api, params);
+        if (StringUtils.isNotBlank(json)) {
+            return JSONUtil.parseArray(json);
+        }
+        return null;
+    }
+
+    /**
+     * 获取用户授权的所有仓库项目的总数
+     * @param token 用户令牌
+     * @return 仓库项目总数
+     */
+    public Integer getAllRepoCount(String token){
+        JSONArray allRepoArray = getAllRepoArray(token);
+        if (allRepoArray!=null){
+            return allRepoArray.size();
+        }
+        return 0;
     }
 
     /**
@@ -162,10 +199,13 @@ public class GiteeAdapter implements Jcr {
      */
     @Override
     public boolean addDirectory(String absolute, String api, Map<String, Object> params, String method) {
-        boolean isAdded = jcrUtils.addNodeOnRootByAbsPath(absolute);
-        if (isAdded) {
-            jcrUtils.addPropertyOnNodeByAbsPath(".keep", " ", absolute);
-            return StringUtils.isNotBlank(jcrUtils.executeUrl(api, params, method));
+        int code = jcrUtils.executeUrlBackResponse(api, params, method).getStatus();
+        if (code == FILE_CREATED_STATUS_CODE){
+            boolean isAdded = jcrUtils.addNodeOnRootByAbsPath(absolute);
+            if (isAdded) {
+                jcrUtils.addPropertyOnNodeByAbsPath(".keep", " ", absolute);
+                return StringUtils.isNotBlank(jcrUtils.executeUrl(api, params, method));
+            }
         }
         return false;
     }
@@ -174,16 +214,63 @@ public class GiteeAdapter implements Jcr {
      * 删除文件夹
      *
      * @param absolute 文件夹的绝对路径
-     * @param api      实际远程操作的api
-     * @param params   请求参数
-     * @param method   请求方式
+     * @param params 自定义参数
      * @return 是否删除成功
      */
     @Override
-    public boolean removeDirectory(String absolute, String api, Map<String, Object> params, String method) {
+    public boolean removeDirectory(String absolute,Map<String ,Object> params) {
         // 删除文件夹需保证文件夹里没有文件  包括其子文件夹  当一个文件夹没有文件时 会默认把文件夹删除
         // 所以只需把文件夹下所有文件删除即可
-        return Jcr.super.removeDirectory(absolute, api, params, method);
+        // 远程删除的path开头没有/
+        String user = (String) params.get("user");
+        String repo = (String) params.get("repo");
+        String token = (String) params.get("token");
+        String owner = getOwnerByToken(token);
+        if (absolute.startsWith("/")){
+            absolute = absolute.substring(1);
+        }
+        String name = absolute.substring(absolute.lastIndexOf("/")+1);
+        removeDirOnGiteeRepo(absolute,repo,owner,token,"删除文件夹:"+name+" "+DateConverter.getNowMonthAndDay());
+        String repository = "/"+user+"/"+repo+"/"+absolute;
+        return jcrUtils.removeItemByAbsPath(repository);
+    }
+
+
+    /**
+     * 递归远程删除文件夹下的所有文件
+     * @param path 要删除的文件夹路径 开头不含 /
+     * @param repo 仓库项目
+     * @param owner 远程用户名
+     * @param token 令牌
+     * @param msg commit 信息
+     */
+    public void removeDirOnGiteeRepo(String path,String repo,String owner,String token,String msg){
+        String contentApi = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/contents/"
+                +path+"?access_token="+token;
+        String contentJson = HttpUtil.get(contentApi);
+        JSONArray array = JSONUtil.parseArray(contentJson);
+        for (Object o : array) {
+            JSONObject obj = (JSONObject) o;
+            String type = obj.getStr("type");
+            if ("dir".equals(type)){
+                String dirPath = obj.getStr("path");
+                removeDirOnGiteeRepo(dirPath, repo, owner, token, msg);
+            }else if ("file".equals(type)){
+                String filePath = obj.getStr("path");
+                String sha = obj.getStr("sha");
+                String deleteApi = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/contents/"+filePath;
+                Map<String,Object> params = new HashMap<>(3);
+                params.put("access_token",token);
+                params.put("sha",sha);
+                params.put("message",msg);
+                HttpResponse response = jcrUtils.executeUrlBackResponse(deleteApi, params, "DELETE");
+                if (response.getStatus() != 200) {
+                    System.out.println(filePath+" 删除失败!");
+                    throw new RuntimeException("文件删除失败!");
+                }
+            }
+        }
+
     }
 
     /**
@@ -212,36 +299,41 @@ public class GiteeAdapter implements Jcr {
         return jcrUtils.getContentTreeOfNodeByAbsPath(absolute);
     }
 
-    /**
-     * 添加文件
-     *
-     * @param dirAbsolute 文件存放的文件夹绝对路径
-     * @param filename    文件名
-     * @param content     文件源
-     * @param api         实际远程操作的api
-     * @param params      请求参数
-     * @param method      请求方式
-     * @return 是否添加成功
-     */
-    @Override
-    public boolean addFile(String dirAbsolute, String filename, InputStream content, String api, Map<String, Object> params, String method) {
-        return Jcr.super.addFile(dirAbsolute, filename, content, api, params, method);
-    }
 
     /**
      * 添加文件
      *
-     * @param dirAbsolute 文件存放的文件夹绝对路径
-     * @param filename    文件名
-     * @param content     文件源
      * @param api         实际远程操作的api
      * @param params      请求参数
      * @param method      请求方式
      * @return 是否添加成功
      */
     @Override
-    public boolean addFile(String dirAbsolute, String filename, String content, String api, Map<String, Object> params, String method) {
-        return Jcr.super.addFile(dirAbsolute, filename, content, api, params, method);
+    public boolean addFile(String api, Map<String, Object> params, String method) {
+        String username = (String) params.get("user");
+        String repo = (String) params.get("repo");
+        String owner = (String) params.get("owner");
+        String token = (String) params.get("access_token");
+        String path = (String) params.get("path");
+        if (path.startsWith("/")){
+            path = path.substring(1);
+        }
+        params.remove("user");
+        params.remove("repo");
+        params.remove("owner");
+        HttpResponse response = jcrUtils.executeUrlBackResponse(api, params, method);
+        if (response.getStatus() == 201){
+            String contentApi = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/contents/"
+                    +path+"?access_token="+token;
+            String contentJson = HttpUtil.get(contentApi);
+            TreeDto treeDto = JSONUtil.toBean(contentJson, TreeDto.class);
+            treeDto.setOwner(owner);
+            String absolute = "/"+username+"/"+repo+"/"+treeDto.getPath();
+            return jcrUtils.addPropertyOnNodeByAbsPath(treeDto.getName(), JSONUtil.toJsonStr(treeDto), absolute);
+        }else if (response.getStatus() == 401){
+            throw new RuntimeException("没有权限,请检查token");
+        }
+        return false;
     }
 
     /**
@@ -263,16 +355,39 @@ public class GiteeAdapter implements Jcr {
     /**
      * 删除文件
      *
-     * @param dirAbsolute 文件存放的文件夹绝对路径
-     * @param filename    文件名
-     * @param api         实际远程操作的api
-     * @param params      请求参数
-     * @param method      请求方式
+     * @param path    文件路径
+     * @param params 自定义参数
      * @return 是否删除成功
      */
     @Override
-    public boolean deleteFile(String dirAbsolute, String filename, String api, Map<String, Object> params, String method) {
-        return Jcr.super.deleteFile(dirAbsolute, filename, api, params, method);
+    public boolean deleteFile(String path, Map<String, Object> params) {
+        String user = (String) params.get("user");
+        String repo = (String) params.get("repo");
+        String token = (String) params.get("token");
+        String owner = getOwnerByToken(token);
+        if (path.startsWith("/")){
+            path = path.substring(1);
+        }
+        String contentApi = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/contents/"
+                +path+"?access_token="+token;
+        String json = HttpUtil.get(contentApi);
+        String sha = JSONUtil.parseObj(json).getStr("sha");
+        String deleteApi = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/contents/"+path;
+        params.remove("user");
+        params.remove("repo");
+        params.remove("token");
+        params.put("access_token",token);
+        params.put("sha",sha);
+        String name = path.substring(path.lastIndexOf("/")+1);
+        params.put("message","删除文件:"+name+" "+DateConverter.getNowMonthAndDay());
+        HttpResponse response = jcrUtils.executeUrlBackResponse(deleteApi, params, "DELETE");
+        if (response.getStatus() == 200) {
+            String repository = "/"+user+"/"+repo+"/"+path;
+            return jcrUtils.removeItemByAbsPath(repository);
+        }else if (response.getStatus() == 401){
+            throw new RuntimeException("没有权限删除文件");
+        }
+        return false;
     }
 
     /**

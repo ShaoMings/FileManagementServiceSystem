@@ -153,7 +153,7 @@ public class TestController extends BaseController {
         Map<String, Object> params = new HashMap<>(2);
         params.put("access_token", "4e58b2c5adb230755c980dfed542654f");
         params.put("recursive", 1);
-        giteeAdapter.initializeRepository("shaoming/JavaReview",api, params, "GET");
+        giteeAdapter.initializer("shaoming/JavaReview",api, params, "GET");
 
         return JSONUtil.toJsonStr(jcrUtils.getAllFilesPathInfo());
     }

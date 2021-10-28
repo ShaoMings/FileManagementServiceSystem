@@ -45,9 +45,7 @@ public class GiteeIndexController extends BaseController {
     }
 
     @RequestMapping("/auth")
-    public String index(Model model) {
-        model.addAttribute("clientId","");
-        model.addAttribute("clientSecret","");
+    public String index() {
         return "repo/gitee-auth";
     }
 }

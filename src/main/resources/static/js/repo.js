@@ -353,7 +353,8 @@ function getAllRepo() {
                 $('#form-item select[name="project"]').append(el);
                 layui.form.render('select');
             } else {
-                layer.msg("找不到该用户的仓库!");
+                layer.close(index);
+                layer.msg("找不到该用户的仓库!请检查认证是否有效,然后刷新重试!");
             }
         }
     });
@@ -406,20 +407,22 @@ function getParentFile(repo) {
             $("#file-result").html(html);
             $("#path-side").html('<a class="path-side-btn" data-path=""><cite>全部文件</cite></a>');
             layer.close(index);
-            let button_html = '<div class="layui-input-inline" style="float: right;width: auto">\n' +
-                '                                <button class="layui-btn" id="mkdir">\n' +
-                '                                    <i class="fa fa-plus"></i>&nbsp;新建文件夹\n' +
-                '                                </button>\n' +
-                '                            </div>\n' +
-                '                            <div class="layui-input-inline" style="float: right;width: auto">\n' +
-                '                                <button class="layui-btn" id="upload">\n' +
-                '                                    <i class="fa fa-plus"></i>&nbsp;上传文件\n' +
-                '                                </button>\n' +
-                '                            </div>';
-            $('#form-item').append(button_html);
+            if (!$("#mkdir").size()>0){
+                let button_html = '<div class="layui-input-inline" style="float: right;width: auto">\n' +
+                    '                                <button class="layui-btn" id="mkdir">\n' +
+                    '                                    <i class="fa fa-plus"></i>&nbsp;新建文件夹\n' +
+                    '                                </button>\n' +
+                    '                            </div>\n' +
+                    '                            <div class="layui-input-inline" style="float: right;width: auto">\n' +
+                    '                                <button class="layui-btn" id="upload">\n' +
+                    '                                    <i class="fa fa-plus"></i>&nbsp;上传文件\n' +
+                    '                                </button>\n' +
+                    '                            </div>';
+                $('#form-item').append(button_html);
+            }
         } else {
             layer.close(index);
-            // layer.msg(result.msg);
+            layer.msg("获取内容失败!请检查认证是否有效,然后刷新重试!");
         }
     });
 }

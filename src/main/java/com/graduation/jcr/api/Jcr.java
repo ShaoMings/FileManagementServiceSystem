@@ -19,10 +19,41 @@ public interface Jcr {
      * @param method 请求方式
      * @return 是否初始化成功
      */
-    default boolean initializeRepository(String repository,String api,Map<String, Object> params,String method){
+    default boolean initializer(String repository,String api,Map<String, Object> params,String method){
         return false;
     }
 
+    /**
+     * 授权器
+     * @param api 请求api
+     * @param params 请求参数
+     * @param method 请求方式
+     * @return 是否授权
+     */
+    default boolean authorizer(String api,Map<String, Object> params,String method){
+        return false;
+    }
+    /**
+     * 同步器
+     * @param api 请求api
+     * @param params 请求参数
+     * @param method 请求方式
+     * @return 是否同步成功
+     */
+    default boolean synchronizer(String api,Map<String, Object> params,String method){
+        return false;
+    }
+
+    /**
+     * 检测器
+     * @param api 请求api
+     * @param params 请求参数
+     * @param method 请求方式
+     * @return 是否有更新
+     */
+    default boolean detector(String api,Map<String, Object> params,String method){
+        return false;
+    }
 
     /**
      *  添加文件夹

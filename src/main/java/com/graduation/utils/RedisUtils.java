@@ -369,6 +369,15 @@ public class RedisUtils {
     }
 
     /**
+     * 通过键移除值
+     * @param key 键
+     * @return 是否移除成功
+     */
+    public boolean remove(String key){
+        return Boolean.TRUE.equals(redisTemplate.delete(key));
+    }
+
+    /**
      * 移除值为value的
      * @param key 键
      * @param values 值 可以是多个

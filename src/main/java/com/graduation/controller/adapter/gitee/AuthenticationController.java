@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.graduation.controller.BaseController;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.gitee.AuthTokenVo;
+import com.graduation.repo.adapter.GiteeAdapter;
 import com.graduation.utils.RedisUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,19 +28,33 @@ public class AuthenticationController extends BaseController {
 
     @Autowired
     private RedisUtils redisUtils;
+    @Autowired
+    private GiteeAdapter giteeAdapter;
 
 
+    /**
+     * 检查 token是否存在并是否有效
+     *
+     * @return ture有效
+     */
     @RequestMapping("/tokenCheck")
-    public FileResponseVo checkToken(){
+    public FileResponseVo checkToken() {
         if (redisUtils.hasKey(getUser().getUsername() + "-auth_token")) {
             String token = (String) redisUtils.get(getUser().getUsername() + "-auth_token");
-            return FileResponseVo.success(token);
+            if (giteeAdapter.checkToken(token)) {
+                return FileResponseVo.success(token);
+            }
         }
         return FileResponseVo.fail("no token!");
     }
 
+    /**
+     * 检查授权码是否存在
+     *
+     * @return ture存在
+     */
     @RequestMapping("/codeCheck")
-    public FileResponseVo checkCode(){
+    public FileResponseVo checkCode() {
         if (redisUtils.hasKey(getUser().getUsername() + "-auth_code")) {
             return FileResponseVo.success();
         }
@@ -47,55 +62,41 @@ public class AuthenticationController extends BaseController {
     }
 
 
+    /**
+     * OAuth2 认证 通过授权码发起post请求获取token
+     *
+     * @param clientId     clientId
+     * @param clientSecret clientSecret
+     * @param backUrl      获取成功回调地址(跳转地址)不能与创建app时填写的不一致
+     * @return 响应对象
+     */
     @RequestMapping("/certification")
     public FileResponseVo certification(String clientId, String clientSecret, String backUrl) {
-        if (redisUtils.hasKey(getUser().getUsername() + "-auth_code")) {
-            String code = (String) redisUtils.get(getUser().getUsername() + "-auth_code");
-            String request = "https://gitee.com/oauth/token?grant_type=authorization_code&code="
-                    + code + "&client_id=" + clientId + "&redirect_uri=" + backUrl + "&client_secret=" + clientSecret;
-            Map<String, Object> params = new HashMap<>();
-            params.put("grant_type", "authorization_code");
-            params.put("code", code);
-            params.put("client_id", clientId);
-            params.put("redirect_uri", backUrl);
-            params.put("client_secret", clientSecret);
-            String json = HttpUtil.post(request, params);
-            AuthTokenVo tokenVo = JSONUtil.toBean(json, AuthTokenVo.class);
-            if (StringUtils.isNotBlank(tokenVo.getAccessToken())){
-                redisUtils.set(getUser().getUsername() + "-auth_token",tokenVo.getAccessToken()
-                        ,Long.parseLong(tokenVo.getExpiresIn()));
-                redisUtils.set(getUser().getUsername() + "-auth_refresh_token",tokenVo.getRefreshToken()
-                        ,Long.parseLong(tokenVo.getExpiresIn()));
-                redisUtils.set(getUser().getUsername() + "-auth_refresh",false
-                        ,Long.parseLong(tokenVo.getExpiresIn()));
-            }
-            return FileResponseVo.success(tokenVo);
-        }
-        return FileResponseVo.fail("error");
+        AuthTokenVo tokenVo = giteeAdapter.oauth2Authenticator(getUser().getUsername(), clientId, clientSecret, backUrl);
+        return tokenVo == null?FileResponseVo.fail("error"):FileResponseVo.success(tokenVo);
     }
 
 
+    /**
+     * 个人令牌或 OAuth2 授权  主要通过token有效性验证是否进行授权
+     *
+     * @param token   token
+     * @param refresh 是否 refresh token
+     * @param method  0 表示 个人令牌授权 1表示OAuth2授权
+     * @return 响应对象
+     */
     @RequestMapping("/authorization")
-    public FileResponseVo authentication(String token,Boolean refresh,String method){
-            if (StringUtils.isNotBlank(token)){
-                if ("1".equals(method)){
-                    if (redisUtils.hasKey(getUser().getUsername() + "-auth_token")){
-                        if (redisUtils.get(getUser().getUsername() + "-auth_token").equals(token)){
-                            redisUtils.set(getUser().getUsername() + "-auth_refresh",refresh);
-                            return FileResponseVo.success("accredit successful!");
-                        }else {
-                            return FileResponseVo.fail("token is not correct!");
-                        }
-                    }else {
-                        return FileResponseVo.fail("token is overdue!");
-                    }
-                }else {
-                    redisUtils.set(getUser().getUsername() + "-auth_token",token);
-                    redisUtils.set(getUser().getUsername() + "-auth_refresh",refresh);
-                    return FileResponseVo.success("accredit successful!");
-                }
-            }
-            return FileResponseVo.fail("error!");
+    public FileResponseVo authentication(String token, Boolean refresh, String method) {
+        Map<String,Object> params = new HashMap<>(4);
+        params.put("user",getUser().getUsername());
+        params.put("token",token);
+        params.put("refresh",refresh);
+        params.put("method",method);
+        boolean isAuthenticated = giteeAdapter.authorizer(params);
+        if (isAuthenticated){
+            return FileResponseVo.success("accredit successful!");
+        }
+        return FileResponseVo.fail("error!");
     }
 
 }

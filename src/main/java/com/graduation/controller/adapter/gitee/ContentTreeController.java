@@ -33,9 +33,6 @@ public class ContentTreeController extends BaseController {
     @Autowired
     private RedisUtils redisUtils;
 
-    @Autowired
-    private RepoContentController repoContentController;
-
     /**
      * 用于获取指定路径下的文件或文件夹信息
      *
@@ -44,37 +41,11 @@ public class ContentTreeController extends BaseController {
     @RequestMapping("/trees")
     public FileResponseVo getRepoTree(String path, String repo,String token) {
         String username = getUser().getUsername();
-        if ("".equals(path)){
-            StringBuilder sb = new StringBuilder();
-            Map<String, Object> params = new HashMap<>(2);
-            if (token == null){
-                if (redisUtils.hasKey(username + "-auth_token")){
-                    token = (String) redisUtils.get(username + "-auth_token");
-                }
-            }
-            String owner = giteeAdapter.getOwnerByToken(token);
-            params.put("access_token",token);
-            params.put("limit",1);
-            sb.append("https://gitee.com/api/v5/repos/").append(owner)
-                    .append("/").append(repo).append("/events");
-            boolean isNoLast = giteeAdapter.isNoTheLast(sb.toString(), params, "GET"
-                    ,giteeAdapter.getTheLastOnRepo(username,repo));
-            // 有更新 需要重新拉取
-            if (isNoLast){
-                repoContentController.initializeRepository(token,owner,repo);
-            }
+        List<JcrContentTreeDto> tree = giteeAdapter.getRepoContentTree(username, path, repo, token);
+        if (tree!=null){
+            return FileResponseVo.success(tree);
         }
-        boolean isParent = "".equals(path) || "/".equals(path);
-        String prefix = "/" + username + "/" + repo;
-        String origin = prefix;
-        if (!isParent){
-            prefix += path;
-        }
-        List<JcrContentTreeDto> tree = giteeAdapter.getDirectoryFiles(prefix);
-        tree.forEach(t->{
-            t.setPath(t.getPath().replace(origin,""));
-        });
-        return FileResponseVo.success(tree);
+        return FileResponseVo.fail("error");
     }
 
     /**

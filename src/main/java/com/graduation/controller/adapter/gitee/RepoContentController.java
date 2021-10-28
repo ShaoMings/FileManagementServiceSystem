@@ -1,19 +1,12 @@
 package com.graduation.controller.adapter.gitee;
 
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
+
 import com.graduation.controller.BaseController;
 import com.graduation.model.dto.gitee.request.AllRepoDto;
 import com.graduation.model.vo.FileResponseVo;
-import com.graduation.model.vo.gitee.RepoInfoVo;
 import com.graduation.model.vo.gitee.RepoSimpleInfoVo;
 import com.graduation.repo.adapter.GiteeAdapter;
-import com.graduation.utils.CommonUtils;
-import com.graduation.utils.DateConverter;
-import com.graduation.utils.RedisUtils;
-import org.apache.commons.lang3.StringUtils;
+import com.graduation.repo.solr.SolrComponent;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +26,9 @@ public class RepoContentController extends BaseController {
 
     @Autowired
     private GiteeAdapter giteeAdapter;
+
+    @Autowired
+    private SolrComponent solrComponent;
 
 
 

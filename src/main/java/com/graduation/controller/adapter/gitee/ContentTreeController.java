@@ -30,9 +30,6 @@ public class ContentTreeController extends BaseController {
     @Autowired
     private GiteeAdapter giteeAdapter;
 
-    @Autowired
-    private RedisUtils redisUtils;
-
     /**
      * 用于获取指定路径下的文件或文件夹信息
      *
@@ -44,6 +41,15 @@ public class ContentTreeController extends BaseController {
         List<JcrContentTreeDto> tree = giteeAdapter.getRepoContentTree(username, path, repo, token);
         if (tree!=null){
             return FileResponseVo.success(tree);
+        }
+        return FileResponseVo.fail("error");
+    }
+
+    @RequestMapping("/search")
+    public FileResponseVo search(String repo,String keywords){
+        List<JcrContentTreeDto> res = giteeAdapter.searchByKeyWordsAndRepo(repo, keywords);
+        if (res!=null){
+            return FileResponseVo.success(res);
         }
         return FileResponseVo.fail("error");
     }

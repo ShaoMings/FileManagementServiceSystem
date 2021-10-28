@@ -159,7 +159,7 @@ public class JcrUtils {
      * @param absPath 绝对路径
      * @return 文件及文件夹
      */
-    public List<JcrContentTreeDto> getContentTreeOfNodeByAbsPath(String absPath) {
+    public List<JcrContentTreeDto> getContentTreeOfNodeByAbsPath(String repo,String absPath) {
         try {
             if (session.nodeExists(absPath)) {
                 List<JcrContentTreeDto> list = new ArrayList<>();
@@ -171,7 +171,7 @@ public class JcrUtils {
                         String name = n.getName();
                         String path = n.getPath();
                         if (!isIgnores(path)) {
-                            list.add(new JcrContentTreeDto(path, name, 0L, "0B", true));
+                            list.add(new JcrContentTreeDto(repo,path, name, 0L, "0B", true));
                         }
                     }
                 }
@@ -186,7 +186,7 @@ public class JcrUtils {
                             JSONObject jsonObject = JSONUtil.parseObj(json);
                             Long size = jsonObject.getLong("size");
                             String file_size = jsonObject.getStr("file_size");
-                            list.add(new JcrContentTreeDto(path, name, size, file_size, false));
+                            list.add(new JcrContentTreeDto(repo,path, name, size, file_size, false));
                         }
 
                     }

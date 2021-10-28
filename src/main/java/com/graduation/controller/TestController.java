@@ -154,13 +154,12 @@ public class TestController extends BaseController {
         params.put("access_token", "4e58b2c5adb230755c980dfed542654f");
         params.put("recursive", 1);
         giteeAdapter.initializer("shaoming/JavaReview",api, params, "GET");
-
         return JSONUtil.toJsonStr(jcrUtils.getAllFilesPathInfo());
     }
 
     @RequestMapping("/getTree")
     public String getTree(String path){
-        return JSONUtil.toJsonStr(jcrUtils.getContentTreeOfNodeByAbsPath(path));
+        return JSONUtil.toJsonStr(jcrUtils.getContentTreeOfNodeByAbsPath("",path));
     }
 
 

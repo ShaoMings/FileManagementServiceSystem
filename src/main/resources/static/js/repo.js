@@ -4,8 +4,11 @@ let project;
 layui.use(['element', 'form'], function () {
     element = layui.element;
     let form = layui.form;
+    let repo;
     form.on('select(repo)', function (data) {
+        $('#search').val("");
         let value = data.value;
+        repo = value;
         $("#file-result").html('<div class="file-list-file-box"><div class="no-file-tip" value=""></div></div>');
         $("#project-item").html('<select name="project" lay-filter="project" id="project-select"><option value="">选择项目</option></select>');
         layui.form.render('select');
@@ -27,10 +30,15 @@ layui.use(['element', 'form'], function () {
         }
     })
     form.on('select(project)', function (data) {
-        let value = data.value;
-        let info = getOwnerAndRepo(value);
-        project = info[1];
-        getParentFile(project);
+        $('#search').val("");
+        if (repo === "gitee"){
+            let value = data.value;
+            let info = getOwnerAndRepo(value);
+            project = info[1];
+            getParentFile(project);
+        }else {
+            layer.msg("待适配...");
+        }
     });
 });
 
@@ -147,35 +155,40 @@ $('#file-result').on('click', '.rename-file-btn', function () {
 
 /* 监听文件检索框 */
 $('#search').on('input', function (e) {
-    let keywords = e.delegateTarget.value;
-    if (keywords === "" || keywords === undefined) {
-        getParentFile();
-    } else {
-        let index = layer.load();
-        $.post('/file/getSearchFiles', {"keywords": keywords}, function (res) {
-            if (res.code === 200) {
-                let data = res;
-                template.helper('iconHandler', function (name, isDir) {
-                    let icon;
-                    if (isDir === true) {
-                        icon = "file";
-                    } else {
-                        let index = name.lastIndexOf(".");
-                        let length = name.length;
-                        let suffix = name.substring(index + 1, length).toLowerCase();
-                        icon = kit.getIconName(suffix);
-                    }
-                    return icon;
-                });
-                let html = template('file-list', data);
-                $("#file-result").html(html);
-                layer.close(index);
-            } else {
-                layer.close(index);
-                layer.msg("系统异常");
-            }
-        });
+    if (project!== undefined){
+        let keywords = e.delegateTarget.value;
+        if (keywords === "" || keywords === undefined) {
+            getParentFile(project);
+        } else {
+            let index = layer.load();
+            $.post('/repo/gite/search', {keywords: keywords,repo:project}, function (res) {
+                if (res.code === 200) {
+                    let data = res;
+                    template.helper('iconHandler', function (name, isDir) {
+                        let icon;
+                        if (isDir === true) {
+                            icon = "file";
+                        } else {
+                            let index = name.lastIndexOf(".");
+                            let length = name.length;
+                            let suffix = name.substring(index + 1, length).toLowerCase();
+                            icon = kit.getIconName(suffix);
+                        }
+                        return icon;
+                    });
+                    let html = template('file-list', data);
+                    $("#file-result").html(html);
+                    layer.close(index);
+                } else {
+                    layer.close(index);
+                    layer.msg("系统异常");
+                }
+            });
+        }
+    }else {
+        layer.msg("请先选择项目!");
     }
+
 });
 
 //公开文件监听

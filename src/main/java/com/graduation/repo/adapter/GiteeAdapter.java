@@ -10,16 +10,19 @@ import com.graduation.jcr.model.dto.JcrContentTreeDto;
 import com.graduation.model.dto.gitee.request.AllRepoDto;
 import com.graduation.model.dto.gitee.response.ContentTreeDto;
 import com.graduation.model.dto.gitee.response.TreeDto;
+import com.graduation.model.pojo.gitee.SolrFileInfo;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.gitee.AuthTokenVo;
 import com.graduation.model.vo.gitee.RepoInfoVo;
 import com.graduation.model.vo.gitee.RepoSimpleInfoVo;
+import com.graduation.repo.solr.SolrComponent;
 import com.graduation.utils.CommonUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.jcr.utils.JcrUtils;
 import com.graduation.utils.RedisUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -45,6 +48,9 @@ public class GiteeAdapter implements Jcr {
 
     @Autowired
     private RedisUtils redisUtils;
+
+    @Autowired
+    private SolrComponent solrComponent;
 
     /**
      * 仓库信息初始化器
@@ -198,6 +204,8 @@ public class GiteeAdapter implements Jcr {
                         jcrUtils.addNodeOnRootByAbsPath(prefix + t.getPath());
                     } else {
                         jcrUtils.addPropertyOnNodeByAbsPath(t.getName(), JSONUtil.toJsonStr(t), prefix + t.getPath());
+                        solrComponent.addObjectIntoSolr(new JcrContentTreeDto(repo,t.getPath(),t.getName(),
+                                t.getSize().longValue(),t.getFile_size(),t.getIs_dir()));
                     }
                 });
                 return true;
@@ -243,7 +251,7 @@ public class GiteeAdapter implements Jcr {
                     if (!isParent) {
                         prefix += path;
                     }
-                    List<JcrContentTreeDto> tree = getDirectoryFiles(prefix);
+                    List<JcrContentTreeDto> tree = getDirectoryFiles(repo,prefix);
                     tree.forEach(t -> {
                         t.setPath(t.getPath().replace(origin, ""));
                     });
@@ -469,6 +477,16 @@ public class GiteeAdapter implements Jcr {
     }
 
     /**
+     * 通过关键字和仓库项目名称查找文件
+     * @param repo 仓库项目名
+     * @param keywords 关键字
+     * @return 结果集
+     */
+    public List<JcrContentTreeDto> searchByKeyWordsAndRepo(String repo,String keywords){
+        return solrComponent.queryByKeyWords(repo, keywords);
+    }
+
+    /**
      * 获取用户的所有授权仓库名称
      *
      * @param user 用户名
@@ -588,9 +606,8 @@ public class GiteeAdapter implements Jcr {
      * @param absolute 文件夹的绝对路径
      * @return 文件或文件夹信息列表
      */
-    @Override
-    public List<JcrContentTreeDto> getDirectoryFiles(String absolute) {
-        return jcrUtils.getContentTreeOfNodeByAbsPath(absolute);
+    public List<JcrContentTreeDto> getDirectoryFiles(String repo,String absolute) {
+        return jcrUtils.getContentTreeOfNodeByAbsPath(repo,absolute);
     }
 
 

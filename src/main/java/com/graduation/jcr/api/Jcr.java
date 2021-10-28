@@ -1,6 +1,7 @@
 package com.graduation.jcr.api;
 
 import com.graduation.jcr.model.dto.JcrContentTreeDto;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 import java.io.InputStream;
 import java.util.List;
@@ -130,14 +131,6 @@ public interface Jcr {
         return false;
     }
 
-    /**
-     * 获取绝对路径文件夹下的文件或文件夹
-     * @param absolute 文件夹的绝对路径
-     * @return 文件或文件夹信息列表
-     */
-    default List<JcrContentTreeDto> getDirectoryFiles(String absolute){
-        return null;
-    }
 
     /**
      * 添加文件

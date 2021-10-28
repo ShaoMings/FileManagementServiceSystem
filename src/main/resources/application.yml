@@ -18,6 +18,8 @@ default:
     peerAddress: http://10.0.4.3:8080/group1
 
 spring:
+  aop:
+    proxy-target-class: true
   thymeleaf:
     mode: HTML
     encoding: UTF-8
@@ -83,3 +85,6 @@ pagehelper:
   helper-dialect: mysql
   support-methods-arguments: true
   params: count=countSql
+
+solr:
+  collection: collection1

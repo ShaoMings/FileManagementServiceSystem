@@ -6,6 +6,7 @@ import com.graduation.repo.adapter.GiteeAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.solr.core.SolrTemplate;
 import org.springframework.data.solr.core.query.Criteria;
 import org.springframework.data.solr.core.query.FilterQuery;
@@ -15,6 +16,7 @@ import org.springframework.data.solr.core.query.result.ScoredPage;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -43,17 +45,24 @@ public class SolrComponent {
      *
      * @param o 对象
      */
-    @Async
+//    @Async
     public void addObjectIntoSolr(Object o) {
         solrTemplate.saveBean(collection, o);
         solrTemplate.commit(collection);
     }
 
     public List<JcrContentTreeDto> queryByKeyWords(String repo,String keywords){
+        List<JcrContentTreeDto> all = new ArrayList<>();
         Query query = new SimpleQuery("name:"+keywords);
         query.addFilterQuery(FilterQuery.filter(Criteria.where("repo").is(repo)));
         ScoredPage<JcrContentTreeDto> res = solrTemplate.queryForPage(collection, query, JcrContentTreeDto.class);
-        return res.getContent();
+        all.addAll(res.getContent());
+        int totalPages = res.getTotalPages();
+        for (int i = 1; i < totalPages; i++) {
+            query.setOffset(i*10L);
+            all.addAll(solrTemplate.queryForPage(collection, query, JcrContentTreeDto.class).getContent());
+        }
+        return all;
     }
 
 }

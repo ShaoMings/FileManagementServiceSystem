@@ -1,13 +1,10 @@
 package com.graduation.controller.adapter.gitee;
 
 import cn.hutool.core.codec.Base64;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONUtil;
 import com.graduation.controller.BaseController;
-import com.graduation.model.dto.gitee.response.SingleFileResultDto;
-import com.graduation.model.dto.gitee.response.TreeDto;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.repo.adapter.GiteeAdapter;
+import com.graduation.repo.adapter.TokenProxy;
 import com.graduation.utils.DateConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,20 +35,21 @@ public class ContentBlobController extends BaseController {
 
     @RequestMapping("/blob")
     public void getBlobContent(String path, String repo, String code, HttpServletResponse response) throws IOException {
-        path = "/" + getUser().getUsername() + "/" + repo + path;
-        TreeDto dto = giteeAdapter.getFile(path, TreeDto.class);
-        String request = "https://gitee.com/api/v5/repos/" + dto.getOwner() + "/"
-                + repo + "/git/blobs/" + dto.getSha() + "?access_token=" + code;
-        String json = HttpUtil.get(request);
-        SingleFileResultDto resultDto = JSONUtil.toBean(json, SingleFileResultDto.class);
-        String content = resultDto.getContent();
-        if (StringUtils.isNotBlank(content)) {
-            byte[] bytes = Base64.decode(content);
-            ServletOutputStream out = response.getOutputStream();
-            response.setHeader("Content-Disposition", "attachment;filename=" + dto.getName());
-            out.write(bytes);
-            out.flush();
+        if (StringUtils.isNotBlank(code)){
+            code = TokenProxy.tokenDecode(code);
         }
+        if (path.contains("/")){
+            String filename = path.substring(path.lastIndexOf("/")+1);
+            byte[] bytes = giteeAdapter.getRemoteFileContent(getUser().getUsername(), path, repo, code);
+            if (bytes!=null){
+                ServletOutputStream out = response.getOutputStream();
+                filename = URLEncoder.encode(filename,"UTF-8").replaceAll("\\+","%20");
+                response.setHeader("Content-Disposition", "attachment;filename="+filename);
+                out.write(bytes);
+                out.close();
+            }
+        }
+
     }
 
     /**
@@ -62,6 +61,9 @@ public class ContentBlobController extends BaseController {
      */
     @RequestMapping("/addFile")
     public FileResponseVo addFile(MultipartFile file,String path, String repo, String token) throws IOException {
+        if (StringUtils.isNotBlank(token)){
+            token = TokenProxy.tokenDecode(token);
+        }
         String filename = file.getOriginalFilename();
         String content = Base64.encode(file.getInputStream());
         Map<String,Object> params = new HashMap<>(8);
@@ -87,6 +89,9 @@ public class ContentBlobController extends BaseController {
      */
     @RequestMapping("/removeFile")
     public FileResponseVo removeFile(String path, String repo, String token){
+        if (StringUtils.isNotBlank(token)){
+            token = TokenProxy.tokenDecode(token);
+        }
         Map<String,Object> params = new HashMap<>(3);
         params.put("user",getUser().getUsername());
         params.put("repo",repo);

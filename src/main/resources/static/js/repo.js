@@ -186,6 +186,7 @@ $('#search').on('input', function (e) {
             });
         }
     }else {
+        $('#search').val("");
         layer.msg("请先选择项目!");
     }
 
@@ -367,7 +368,10 @@ function getAllRepo() {
                 layui.form.render('select');
             } else {
                 layer.close(index);
-                layer.msg("找不到该用户的仓库!请检查认证是否有效,然后刷新重试!");
+                layer.msg("找不到该用户的仓库!请检查认证是否有效!");
+                setTimeout(function () {
+                    window.location.reload();
+                },2000);
             }
         }
     });
@@ -435,7 +439,10 @@ function getParentFile(repo) {
             }
         } else {
             layer.close(index);
-            layer.msg("获取内容失败!请检查认证是否有效,然后刷新重试!");
+            layer.msg("获取内容失败!请检查认证是否有效!");
+            setTimeout(function () {
+                window.location.reload();
+            },2000);
         }
     });
 }
@@ -760,13 +767,12 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source + "&download=0";
         layer.open({
             type: 2,
             title: '文件内容',
             skin: 'layui-layer-rim', //加上边框
             area: ['90%', '90vh'], //宽高
-            content: viewer_url
+            content: source
         })
     } else {
         if (doc_types.indexOf(kit.getFileType(suffix)) !== -1) {

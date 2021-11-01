@@ -1,13 +1,10 @@
 package com.graduation.controller.adapter.gitee;
 
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONUtil;
 import com.graduation.controller.BaseController;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.gitee.AuthTokenVo;
 import com.graduation.repo.adapter.GiteeAdapter;
 import com.graduation.utils.RedisUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

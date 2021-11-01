@@ -4,13 +4,12 @@ import com.graduation.controller.BaseController;
 import com.graduation.jcr.model.dto.JcrContentTreeDto;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.repo.adapter.GiteeAdapter;
+import com.graduation.repo.adapter.TokenProxy;
 import com.graduation.utils.DateConverter;
-import com.graduation.utils.RedisUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +36,9 @@ public class ContentTreeController extends BaseController {
      */
     @RequestMapping("/trees")
     public FileResponseVo getRepoTree(String path, String repo,String token) {
+        if (StringUtils.isNotBlank(token)){
+            token = TokenProxy.tokenDecode(token);
+        }
         String username = getUser().getUsername();
         List<JcrContentTreeDto> tree = giteeAdapter.getRepoContentTree(username, path, repo, token);
         if (tree!=null){
@@ -45,6 +47,12 @@ public class ContentTreeController extends BaseController {
         return FileResponseVo.fail("error");
     }
 
+    /**
+     * solr关键字检索
+     * @param repo 仓库名称
+     * @param keywords 关键字
+     * @return 响应对象
+     */
     @RequestMapping("/search")
     public FileResponseVo search(String repo,String keywords){
         List<JcrContentTreeDto> res = giteeAdapter.searchByKeyWordsAndRepo(repo, keywords);
@@ -63,6 +71,9 @@ public class ContentTreeController extends BaseController {
      */
     @RequestMapping("/addDir")
     public FileResponseVo addDir(String path,String repo,String token){
+        if (StringUtils.isNotBlank(token)){
+            token = TokenProxy.tokenDecode(token);
+        }
         String owner = giteeAdapter.getOwnerByToken(token);
         String api = "https://gitee.com/api/v5/repos/"+owner+"/"+repo+"/contents"+path+"/.keep";
         path = "/"+getUser().getUsername()+"/"+repo+path;
@@ -83,6 +94,9 @@ public class ContentTreeController extends BaseController {
      */
     @RequestMapping("/removeDir")
     public FileResponseVo removeDir(String path,String repo,String token){
+        if (StringUtils.isNotBlank(token)){
+            token = TokenProxy.tokenDecode(token);
+        }
         Map<String,Object> params = new HashMap<>(3);
         params.put("user",getUser().getUsername());
         params.put("repo",repo);

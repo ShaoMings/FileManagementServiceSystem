@@ -1,5 +1,6 @@
 package com.graduation.repo.adapter;
 
+import cn.hutool.core.codec.Base64;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
@@ -9,6 +10,7 @@ import com.graduation.jcr.api.Jcr;
 import com.graduation.jcr.model.dto.JcrContentTreeDto;
 import com.graduation.model.dto.gitee.request.AllRepoDto;
 import com.graduation.model.dto.gitee.response.ContentTreeDto;
+import com.graduation.model.dto.gitee.response.SingleFileResultDto;
 import com.graduation.model.dto.gitee.response.TreeDto;
 import com.graduation.model.pojo.gitee.SolrFileInfo;
 import com.graduation.model.vo.FileResponseVo;
@@ -204,7 +206,7 @@ public class GiteeAdapter implements Jcr {
                         jcrUtils.addNodeOnRootByAbsPath(prefix + t.getPath());
                     } else {
                         jcrUtils.addPropertyOnNodeByAbsPath(t.getName(), JSONUtil.toJsonStr(t), prefix + t.getPath());
-                        solrComponent.addObjectIntoSolr(new JcrContentTreeDto(repo,t.getPath(),t.getName(),
+                        solrComponent.addObjectIntoSolr(new JcrContentTreeDto(repo,t.getPath()+"/"+t.getName(),t.getName(),
                                 t.getSize().longValue(),t.getFile_size(),t.getIs_dir()));
                     }
                 });
@@ -432,6 +434,24 @@ public class GiteeAdapter implements Jcr {
         String json = HttpUtil.get(api);
         if (StringUtils.isNotBlank(json)) {
             return JSONUtil.parseObj(json).getStr("login");
+        }
+        return null;
+    }
+
+
+    public byte[] getRemoteFileContent(String username,String path, String repo, String code){
+        path = "/" + username + "/" + repo + (path.startsWith("/")?path:"/"+path);
+        TreeDto dto = getFile(path, TreeDto.class);
+        String request = "https://gitee.com/api/v5/repos/" + dto.getOwner() + "/"
+                + repo + "/git/blobs/" + dto.getSha() + "?access_token=" + code;
+        String json = HttpUtil.get(request);
+        SingleFileResultDto resultDto = JSONUtil.toBean(json, SingleFileResultDto.class);
+        String content = resultDto.getContent();
+        if (StringUtils.isNotBlank(content)) {
+            byte[] bytes = Base64.decode(content);
+            if (bytes.length>0){
+                return bytes;
+            }
         }
         return null;
     }

@@ -2,6 +2,7 @@ package com.graduation.controller.adapter.gitee;
 
 import com.graduation.controller.BaseController;
 import com.graduation.model.vo.FileResponseVo;
+import com.graduation.repo.adapter.TokenProxy;
 import com.graduation.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,6 +26,7 @@ public class TokenController extends BaseController {
     public FileResponseVo getToken(){
         if (redisUtils.hasKey(getUser().getUsername() + "-auth_token")) {
             String token = (String) redisUtils.get(getUser().getUsername() + "-auth_token");
+            token = TokenProxy.tokenEncode(token);
             return FileResponseVo.success(token);
         }
         return FileResponseVo.fail("cannot get user gitee token!");

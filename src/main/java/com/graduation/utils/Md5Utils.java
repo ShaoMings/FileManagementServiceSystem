@@ -41,16 +41,23 @@ public class Md5Utils {
         return hexValue.toString();
     }
 
-    public static void main(String[] args) {
-        try {
-            SecureUtil.md5();
-            String url = "http://node-1:8080/group1/我的文件/TheWormValley.mp4";
-            String outputPath = Constant.OUTPUT_TMP_FILE_PATH;
-            String filename = "TheWormValley.mp4";
-            FileOutputStream fileOutputStream = new FileOutputStream(outputPath + "/test/"+filename);
-        }catch (Exception e){
-            e.printStackTrace();
+    public static String convertMD5(String inStr){
+        char[] a = inStr.toCharArray();
+        for (int i = 0; i < a.length; i++){
+            a[i] = (char) (a[i] ^ 't');
         }
+        String s = new String(a);
+        return s;
+    }
+
+
+
+    public static void main(String[] args) {
+        String s = "380104eeca293cd6e3e7d09dcb5aa18e";
+        System.out.println(s);
+        System.out.println(encode(s));
+        System.out.println(convertMD5(s));
+        System.out.println(convertMD5(convertMD5(s)));
     }
 
 }

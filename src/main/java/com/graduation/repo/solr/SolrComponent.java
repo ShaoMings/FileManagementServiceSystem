@@ -45,22 +45,29 @@ public class SolrComponent {
      *
      * @param o 对象
      */
-//    @Async
+    @Async
     public void addObjectIntoSolr(Object o) {
         solrTemplate.saveBean(collection, o);
         solrTemplate.commit(collection);
     }
 
+    public void delByItem(String name,String value){
+        Query query = new SimpleQuery(name+":"+value);
+        solrTemplate.delete(collection,query);
+        solrTemplate.commit(collection);
+    }
+
     public List<JcrContentTreeDto> queryByKeyWords(String repo,String keywords){
-        List<JcrContentTreeDto> all = new ArrayList<>();
         Query query = new SimpleQuery("name:"+keywords);
         query.addFilterQuery(FilterQuery.filter(Criteria.where("repo").is(repo)));
         ScoredPage<JcrContentTreeDto> res = solrTemplate.queryForPage(collection, query, JcrContentTreeDto.class);
-        all.addAll(res.getContent());
+        List<JcrContentTreeDto> all = new ArrayList<>(res.getContent());
         int totalPages = res.getTotalPages();
-        for (int i = 1; i < totalPages; i++) {
-            query.setOffset(i*10L);
-            all.addAll(solrTemplate.queryForPage(collection, query, JcrContentTreeDto.class).getContent());
+        if (totalPages>1){
+            for (int i = 1; i < totalPages; i++) {
+                query.setOffset(i*10L);
+                all.addAll(solrTemplate.queryForPage(collection, query, JcrContentTreeDto.class).getContent());
+            }
         }
         return all;
     }

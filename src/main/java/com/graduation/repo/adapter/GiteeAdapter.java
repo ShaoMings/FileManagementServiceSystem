@@ -182,6 +182,7 @@ public class GiteeAdapter implements Jcr {
         StringBuilder sb = new StringBuilder();
         String owner = (String) params.get("owner");
         String repo = (String) params.get("repo");
+        solrComponent.delByItem("repo",repo);
         String token = (String) params.get("access_token");
         sb.append("https://gitee.com/api/v5/repos/").append(owner)
                 .append("/").append(repo).append("/events");
@@ -379,7 +380,7 @@ public class GiteeAdapter implements Jcr {
      */
     public void callInitializeRepository(String username, String token, String owner, String repo) {
         String api = "https://gitee.com/api/v5/repos/" + owner + "/" + repo + "/git/trees/master";
-        Map<String, Object> m = new HashMap<>(2);
+        Map<String, Object> m = new HashMap<>(4);
         m.put("access_token", token);
         m.put("recursive", 1);
         m.put("owner", owner);

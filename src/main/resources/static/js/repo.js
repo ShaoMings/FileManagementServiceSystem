@@ -521,12 +521,12 @@ function setPathSide(dir) {
 
 /*监听下载按钮*/
 $("#file-result").on("click", ".download-btn", function () {
-    let name = $(this).data("name");
     let path = $(this).data("path");
-    let url = "/file/downloadFile";
+    let url = "/repo/gite/blob";
     let form = $("<form></form>").attr("action", url).attr("method", "post");
     form.append($("<input></input>").attr("type", "hidden").attr("name", "path").attr("value", path));
-    form.append($("<input></input>").attr("type", "hidden").attr("name", "name").attr("value", name));
+    form.append($("<input></input>").attr("type", "hidden").attr("name", "repo").attr("value", project));
+    form.append($("<input></input>").attr("type", "hidden").attr("name", "code").attr("value", gitee_token));
     form.appendTo('body').submit().remove();
 })
 

@@ -44,9 +44,9 @@ $("#bigFile").on("click", function () {
                 showProgressDetails:true,
                 fileManagerSelectionType: 'both'
             }).use(Uppy.Tus, {
-                endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
+                // endpoint: 'http://192.168.0.106:8080/group1/big/upload/'
                 // endpoint: 'http://10.60.1.79:8080/group1/big/upload/'
-                // endpoint: 'http://1.15.221.117:8085/group1/big/upload/'
+                endpoint: 'http://1.15.221.117:8085/group1/big/upload/'
             })
             upload.on('complete', (result) => {
                 let obj = result.successful[0];
@@ -61,8 +61,8 @@ $("#bigFile").on("click", function () {
                 auth_token: '9ee60e59-cb0f-4578-aaba-29b9fc2919ca',
                 path: user.username+$("#path").val(),
                 // callback_url:'http://10.60.2.0:8081/callback/bigFileInfo'
-                // callback_url:'http://1.15.221.117:8081/callback/bigFileInfo'
-                callback_url:'http://192.168.0.106:8081/callback/bigFileInfo'
+                callback_url:'http://1.15.221.117:8081/callback/bigFileInfo'
+                // callback_url:'http://localhost:8081/callback/bigFileInfo'
             });
         }
     });

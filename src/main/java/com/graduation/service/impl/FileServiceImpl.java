@@ -78,7 +78,7 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
             if (file != null) {
                 Integer fileId = file.getId();
                 if (file.getOpen() == 1) {
-                    shareService.privateFileToRemoveRecordByFileId(fileId);
+                    shareService.privateFileToRemoveRecordByFilePath(sqlFilePath);
                 }
                 QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
                 userFileQueryWrapper.eq("file_id", fileId);
@@ -118,17 +118,17 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
         fileQueryWrapper.likeRight("file_path", pathPrefix);
         List<File> deleteFileList = this.list(fileQueryWrapper);
         if (deleteFileList.size()>0){
-            List<Integer> openFilesIdList = new ArrayList<>();
+            List<String> openFilesPathList = new ArrayList<>();
             List<Integer> fileIds = new ArrayList<>();
             QueryWrapper<UserFile> userFileQueryWrapper = new QueryWrapper<>();
             deleteFileList.forEach(e -> {
                 fileIds.add(e.getId());
                 if (e.getOpen() == 1){
-                    openFilesIdList.add(e.getId());
+                    openFilesPathList.add(e.getFilePath());
                 }
             });
-            if (openFilesIdList.size()>0){
-                shareService.privateFilesToRemoveRecordsByFileIdList(openFilesIdList);
+            if (openFilesPathList.size()>0){
+                shareService.privateFilesToRemoveRecordsByFilePathList(openFilesPathList);
             }
             userFileQueryWrapper.in("file_id", fileIds);
             boolean isDeleteFiles = this.removeByIds(fileIds);
@@ -188,23 +188,26 @@ public class FileServiceImpl extends ServiceImpl<FileMapper, File> implements Fi
 
     @Override
     public boolean saveFilePathByUserId(Integer id, String filePath,Integer peerId,String md5) {
-        String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
-        String tmpPath = filePath.substring(0,filePath.lastIndexOf("/")+1);
-        QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
-        fileQueryWrapper.eq("file_name",filename);
-        if (tmpPath.contains("//")){
-            filePath = tmpPath.replaceAll("//","/") + filename;
+        if (filePath!=null){
+            String filename = filePath.substring(filePath.lastIndexOf("/") + 1);
+            String tmpPath = filePath.substring(0,filePath.lastIndexOf("/")+1);
+            QueryWrapper<File> fileQueryWrapper = new QueryWrapper<>();
+            fileQueryWrapper.eq("file_name",filename);
+            if (tmpPath.contains("//")){
+                filePath = tmpPath.replaceAll("//","/") + filename;
+            }
+            fileQueryWrapper.eq("file_path",filePath);
+            fileQueryWrapper.eq("peer_id",peerId);
+            if (this.list(fileQueryWrapper).size()<=0) {
+                File file = new File(id, filename,md5, filePath,new Date(),peerId,null);
+                boolean flag1 = this.save(file);
+                Integer fileId = file.getId();
+                boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
+                return flag1 && flag2;
+            }
+            return true;
         }
-        fileQueryWrapper.eq("file_path",filePath);
-        fileQueryWrapper.eq("peer_id",peerId);
-        if (this.list(fileQueryWrapper).size()<=0) {
-            File file = new File(id, filename,md5, filePath,new Date(),peerId,null);
-            boolean flag1 = this.save(file);
-            Integer fileId = file.getId();
-            boolean flag2 = userFileService.save(new UserFile(null, id, fileId));
-            return flag1 && flag2;
-        }
-        return true;
+        return false;
     }
 
     @Override

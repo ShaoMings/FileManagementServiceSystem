@@ -35,6 +35,7 @@ public class TreeDto {
     /**  仓库用户名*/
     private String owner;
 
+    private Integer open;
 
 
     public void setSize(Integer size) {

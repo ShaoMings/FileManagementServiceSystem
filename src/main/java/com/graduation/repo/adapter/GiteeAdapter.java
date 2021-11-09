@@ -12,19 +12,17 @@ import com.graduation.model.dto.gitee.request.AllRepoDto;
 import com.graduation.model.dto.gitee.response.ContentTreeDto;
 import com.graduation.model.dto.gitee.response.SingleFileResultDto;
 import com.graduation.model.dto.gitee.response.TreeDto;
-import com.graduation.model.pojo.gitee.SolrFileInfo;
-import com.graduation.model.vo.FileResponseVo;
 import com.graduation.model.vo.gitee.AuthTokenVo;
 import com.graduation.model.vo.gitee.RepoInfoVo;
 import com.graduation.model.vo.gitee.RepoSimpleInfoVo;
 import com.graduation.repo.solr.SolrComponent;
+import com.graduation.service.ShareService;
 import com.graduation.utils.CommonUtils;
 import com.graduation.utils.DateConverter;
 import com.graduation.jcr.utils.JcrUtils;
 import com.graduation.utils.RedisUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -32,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Description Gitee 远程仓库适配器
@@ -54,6 +53,9 @@ public class GiteeAdapter implements Jcr {
     @Autowired
     private SolrComponent solrComponent;
 
+    @Autowired
+    private ShareService shareService;
+
     /**
      * 仓库信息初始化器
      *
@@ -66,6 +68,15 @@ public class GiteeAdapter implements Jcr {
     @Override
     public boolean initializer(String repository, String api, Map<String, Object> params, String method) {
         return initializeRepository(repository, api, params, method);
+    }
+
+    /**
+     * 检查jcr指定路径是否存在内容
+     * @param rootPath 根目录
+     * @return true 存在 false 不存在
+     */
+    public boolean existsRootContent(String rootPath){
+        return jcrUtils.hasItemOnNodeByAbsPath(rootPath);
     }
 
     /**
@@ -156,10 +167,27 @@ public class GiteeAdapter implements Jcr {
         return false;
     }
 
+    /**
+     * 将token从redis中移除
+     * @param username
+     */
     public void removeTokenFromRedis(String username) {
         if (redisUtils.hasKey(username + "-auth_token")) {
             redisUtils.remove(username + "-auth_token");
         }
+    }
+
+    public boolean modifyFileFieldByFilePath(String filename,String filePath,String fieldName,Object newValue){
+        if (jcrUtils.hasPropertyByAbsPath(filePath)) {
+            String json = jcrUtils.getStringPropertyByAbsPath(filePath);
+            JSONObject jsonObject = JSONUtil.parseObj(json).set(fieldName, newValue);
+            jcrUtils.removeItemByAbsPath(filePath);
+            if (filePath.contains(filename)){
+                filePath = filePath.replace(filename,"");
+            }
+            return jcrUtils.addPropertyOnNodeByAbsPath(filename, jsonObject.toString(), filePath);
+        }
+        return false;
     }
 
 
@@ -174,7 +202,7 @@ public class GiteeAdapter implements Jcr {
      */
     private boolean initializeRepository(String repository, String api, Map<String, Object> params, String method) {
         // 如果之前仓库有数据，需重新删除 添加
-        boolean hasOld = jcrUtils.hasItemOnNodeByAbsPath("/" + repository);
+        boolean hasOld = existsRootContent("/" + repository);
         if (hasOld) {
             jcrUtils.removeItemByAbsPath("/" + repository);
         }
@@ -203,12 +231,13 @@ public class GiteeAdapter implements Jcr {
                 tree.forEach(t -> {
                     // 初始格式化 getPath
                     t.getPath();
+                    int open = shareService.existsShareByFilePath(prefix + t.getPath())?1:0;
                     if (t.getIs_dir()) {
                         jcrUtils.addNodeOnRootByAbsPath(prefix + t.getPath());
                     } else {
                         jcrUtils.addPropertyOnNodeByAbsPath(t.getName(), JSONUtil.toJsonStr(t), prefix + t.getPath());
                         solrComponent.addObjectIntoSolr(new JcrContentTreeDto(repo,t.getPath()+"/"+t.getName(),t.getName(),
-                                t.getSize().longValue(),t.getFile_size(),t.getIs_dir()));
+                                t.getSize().longValue(),t.getFile_size(),t.getIs_dir(),open));
                     }
                 });
                 return true;
@@ -233,7 +262,18 @@ public class GiteeAdapter implements Jcr {
                     if (redisUtils.hasKey(username + "-auth_token")) {
                         token = (String) redisUtils.get(username + "-auth_token");
                     }
+                    boolean isParent = "".equals(path) || "/".equals(path);
+                    String prefix = "/" + username + "/" + repo;
+                    String origin = prefix;
                     if ("".equals(path)) {
+                        // 开发时加快速度
+                        if (existsRootContent(prefix)){
+                            List<JcrContentTreeDto> tree = getDirectoryFiles(repo,prefix);
+                            tree.forEach(t -> {
+                                t.setPath(t.getPath().replace(origin, ""));
+                            });
+                            return tree;
+                        }
                         StringBuilder sb = new StringBuilder();
                         Map<String, Object> params = new HashMap<>(2);
                         String owner = getOwnerByToken(token);
@@ -248,9 +288,6 @@ public class GiteeAdapter implements Jcr {
                             callInitializeRepository(username, token, owner, repo);
                         }
                     }
-                    boolean isParent = "".equals(path) || "/".equals(path);
-                    String prefix = "/" + username + "/" + repo;
-                    String origin = prefix;
                     if (!isParent) {
                         prefix += path;
                     }
@@ -443,8 +480,21 @@ public class GiteeAdapter implements Jcr {
     public byte[] getRemoteFileContent(String username,String path, String repo, String code){
         path = "/" + username + "/" + repo + (path.startsWith("/")?path:"/"+path);
         TreeDto dto = getFile(path, TreeDto.class);
+        return getFileBytes(dto,repo,code);
+    }
+
+
+    public byte[] getOpenFileContent(String filePath,String repo,String token){
+        TreeDto fileInfo = getFile(filePath, TreeDto.class);
+        return getFileBytes(fileInfo,repo,token);
+    }
+
+    private byte[] getFileBytes(TreeDto dto,String repo,String token){
+        if (dto == null){
+            throw new RuntimeException("仓库不存在该文件!");
+        }
         String request = "https://gitee.com/api/v5/repos/" + dto.getOwner() + "/"
-                + repo + "/git/blobs/" + dto.getSha() + "?access_token=" + code;
+                + repo + "/git/blobs/" + dto.getSha() + "?access_token=" + token;
         String json = HttpUtil.get(request);
         SingleFileResultDto resultDto = JSONUtil.toBean(json, SingleFileResultDto.class);
         String content = resultDto.getContent();

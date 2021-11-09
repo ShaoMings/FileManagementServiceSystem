@@ -200,11 +200,15 @@ $('#file-result').on('click', '.open-btn', function () {
     let filesize = $(this).data('size');
     let open = $(this).data('open');
 
+    if (open === undefined){
+        open = 0
+    }
+
     if (open === 0) {
         $.ajax({
-            url: "/share/open",
+            url: "/repo/gite/open",
             method: "post",
-            data: {"filename": filename, "path": path, "size": filesize},
+            data: {"filename": filename, "path": path, "size": filesize,"repo":project,"token":gitee_token},
             success: function (res) {
                 if (res.code === 200) {
                     layer.msg("公开成功!");
@@ -217,9 +221,9 @@ $('#file-result').on('click', '.open-btn', function () {
         })
     } else {
         $.ajax({
-            url: "/share/private",
+            url: "/repo/gite/private",
             method: "post",
-            data: {"filename": filename, "path": path},
+            data: {"filename": filename, "path": path,"repo":project},
             success: function (res) {
                 if (res.code === 200) {
                     layer.msg("私有成功!");
@@ -236,7 +240,7 @@ $('#file-result').on('click', '.open-btn', function () {
 
 // 监听文件分享
 $('#file-result').on('click', '.share-btn', function () {
-    let path = $(this).data('path');
+    let path = "/"+project+$(this).data('path');
     let filename = $(this).data('name');
     let html = '<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">' +
         '  <legend style="font-size: 15px;margin-left: 9px">分享文件:' + filename + '</legend>' +
@@ -268,8 +272,8 @@ $('#file-result').on('click', '.share-btn', function () {
             $('#share-btn').on('click', function () {
                 if (checkSystemRightTime()) {
                     let shareTime = $('#share-time option:selected').val();
-                    let data = {"path": path, "filename": filename, "days": shareTime};
-                    $.post("/file/share", data, function (res) {
+                    let data = {"path": path, "filename": filename, "days": shareTime,"token":gitee_token};
+                    $.post("/repo/gite/share", data, function (res) {
                         if (res.code === 200) {
                             layer.close(index);
                             let loadIndex = layer.load();
@@ -280,7 +284,6 @@ $('#file-result').on('click', '.share-btn', function () {
                                 '<li><span>提取码:&nbsp;</span>' + res.data.check + '</li>' +
                                 '<li><span>二维码:</span></br><div id="qrcode" style="width:150px; height:150px; margin:0 auto;"></div></li>' +
                                 '</ul>';
-
                             layer.open({
                                 type: 1,
                                 skin: 'layui-layer-demo', //样式类名
@@ -408,6 +411,7 @@ function getParentFile(repo) {
     }, function (result) {
         if (result.code === 200) {
             let data = result;
+            console.log(data);
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {

@@ -1,5 +1,6 @@
 package com.graduation.model.vo;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,4 +26,6 @@ public class OpenFileInfoVo {
     private String time;
     private Integer download;
     private Integer read;
+    private Integer remote;
+    private String token;
 }

@@ -32,6 +32,18 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     @Autowired
     private FileService fileService;
 
+    /**
+     * 通过文件路径查找是否存在该文件公开记录
+     *
+     * @param filePath 文件路径
+     * @return 是否存在
+     */
+    @Override
+    public boolean existsShareByFilePath(String filePath) {
+        LambdaQueryWrapper<Share> wrapper = new LambdaQueryWrapper<Share>().eq(Share::getFilePath, filePath);
+        return this.list(wrapper).size() == 1;
+    }
+
     @Override
     public boolean downloadCountPlusById(Integer shareId,Integer newCount) {
         UpdateWrapper<Share> updateWrapper = new UpdateWrapper<>();
@@ -88,6 +100,32 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
     public boolean privateFilesToRemoveRecordsByFileIdList(List<Integer> fileIds) {
         QueryWrapper<Share> queryWrapper = new QueryWrapper<>();
         queryWrapper.in("file_id",fileIds);
+        return this.remove(queryWrapper);
+    }
+
+    /**
+     * 通过文件Path移除公开记录
+     *
+     * @param filePath 文件id
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean privateFileToRemoveRecordByFilePath(String filePath) {
+        QueryWrapper<Share> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("file_path",filePath);
+        return this.remove(queryWrapper);
+    }
+
+    /**
+     * 通过公开文件Path集合 批量移除公开记录
+     *
+     * @param filePaths 公开文件id集合
+     * @return 是否删除成功
+     */
+    @Override
+    public boolean privateFilesToRemoveRecordsByFilePathList(List<String> filePaths) {
+        QueryWrapper<Share> queryWrapper = new QueryWrapper<>();
+        queryWrapper.in("file_path",filePaths);
         return this.remove(queryWrapper);
     }
 

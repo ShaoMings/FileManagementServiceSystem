@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>请输入提取码</title>
+    <link rel="Shortcut Icon" th:href="@{/static/images/favicon.ico}" type="image/x-icon"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" th:href="@{/static/css/check.css}">
+</head>
+<body>
+<div class="container init-docs" id="doc">
+    <div class="header">
+        <div class="verify-form">
+            <form class="clearfix" name="accessForm" action="/repo/gite/download" method="get">
+                <div class="form-header">
+                    <div class="file-name">文件分享验证</div>
+                </div>
+                <div class="verify-input">
+                    <div class="input-tips">请输入提取码:</div>
+                    <input hidden name="code" th:value="${code}">
+                    <input class="input-check" name="check" type="password" maxlength="4">
+                    <button class="submit-btn" type="submit">开始下载</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="cloud-bg">
+    <div class="bg-cloud"></div>
+</div>
+</body>
+</html>

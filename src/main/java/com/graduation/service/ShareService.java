@@ -18,6 +18,13 @@ import java.util.List;
 public interface ShareService extends IService<Share> {
 
     /**
+     * 通过文件路径查找是否存在该文件公开记录
+     * @param filePath 文件路径
+     * @return 是否存在
+     */
+    boolean existsShareByFilePath(String filePath);
+
+    /**
      * 通过分享的文件的表id对下载量加1
      * @param shareId id
      * @param newCount 加1后的总数
@@ -73,6 +80,20 @@ public interface ShareService extends IService<Share> {
      * @return 是否删除成功
      */
     boolean privateFilesToRemoveRecordsByFileIdList(List<Integer> fileIds);
+
+    /**
+     * 通过文件Path移除公开记录
+     * @param filePath 文件id
+     * @return 是否删除成功
+     */
+    boolean privateFileToRemoveRecordByFilePath(String filePath);
+
+    /**
+     * 通过公开文件Path集合 批量移除公开记录
+     * @param filePaths 公开文件id集合
+     * @return 是否删除成功
+     */
+    boolean privateFilesToRemoveRecordsByFilePathList(List<String> filePaths);
 
 
 }

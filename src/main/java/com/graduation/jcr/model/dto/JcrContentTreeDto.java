@@ -34,6 +34,6 @@ public class JcrContentTreeDto {
     /** 是否为文件夹*/
     @Field("is_dir")
     private Boolean is_dir;
-
+    private Integer open;
 
 }

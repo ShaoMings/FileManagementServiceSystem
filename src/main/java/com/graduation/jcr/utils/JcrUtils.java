@@ -42,7 +42,7 @@ public class JcrUtils {
 
     private static final String DELETE_METHOD = "delete";
 
-    private Session session;
+    private static Session session;
 
     private List<String> allFilesPath = new ArrayList<>();
     private List<String> allDirsPath = new ArrayList<>();
@@ -51,6 +51,10 @@ public class JcrUtils {
      * 初始化构造session  默认本地jcr认证id密码均为admin
      */
     public JcrUtils() {
+
+    }
+
+    static {
         try {
             session = new Jcr(new Oak()).createRepository().login(new SimpleCredentials("admin", "admin".toCharArray()));
         } catch (Exception e) {
@@ -171,7 +175,7 @@ public class JcrUtils {
                         String name = n.getName();
                         String path = n.getPath();
                         if (!isIgnores(path)) {
-                            list.add(new JcrContentTreeDto(repo,path, name, 0L, "0B", true));
+                            list.add(new JcrContentTreeDto(repo,path, name, 0L, "0B", true,0));
                         }
                     }
                 }
@@ -186,7 +190,8 @@ public class JcrUtils {
                             JSONObject jsonObject = JSONUtil.parseObj(json);
                             Long size = jsonObject.getLong("size");
                             String file_size = jsonObject.getStr("file_size");
-                            list.add(new JcrContentTreeDto(repo,path, name, size, file_size, false));
+                            Integer open = jsonObject.getInt("open", 0);
+                            list.add(new JcrContentTreeDto(repo,path, name, size, file_size, false,open));
                         }
 
                     }

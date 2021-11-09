@@ -31,6 +31,7 @@ function getShareRecord() {
     $.post('/share/record', function (res) {
         if (res.code === 200) {
             let data = res.data;
+            console.log(data)
             let container = $('#share-container');
             if (data.length > 0) {
                 $.each(data, function (index, value) {
@@ -52,7 +53,8 @@ function getShareRecord() {
                         '            </div>\n' +
                         '            <div class="option">\n' +
                         (Number(role) < 3 ? '<button class="delete-btn"  data-id="' + value.shareId + '" data-role="'+value.sharerRole+'">删除分享</button>' : '') +
-                        '                <button class="download-btn" data-username="' + value.sharerUsername + '" data-id="' + value.shareId + '" data-download="' + value.download + '" data-name="' + value.fileName + '" data-path="' + value.filePath + '">文件下载</button>\n' +
+                        '                <button class="download-btn" data-username="' + value.sharerUsername + '" data-id="' + value.shareId + '" ' +
+                        'data-download="' + value.download + '" data-remote="' + value.remote + '" data-token="' + value.token + '" data-name="' + value.fileName + '" data-path="' + value.filePath + '">文件下载</button>' +
                         '            </div>\n' +
                         '        </div>'
                     container.append(html);
@@ -96,6 +98,8 @@ $("#share-container").on('click','.delete-btn',function () {
 $("#share-container").on("click", ".download-btn", function () {
     let name = $(this).data("name");
     let path = $(this).data("path");
+    let remote = $(this).data("remote");
+    let token = $(this).data("token");
     let username = $(this).data("username");
     let obj = $(this);
     let shareId = $(this).data("id");
@@ -114,12 +118,22 @@ $("#share-container").on("click", ".download-btn", function () {
             }
         }
     });
-    let url = "/file/downloadFile";
-    let form = $("<form></form>").attr("action", url).attr("method", "post");
-    form.append($("<input/>").attr("type", "hidden").attr("name", "path").attr("value", path));
-    form.append($("<input/>").attr("type", "hidden").attr("name", "name").attr("value", name));
-    form.append($("<input/>").attr("type", "hidden").attr("name", "username").attr("value", username));
-    form.appendTo('body').submit().remove();
+    layer.msg("已提交下载请求!");
+    if (remote === 0){
+        let url = "/file/downloadFile";
+        let form = $("<form></form>").attr("action", url).attr("method", "post");
+        form.append($("<input/>").attr("type", "hidden").attr("name", "path").attr("value", path));
+        form.append($("<input/>").attr("type", "hidden").attr("name", "name").attr("value", name));
+        form.append($("<input/>").attr("type", "hidden").attr("name", "username").attr("value", username));
+        form.appendTo('body').submit().remove();
+    }else {
+        let url = "/repo/gite/open/download";
+        let form = $("<form></form>").attr("action", url).attr("method", "post");
+        form.append($("<input/>").attr("type", "hidden").attr("name", "filePath").attr("value", path));
+        form.append($("<input/>").attr("type", "hidden").attr("name", "token").attr("value", token));
+        form.appendTo('body').submit().remove();
+    }
+
 })
 
 // 文件预览

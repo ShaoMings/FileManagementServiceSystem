@@ -62,5 +62,11 @@ public class Share implements Serializable {
     @ApiModelProperty(value = "浏览次数")
     private Integer readCount;
 
+    @ApiModelProperty(value = "远程标识 0本地 1远程")
+    private Integer remote;
+
+    @ApiModelProperty(value = "用于远程文件的token")
+    private String token;
+
 
 }

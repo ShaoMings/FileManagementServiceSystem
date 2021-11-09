@@ -6,6 +6,7 @@ import cn.hutool.crypto.symmetric.AES;
 import cn.hutool.crypto.symmetric.SymmetricAlgorithm;
 import cn.hutool.crypto.symmetric.SymmetricCrypto;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
@@ -163,9 +164,16 @@ public class AesUtils {
 
     public static String getTokenByCode(String code) throws Exception {
         String path = decrypt(code);
-        String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
-        String username = path.substring(0, path.indexOf("/"));
-        return TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr("/" + username + groupFilePath.substring(1)));
+        int count = path.length() - path.replaceAll("/","").length();
+        String filePath;
+        if (count>1){
+            filePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
+            String username = path.substring(0, path.indexOf("/"));
+            return TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr("/" + username + filePath.substring(1)));
+        }else {
+            filePath = path.substring(path.indexOf("/"),path.lastIndexOf("@"));
+            return TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(filePath));
+        }
     }
 
     public static void main(String[] args) throws Exception {

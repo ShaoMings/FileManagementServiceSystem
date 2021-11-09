@@ -5,7 +5,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.graduation.controller.BaseController;
+import com.graduation.controller.adapter.local.BaseController;
 import com.graduation.model.vo.FileInfoVo;
 import com.graduation.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -505,7 +505,7 @@ $("#path-side").on("click", ".path-side-btn", function () {
 
 //打开文件夹
 function openDir(dir) {
-    console.log(dir)
+    // console.log(dir)
     let index = layer.load();
     let suff = dir.substring(0, 1);
     if (suff === "/") {

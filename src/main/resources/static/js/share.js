@@ -31,7 +31,7 @@ function getShareRecord() {
     $.post('/share/record', function (res) {
         if (res.code === 200) {
             let data = res.data;
-            console.log(data)
+            // console.log(data)
             let container = $('#share-container');
             if (data.length > 0) {
                 $.each(data, function (index, value) {

@@ -411,7 +411,7 @@ function getParentFile(repo) {
     }, function (result) {
         if (result.code === 200) {
             let data = result;
-            console.log(data);
+            // console.log(data);
             template.helper('iconHandler', function (name, isDir) {
                 let icon;
                 if (isDir === true) {
@@ -635,7 +635,7 @@ $("#file-result").on("click", ".details-btn", function () {
 $("#file-result").on("click", ".delete-dir-btn", function () {
     let path = $(this).data("path");
     let $this = $(this);
-    console.log(path)
+    // console.log(path)
     layer.confirm('确定要删除该文件夹吗?', {icon: 3, title: '提示'}, function (index) {
         $.post('/repo/gite/removeDir', {
             path: path,

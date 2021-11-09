@@ -52,7 +52,7 @@ public class ShareFileController extends BaseController {
             String path = AesUtils.decrypt(code);
             String groupFilePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
             String username = path.substring(0, path.indexOf("/"));
-            boolean isNoOverdue = redisUtils.hasKey("token-" +username + groupFilePath);
+            boolean isNoOverdue = redisUtils.hasKey("token-" + username + groupFilePath);
             if (isNoOverdue) {
                 String untilToTime = path.substring(path.lastIndexOf("@") + 1);
                 String token = AesUtils.getTokenByCode(code);
@@ -70,7 +70,7 @@ public class ShareFileController extends BaseController {
                 }
 
                 // 服务器部署时打开
-//        peerAddress = "http://1.15.221.117:8085/"+group;
+//                peerAddress = "http://1.15.221.117:8085/" + group;
 
                 // 链接检验未过期
                 if (!DateConverter.isOverdueBaseNow(untilToTime)) {

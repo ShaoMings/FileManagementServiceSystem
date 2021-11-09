@@ -267,13 +267,13 @@ public class GiteeAdapter implements Jcr {
                     String origin = prefix;
                     if ("".equals(path)) {
                         // 开发时加快速度
-                        if (existsRootContent(prefix)){
-                            List<JcrContentTreeDto> tree = getDirectoryFiles(repo,prefix);
-                            tree.forEach(t -> {
-                                t.setPath(t.getPath().replace(origin, ""));
-                            });
-                            return tree;
-                        }
+//                        if (existsRootContent(prefix)){
+//                            List<JcrContentTreeDto> tree = getDirectoryFiles(repo,prefix);
+//                            tree.forEach(t -> {
+//                                t.setPath(t.getPath().replace(origin, ""));
+//                            });
+//                            return tree;
+//                        }
                         StringBuilder sb = new StringBuilder();
                         Map<String, Object> params = new HashMap<>(2);
                         String owner = getOwnerByToken(token);

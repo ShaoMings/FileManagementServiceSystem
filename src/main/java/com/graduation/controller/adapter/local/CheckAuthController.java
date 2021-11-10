@@ -27,6 +27,8 @@ public class CheckAuthController {
     private RedisUtils redisUtils;
 
     private static final String BIG_FILE_UPLOAD_TOKEN = "9ee60e59-cb0f-4578-aaba-29b9fc2919ca";
+    private static final Integer MD5_LENGTH = 32;
+
 
     @RequestMapping("/check")
     public String checkAuth(@RequestParam("auth_token") String token,
@@ -40,15 +42,18 @@ public class CheckAuthController {
             token = token.substring(token.indexOf(",")+1);
         }
         String code = AesUtils.getCheckCodeByDecryptStr(path);
-        if (TokenUtils.verifyToken(token, code)) {
-            if (!TokenUtils.isExpire(token)) {
-                return "ok";
+        if (token.length()>MD5_LENGTH){
+            if (TokenUtils.verifyToken(token, code)) {
+                if (!TokenUtils.isExpire(token)) {
+                    return "ok";
+                }
             }
-        }
-        if (redisUtils.hasKey("token-" + path)) {
-            String authToken = MD5.create().digestHex(MD5.create().digestHex(Constant.MAKE_AUTH_TOKEN_SALT + code));
-            if (token.equals(authToken)) {
-                return "ok";
+        }else {
+            if (redisUtils.hasKey("token-" + path)) {
+                String authToken = MD5.create().digestHex(MD5.create().digestHex(Constant.MAKE_AUTH_TOKEN_SALT + code));
+                if (token.equals(authToken)) {
+                    return "ok";
+                }
             }
         }
         return "fail";

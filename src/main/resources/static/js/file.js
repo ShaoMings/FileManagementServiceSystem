@@ -827,7 +827,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source + "?auth_token=" + token+"&download=0";
+        let viewer_url = source + ((source.indexOf("auth_token")>-1?"":("?auth_token=" + token))+"&download=0");
         layer.open({
             type: 2,
             title: '文件内容',

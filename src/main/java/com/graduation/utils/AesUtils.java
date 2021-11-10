@@ -169,10 +169,10 @@ public class AesUtils {
         if (count>1){
             filePath = path.substring(path.indexOf("/", path.indexOf("/") + 1), path.lastIndexOf("@"));
             String username = path.substring(0, path.indexOf("/"));
-            return TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr("/" + username + filePath.substring(1)));
+            return TokenUtils.getShareAuthToken(AesUtils.getCheckCodeByDecryptStr("/" + username + filePath.substring(1)));
         }else {
             filePath = path.substring(path.indexOf("/"),path.lastIndexOf("@"));
-            return TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(filePath));
+            return TokenUtils.getShareAuthToken(AesUtils.getCheckCodeByDecryptStr(filePath));
         }
     }
 

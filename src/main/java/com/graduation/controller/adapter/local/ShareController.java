@@ -55,7 +55,7 @@ public class ShareController extends BaseController {
         }
         Integer fileId = fileService.getFileIdByFilePath(filePath);
         Integer userRole = userRoleService.getUserRole(getUser().getId());
-        boolean isShared = shareService.save(new Share(null, fileId,filename,filePath, size,getUser().getUsername(),
+        boolean isShared = shareService.save(new Share(null, fileId,filename,path, size,getUser().getUsername(),
                 getUser().getNickName(),userRole, new Date(), null, null,0,null));
         boolean statusChanged = fileService.changeOpenStatusById(fileId, 1);
         if (isShared && statusChanged) {

@@ -155,7 +155,13 @@ $("#share-container").on("click", ".file-title", function () {
             address = res;
         }
     });
-    let source = address + "/" + username + "/" + (path === "" ? name : path + "/" + name);
+    let source
+    let group = address.substring(address.lastIndexOf("/")+1)
+    if(path.indexOf(username+"/"+group)<0){
+        source = address + "/" + username + "/" + (path === "" ? name : path.indexOf(name)<0? (path+"/" + name):path);
+    }else {
+       source = address.substring(0,address.lastIndexOf("/")) + (path === "" ? name : path.indexOf(name)<0? (path+"/" + name):path);
+    }
 
     // 文件预览token
     $.ajax({

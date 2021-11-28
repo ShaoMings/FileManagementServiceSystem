@@ -145,7 +145,10 @@ public class ShareController extends BaseController {
         List<Share> records = shareService.getSevenDayShareFilesRecordByUserName(start, new Date(),getUser().getUsername());
         List<UserOpenFileInfoVo> list = new ArrayList<>();
         records.forEach(r->{
-            String md5 = fileService.getFileMd5ByFileId(r.getFileId());
+            String md5 = "";
+            if (r.getFileId()!=null){
+                md5 = fileService.getFileMd5ByFileId(r.getFileId());
+            }
             list.add(new UserOpenFileInfoVo(r.getId(),r.getFileName(),r.getFilePath(),md5,r.getSharerUsername(),r.getSharer(),
                     r.getFileSize(),DateConverter.getFormatDate(r.getShareTime()),r.getDownloadCount(),r.getReadCount()));
         });

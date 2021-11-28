@@ -52,7 +52,7 @@ function getShareRecord() {
                         '                </span>\n' +
                         '            </div>\n' +
                         '            <div class="option">\n' +
-                        (Number(role) < 3 ? '<button class="delete-btn"  data-id="' + value.shareId + '" data-role="'+value.sharerRole+'">删除分享</button>' : '') +
+                        (Number(role) < 3 ? '<button class="delete-btn"  data-id="' + value.shareId + '" data-role="' + value.sharerRole + '">删除分享</button>' : '') +
                         '                <button class="download-btn" data-username="' + value.sharerUsername + '" data-id="' + value.shareId + '" ' +
                         'data-download="' + value.download + '" data-remote="' + value.remote + '" data-token="' + value.token + '" data-name="' + value.fileName + '" data-path="' + value.filePath + '">文件下载</button>' +
                         '            </div>\n' +
@@ -70,24 +70,24 @@ function getShareRecord() {
 }
 
 /*监听删除按钮*/
-$("#share-container").on('click','.delete-btn',function () {
+$("#share-container").on('click', '.delete-btn', function () {
     let item = $(this).parent().parent();
     let shareId = $(this).data("id");
     let sharerRole = $(this).data("role");
-    if (Number(role) !== 1 && sharerRole === 1){
+    if (Number(role) !== 1 && sharerRole === 1) {
         layer.msg("你没有权限删除该记录!");
         return;
     }
 
     $.ajax({
-        url:"/share/delRecord",
-        method:"post",
-        data:{"shareId":shareId},
-        success:function (res) {
-            if (res.code === 200){
+        url: "/share/delRecord",
+        method: "post",
+        data: {"shareId": shareId},
+        success: function (res) {
+            if (res.code === 200) {
                 layer.msg("删除成功!");
                 item.remove();
-            }else {
+            } else {
                 layer.msg(res.msg);
             }
         }
@@ -119,14 +119,14 @@ $("#share-container").on("click", ".download-btn", function () {
         }
     });
     layer.msg("已提交下载请求!");
-    if (remote === 0){
+    if (remote === 0) {
         let url = "/file/downloadFile";
         let form = $("<form></form>").attr("action", url).attr("method", "post");
         form.append($("<input/>").attr("type", "hidden").attr("name", "path").attr("value", path));
         form.append($("<input/>").attr("type", "hidden").attr("name", "name").attr("value", name));
         form.append($("<input/>").attr("type", "hidden").attr("name", "username").attr("value", username));
         form.appendTo('body').submit().remove();
-    }else {
+    } else {
         let url = "/repo/gite/open/download";
         let form = $("<form></form>").attr("action", url).attr("method", "post");
         form.append($("<input/>").attr("type", "hidden").attr("name", "filePath").attr("value", path));
@@ -136,6 +136,21 @@ $("#share-container").on("click", ".download-btn", function () {
 
 })
 
+function getTokenOfGitee() {
+    let token = "";
+    $.ajax({
+        url: "/repo/gite/token",
+        method: "get",
+        async: false,
+        success: function (res) {
+            if (res.code === 200) {
+                token = res.data;
+            }
+        }
+    });
+    return token;
+}
+
 // 文件预览
 $("#share-container").on("click", ".file-title", function () {
     let name = $(this).data("name");
@@ -144,7 +159,6 @@ $("#share-container").on("click", ".file-title", function () {
     let shareId = $(this).data("id");
     let readCount = $(this).data("read");
     let read = $(this).parent().find('.file-read-count');
-    let username = $(this).data("username");
     let token;
     let canReadFlag = true;
     let address = "http://1.15.221.117:8085/group1";
@@ -156,24 +170,33 @@ $("#share-container").on("click", ".file-title", function () {
         }
     });
     let source
-    let group = address.substring(address.lastIndexOf("/")+1)
-    if(path.indexOf(username+"/"+group)<0){
-        source = address + "/" + username + "/" + (path === "" ? name : path.indexOf(name)<0? (path+"/" + name):path);
-    }else {
-       source = address.substring(0,address.lastIndexOf("/")) + (path === "" ? name : path.indexOf(name)<0? (path+"/" + name):path);
+    let group = address.substring(address.lastIndexOf("/") + 1)
+    let isLocal
+    if (path.startsWith("/" + group)) {
+        isLocal = true
+        source = address.substring(0, address.lastIndexOf("/")) + (path === "" ? "/" + name : path.indexOf(name) < 0 ? (path + "/" + name) : path);
+    } else {
+        isLocal = false
+        let sIndex = path.indexOf("/", 1)
+        let repo = path.substring(sIndex + 1, path.indexOf("/", sIndex + 1))
+        source = `/repo/gite/blob?path=${path}&repo=${repo}`;
     }
 
-    // 文件预览token
-    $.ajax({
-        url: "/preview/token",
-        method: "post",
-        data: {"filePath": username + "/" + (path === "" ? name : path + "/" + name)},
-        async: false,
-        success: function (res) {
-            token = res;
-            source = source + "?auth_token=" + token;
-        }
-    });
+    if (isLocal) {
+        // 文件预览token
+        $.ajax({
+            url: "/preview/token",
+            method: "post",
+            data: {"filePath": path === "" ? name : path.indexOf(group) < 0 ? path : path.replace("/" + group + "/", "")},
+            async: false,
+            success: function (res) {
+                token = res;
+                source = source + "?auth_token=" + token;
+            }
+        });
+    } else {
+        source = source + "&code=" + getTokenOfGitee();
+    }
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
@@ -262,7 +285,7 @@ $("#share-container").on("click", ".file-title", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source + ((source.indexOf("auth_token")>-1?"":("?auth_token=" + token))+"&download=0");
+        let viewer_url = source + ((source.indexOf("auth_token") > -1 ? "" : ("?auth_token=" + token)) + "&download=0");
         layer.close(loadIndex);
         layer.open({
             type: 2,

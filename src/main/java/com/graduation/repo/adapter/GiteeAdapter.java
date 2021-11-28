@@ -478,7 +478,9 @@ public class GiteeAdapter implements Jcr {
 
 
     public byte[] getRemoteFileContent(String username,String path, String repo, String code){
-        path = "/" + username + "/" + repo + (path.startsWith("/")?path:"/"+path);
+        if (!(path.contains(repo)&&path.contains(username))){
+            path = "/" + username + "/" + repo + (path.startsWith("/")?path:"/"+path);
+        }
         TreeDto dto = getFile(path, TreeDto.class);
         return getFileBytes(dto,repo,code);
     }

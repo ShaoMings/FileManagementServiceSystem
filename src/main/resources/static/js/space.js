@@ -57,15 +57,14 @@ function getUserStatus() {
                         '                <div class="file-title" data-username="' + value.sharerUsername + '" data-id="' + value.shareId + '" data-read="' + value.read + '"  ' +
                         'data-name="' + value.fileName + '" data-path="' + value.filePath + '">' + getFileTypeIcon(value.fileName) + '&nbsp;' + value.fileName + '</div>\n' +
                         '                <div class="file-size">文件大小&nbsp;: ' + value.size + '</div>\n' +
-                        '                <div class="file-time">上传时间&nbsp;: ' + value.time + '</div>\n' +
-                        '                <div class="file-md5">文件md5&nbsp;: ' + value.fileMd5 + '</div>\n' +
+                        '                <div class="file-time">上传时间&nbsp;: ' + value.time + '</div>\n' + (value.fileMd5 === "" ? "" : '<div class="file-md5">文件md5&nbsp;: ' + value.fileMd5 + '</div>\n') +
                         '            </div>';
                     obj.append(recordHtml);
-                    if (data.length < 4) {
-                        for (let i = 0; i < 4 - data.length; i++) {
-                            obj.append(noRecordHtml);
-                        }
-                    }
+                    // if (data.length < 4) {
+                    //     for (let i = 0; i < 4 - data.length; i++) {
+                    //         obj.append(noRecordHtml);
+                    //     }
+                    // }
                 });
             } else {
                 for (let i = 0; i < 4; i++) {
@@ -79,6 +78,20 @@ function getUserStatus() {
     });
 }
 
+function getTokenOfGitee() {
+    let token = "";
+    $.ajax({
+        url: "/repo/gite/token",
+        method: "get",
+        async: false,
+        success: function (res) {
+            if (res.code === 200) {
+                token = res.data;
+            }
+        }
+    });
+    return token;
+}
 
 // 文件预览
 $("#recently").on("click", ".file-title", function () {
@@ -95,24 +108,33 @@ $("#recently").on("click", ".file-title", function () {
         }
     });
     let source
-    let group = address.substring(address.lastIndexOf("/")+1)
-    if(path.indexOf(username+"/"+group)<0){
-        source = address + "/" + username + "/" + (path === "" ? name : path.indexOf(name)<0? (path+"/" + name):path);
-    }else {
-        source = address.substring(0,address.lastIndexOf("/")) + (path === "" ? name : path.indexOf(name)<0? (path+"/" + name):path);
+    let group = address.substring(address.lastIndexOf("/") + 1)
+    let isLocal
+    if (path.startsWith("/" + group)) {
+        isLocal = true
+        source = address.substring(0, address.lastIndexOf("/")) + (path === "" ? "/" + name : path.indexOf(name) < 0 ? (path + "/" + name) : path);
+    } else {
+        isLocal = false
+        let sIndex = path.indexOf("/", 1)
+        let repo = path.substring(sIndex + 1, path.indexOf("/", sIndex + 1))
+        source = `/repo/gite/blob?path=${path}&repo=${repo}`;
     }
 
-    // 文件预览token
-    $.ajax({
-        url: "/preview/token",
-        method: "post",
-        data: {"filePath": username + "/" + (path === "" ? name : path + "/" + name)},
-        async: false,
-        success: function (res) {
-            token = res;
-            source = source + "?auth_token=" + token;
-        }
-    });
+    if (isLocal) {
+        // 文件预览token
+        $.ajax({
+            url: "/preview/token",
+            method: "post",
+            data: {"filePath": path === "" ? name : path.indexOf(group) < 0 ? path : path.replace("/" + group + "/", "")},
+            async: false,
+            success: function (res) {
+                token = res;
+                source = source + "?auth_token=" + token;
+            }
+        });
+    } else {
+        source = source + "&code=" + getTokenOfGitee();
+    }
     let index = name.lastIndexOf(".");
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
@@ -146,7 +168,7 @@ $("#recently").on("click", ".file-title", function () {
             content: '<audio src="' + source + '" autoplay controls style="width: 350px;display: block;margin: 10px auto auto;">您的浏览器不支持 audio 标签。</audio>'
         });
     } else if (kit.getFileType(suffix) === "video") {
-        $.getScript("/static/js/easyplayer.min.js",function () {
+        $.getScript("/static/js/easyplayer.min.js", function () {
             //视频
             layer.close(loadIndex);
             layer.open({
@@ -201,7 +223,7 @@ $("#recently").on("click", ".file-title", function () {
             content: '<div id="show-area" class="clearfix" style="width: 100%;height: 100%;overflow: auto;background-color: #FCF6E5;">' + context + '</div>'
         })
     } else if (kit.getFileType(suffix) === "pdf") {
-        let viewer_url = source + ((source.indexOf("auth_token")>-1?"":("?auth_token=" + token))+"&download=0");
+        let viewer_url = source + ((source.indexOf("auth_token") > -1 ? "" : ("?auth_token=" + token)) + "&download=0");
         layer.close(loadIndex);
         layer.open({
             type: 2,

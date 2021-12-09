@@ -11,11 +11,15 @@ server:
 
 # 用户离线配置
 default:
+  # 部署服务器地址
+  ipaddr: 1.15.221.117
   server:
     port: 8080
-    address: http://10.0.4.3:8080
+    address: http://1.15.221.117:8080
     group: group1
-    peerAddress: http://10.0.4.3:8080/group1
+    peerAddress: http://1.15.221.117:8080
+    # nginx 反向代理  -> 8085 - 8080
+    proxy: http://1.15.221.117:8085
 
 spring:
   aop:

@@ -80,7 +80,7 @@ public class SignController extends BaseController {
             // session 存放用户
             session.setAttribute("isLogin", true);
             session.setAttribute("username", user.getAccount());
-            session.setMaxInactiveInterval(1800);
+            session.setMaxInactiveInterval(3 * 60 * 60);
             return "redirect:/";
         } catch (Exception e) {
             LOGGER.info(user.getAccount() + e.getMessage());

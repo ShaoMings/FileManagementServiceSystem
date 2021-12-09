@@ -715,8 +715,7 @@ $("#file-result").on("click", ".resultFile", function () {
     let path = $(this).data("path");
     let username;
     let token;
-    let address = "http://1.15.221.117:8085/group1";
-    // 部署时使用上面的 下面注释
+    let address;
     $.ajax({
         url: "/peers/address",
         async: false,
@@ -755,6 +754,7 @@ $("#file-result").on("click", ".resultFile", function () {
     let length = name.length;
     let suffix = name.substring(index + 1, length).toLowerCase();
     let doc_types = ["word", "excel", "ppt"];
+    let loadIndex = layer.load();
     //图片
     if (kit.getFileType(suffix) === "image") {
         let img = {
@@ -765,6 +765,7 @@ $("#file-result").on("click", ".resultFile", function () {
                 }
             ]
         }
+        layer.close(loadIndex);
         layer.photos({
             photos: img,
             anim: 5,
@@ -772,6 +773,7 @@ $("#file-result").on("click", ".resultFile", function () {
         });
     } else if (kit.getFileType(suffix) === "song") {
         //音乐
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             shadeClose: true,
@@ -783,6 +785,7 @@ $("#file-result").on("click", ".resultFile", function () {
     } else if (kit.getFileType(suffix) === "video") {
         $.getScript("/static/js/easyplayer.min.js",function () {
             //视频
+            layer.close(loadIndex);
             layer.open({
                 type: 1,
                 shadeClose: true,
@@ -796,6 +799,7 @@ $("#file-result").on("click", ".resultFile", function () {
     } else if (kit.getFileType(suffix) === "txt") {
         // 文本
         let resObj = $.ajax({url: source, async: false});
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             skin: 'layui-layer-rim', //加上边框
@@ -810,6 +814,7 @@ $("#file-result").on("click", ".resultFile", function () {
         let resObj = $.ajax({url: source, async: false});
         let converter = new showdown.Converter();
         let context = converter.makeHtml('```md\n' + resObj.responseText + '\n```');
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             skin: 'layui-layer-rim', //加上边框
@@ -824,6 +829,7 @@ $("#file-result").on("click", ".resultFile", function () {
         let resObj = $.ajax({url: source, async: false});
         let converter = new showdown.Converter();
         let context = converter.makeHtml(resObj.responseText);
+        layer.close(loadIndex);
         layer.open({
             type: 1,
             title: '文件内容',
@@ -833,6 +839,7 @@ $("#file-result").on("click", ".resultFile", function () {
         })
     } else if (kit.getFileType(suffix) === "pdf") {
         let viewer_url = source + ((source.indexOf("auth_token")>-1?"":("?auth_token=" + token))+"&download=0");
+        layer.close(loadIndex);
         layer.open({
             type: 2,
             title: '文件内容',
@@ -841,6 +848,7 @@ $("#file-result").on("click", ".resultFile", function () {
             content: viewer_url
         })
     } else {
+        layer.close(loadIndex);
         if (doc_types.indexOf(kit.getFileType(suffix)) !== -1) {
             layer.msg("该文档格式需转为PDF才能在线预览!");
             return;

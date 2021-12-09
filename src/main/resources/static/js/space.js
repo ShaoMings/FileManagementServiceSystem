@@ -97,9 +97,8 @@ function getTokenOfGitee() {
 $("#recently").on("click", ".file-title", function () {
     let name = $(this).data("name");
     let path = $(this).data("path");
-    let username = $(this).data("username");
     let token;
-    let address = "http://1.15.221.117:8085/group1";
+    let address;
     $.ajax({
         url: "/peers/address",
         async: false,
@@ -233,6 +232,7 @@ $("#recently").on("click", ".file-title", function () {
             content: viewer_url
         });
     } else {
+        layer.close(loadIndex);
         if (doc_types.indexOf(kit.getFileType(suffix)) !== -1) {
             layer.msg("该文档格式需下载预览!");
             return;

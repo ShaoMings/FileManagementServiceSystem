@@ -11,8 +11,10 @@ import com.graduation.model.pojo.Peers;
 import com.graduation.model.vo.FileResponseVo;
 import com.graduation.service.PeersService;
 import com.graduation.utils.Constant;
+import com.graduation.utils.NetUtils;
 import com.graduation.utils.RegexUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -39,11 +41,26 @@ public class PeersController extends BaseController {
     @Autowired
     private PeersService peersService;
 
+    @Value("${default.ipaddr}")
+    private String address;
+
+    @Value("${default.server.proxy}")
+    private String proxy;
+
 
     @RequestMapping("/address")
     @ResponseBody
     public String getAddress(){
+        if (NetUtils.INTERNET_IP.equals(address)){
+            return proxy+"/"+getPeersGroupName();
+        }
         return getPeersUrl();
+    }
+
+    @RequestMapping("/group")
+    @ResponseBody
+    public String getGroupName(){
+        return getPeersGroupName();
     }
 
 

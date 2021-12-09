@@ -35,7 +35,7 @@ public class LoginInterceptor implements HandlerInterceptor {
                 return false;
             }else {
                 session.setAttribute("isInstall",true);
-                session.setMaxInactiveInterval(1800);
+                session.setMaxInactiveInterval(3 * 60 * 60);
             }
         }
             if (isLogin!=null && isLogin){

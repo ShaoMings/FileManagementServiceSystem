@@ -161,7 +161,7 @@ $("#share-container").on("click", ".file-title", function () {
     let read = $(this).parent().find('.file-read-count');
     let token;
     let canReadFlag = true;
-    let address = "http://1.15.221.117:8085/group1";
+    let address;
     $.ajax({
         url: "/peers/address",
         async: false,
@@ -295,6 +295,7 @@ $("#share-container").on("click", ".file-title", function () {
             content: viewer_url
         });
     } else {
+        layer.close(loadIndex);
         if (doc_types.indexOf(kit.getFileType(suffix)) !== -1) {
             layer.msg("该文档格式需下载预览!");
             return;
@@ -316,7 +317,5 @@ $("#share-container").on("click", ".file-title", function () {
                 }
             }
         });
-    } else {
-        canReadFlag = true;
     }
 });

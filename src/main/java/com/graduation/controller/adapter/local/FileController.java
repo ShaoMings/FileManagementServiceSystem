@@ -56,14 +56,16 @@ public class FileController extends BaseController {
         if (dir.startsWith("files/")) {
             dir = dir.replace("files/", "");
         }
-        if (!dir.startsWith(username)) {
-            if("".equals(dir)){
-                dir = username;
-            }else {
-                if (dir.startsWith("/")) {
-                    dir = username + dir;
+        if (!dir.startsWith("/" + getPeersGroupName())) {
+            if (!dir.startsWith(username)) {
+                if ("".equals(dir)) {
+                    dir = username;
                 } else {
-                    dir = username + "/" + dir;
+                    if (dir.startsWith("/")) {
+                        dir = username + dir;
+                    } else {
+                        dir = username + "/" + dir;
+                    }
                 }
             }
         }
@@ -341,18 +343,34 @@ public class FileController extends BaseController {
                 } else {
                     originName = path;
                 }
-                if (!username.equals(originName)) {
-                    if (hasPrefix) {
-                        path = username + path.substring(path.indexOf("/"));
-                    } else {
-                        path = username;
+                if (StringUtils.isNotBlank(originName)) {
+                    if (!username.equals(originName)) {
+                        if (hasPrefix) {
+                            path = username + path.substring(path.indexOf("/"));
+                        } else {
+                            path = username;
+                        }
                     }
                 }
+
             }
             if ("".equals(path)) {
                 token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(name));
             } else {
-                token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path + "/" + name));
+                if (path.contains("/" + getPeersGroupName())) {
+                    path = path.replace("/" + getPeersGroupName() + "/", "");
+                }
+                if (!path.contains(name)) {
+                    token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path + "/" + name));
+                } else {
+                    token = TokenUtils.getAuthToken(AesUtils.getCheckCodeByDecryptStr(path));
+                }
+            }
+            if (path.startsWith("/" + getPeersGroupName())) {
+                path = path.replace("/" + getPeersGroupName() + "/", "");
+            }
+            if (path.contains("/" + name)) {
+                path = path.replace("/" + name, "");
             }
             url = new URL(getPeersUrl() + "/" + path + "/" + filename + "?auth_token=" + token);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
